@@ -32,7 +32,7 @@
   "settings": {
     "T_ref_K": 298.15,
     "eta_ref": 0.4,
-    "S0": 1e-28
+    "S0": 5e-29
   },
   "weights_used": {
     "w_J": 1.0,
@@ -73,7 +73,7 @@
         "sigma3_avg": 5.001641547296473e-29,
         "shape_avg": 0.5874828775760095
       },
-      "distance": 0.4037947038705973
+      "distance": 0.403851394076549
     },
     {
       "compound": "DEA",
@@ -106,7 +106,7 @@
         "sigma3_avg": 4.8308362115637864e-29,
         "shape_avg": 0.5084347195058165
       },
-      "distance": 0.5132253473806906
+      "distance": 0.5132677277501557
     },
     {
       "compound": "absorbent_2",
@@ -139,7 +139,7 @@
         "sigma3_avg": 5.19365309755375e-29,
         "shape_avg": 0.518355815218233
       },
-      "distance": 0.5463675632959082
+      "distance": 0.5463946712875107
     },
     {
       "compound": "MDEA",
@@ -172,7 +172,7 @@
         "sigma3_avg": 5.19365309755375e-29,
         "shape_avg": 0.518355815218233
       },
-      "distance": 0.5463675632959082
+      "distance": 0.5463946712875107
     },
     {
       "compound": "DMMEA",
@@ -205,7 +205,7 @@
         "sigma3_avg": 5.609689340854949e-29,
         "shape_avg": 0.5253450426427506
       },
-      "distance": 1.7106964358565897
+      "distance": 1.7111787080371035
     },
     {
       "compound": "DEEA",
@@ -238,7 +238,7 @@
         "sigma3_avg": 6.391409740878299e-29,
         "shape_avg": 0.48230552176820596
       },
-      "distance": 2.299126195467184
+      "distance": 2.299884854480408
     },
     {
       "compound": "MAPA",
@@ -271,7 +271,40 @@
         "sigma3_avg": 6.256953058158629e-29,
         "shape_avg": 0.5176151832628753
       },
-      "distance": 5.874566621836151
+      "distance": 5.883157849236851
+    },
+    {
+      "compound": "3_Aminopropyl_cyclohexyl_amine_S1N",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "D_bar": -9.95217698311447e-26,
+        "A_bar": 3.512069270401772e-27,
+        "m_total": 2.8757168812305682,
+        "sigma3_avg": 8.992478165484891e-29,
+        "shape_avg": 0.39031097896485384
+      },
+      "distance": 7.683819089314725
     },
     {
       "compound": "piperazine",
@@ -304,7 +337,7 @@
         "sigma3_avg": 1.1302604435271521e-28,
         "shape_avg": 0.2269285400796596
       },
-      "distance": 7.915756142314364
+      "distance": 7.941109129582142
     },
     {
       "compound": "hexylamine",
@@ -337,40 +370,7 @@
         "sigma3_avg": 7.617415364922547e-29,
         "shape_avg": 0.4871254913739358
       },
-      "distance": 8.183449979189744
-    },
-    {
-      "compound": "3_Aminopropyl_cyclohexyl_amine_S1N",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        0,
-        3,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        5,
-        0,
-        0,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "D_bar": -9.95217698311447e-26,
-        "A_bar": 2.260435293538635e-27,
-        "m_total": 2.8757168812305682,
-        "sigma3_avg": 8.992478165484891e-29,
-        "shape_avg": 0.39031097896485384
-      },
-      "distance": 8.38921489209034
+      "distance": 8.216657537201655
     },
     {
       "compound": "pyrrolidine",
@@ -403,7 +403,7 @@
         "sigma3_avg": 1.1154186869620622e-28,
         "shape_avg": 0.23574700258800518
       },
-      "distance": 9.70666089354279
+      "distance": 9.78206797954668
     },
     {
       "compound": "methyl_cyclohexyl_amine_MCA",
@@ -436,7 +436,7 @@
         "sigma3_avg": 1.0068786751591112e-28,
         "shape_avg": 0.33493778993058126
       },
-      "distance": 10.16507474512657
+      "distance": 10.268880505354986
     },
     {
       "compound": "piperidine",
@@ -469,7 +469,7 @@
         "sigma3_avg": 1.111935107113601e-28,
         "shape_avg": 0.23782240640415162
       },
-      "distance": 10.290375592797854
+      "distance": 10.398595396770139
     },
     {
       "compound": "1_methyl_piperazine_MPZ",
@@ -502,7 +502,7 @@
         "sigma3_avg": 9.631427261822562e-29,
         "shape_avg": 0.33634647985068405
       },
-      "distance": 10.963438213259215
+      "distance": 11.132283400486015
     },
     {
       "compound": "1_ethyl_piperazine_EPZ",
@@ -535,7 +535,7 @@
         "sigma3_avg": 9.849882798888004e-29,
         "shape_avg": 0.32425083598556487
       },
-      "distance": 11.292843820999128
+      "distance": 11.499411247727457
     },
     {
       "compound": "dimethyl_cyclohexyl_amine_DMCA",
@@ -568,7 +568,7 @@
         "sigma3_avg": 8.862222408791901e-29,
         "shape_avg": 0.3912903502146641
       },
-      "distance": 13.827472902784653
+      "distance": 15.024159396983558
     },
     {
       "compound": "diethyl_cyclohexyl_amine_DECA",
@@ -601,7 +601,7 @@
         "sigma3_avg": 9.275275401488224e-29,
         "shape_avg": 0.3660567297316341
       },
-      "distance": 13.836501501794805
+      "distance": 15.0324692754682
     },
     {
       "compound": "ethyl_cyclohexyl_amine_ECA",
@@ -634,7 +634,7 @@
         "sigma3_avg": 9.78783375378093e-29,
         "shape_avg": 0.3367173803557617
       },
-      "distance": 13.839017128943544
+      "distance": 15.034784794067336
     },
     {
       "compound": "1_methyl_piperidine_MPD",
@@ -667,7 +667,7 @@
         "sigma3_avg": 9.572640721574458e-29,
         "shape_avg": 0.3396865459604596
       },
-      "distance": 13.840315771773051
+      "distance": 15.035980159973457
     },
     {
       "compound": "methyl_cyclopentane",
@@ -700,7 +700,7 @@
         "sigma3_avg": 9.693633169165646e-29,
         "shape_avg": 0.35093673899646605
       },
-      "distance": 13.84142880943159
+      "distance": 15.037004694928054
     },
     {
       "compound": "methyl_cyclohexane",
@@ -733,7 +733,7 @@
         "sigma3_avg": 9.854537017231358e-29,
         "shape_avg": 0.3375072965450461
       },
-      "distance": 13.842725684617106
+      "distance": 15.038198465517192
     },
     {
       "compound": "1_ethyl_piperidine_EPD",
@@ -766,7 +766,7 @@
         "sigma3_avg": 9.7885866323638e-29,
         "shape_avg": 0.3276991562011734
       },
-      "distance": 13.8435274878461
+      "distance": 15.038936532064895
     },
     {
       "compound": "ethyl_cyclopentane",
@@ -799,7 +799,7 @@
         "sigma3_avg": 9.9212789249298e-29,
         "shape_avg": 0.33616500461782334
       },
-      "distance": 13.844489395481373
+      "distance": 15.039821984661977
     },
     {
       "compound": "ethyl_cyclohexane",
@@ -832,7 +832,7 @@
         "sigma3_avg": 1.0039415996838462e-28,
         "shape_avg": 0.32588973808605737
       },
-      "distance": 13.846031028370495
+      "distance": 15.041241103955619
     },
     {
       "compound": "propyl_cyclohexane",
@@ -865,7 +865,7 @@
         "sigma3_avg": 1.0189300693071107e-28,
         "shape_avg": 0.3165253085149815
       },
-      "distance": 13.849270947711632
+      "distance": 15.044223625426971
     },
     {
       "compound": "cyclohexane",
@@ -898,7 +898,7 @@
         "sigma3_avg": 1.0957217493420802e-28,
         "shape_avg": 0.24751
       },
-      "distance": 13.87390608366605
+      "distance": 15.06690508124052
     },
     {
       "compound": "cyclopentane",
@@ -931,7 +931,7 @@
         "sigma3_avg": 1.0957217493420802e-28,
         "shape_avg": 0.24751
       },
-      "distance": 13.878345875330135
+      "distance": 15.070993429234138
     },
     {
       "compound": "cyclobutane",
@@ -964,7 +964,7 @@
         "sigma3_avg": 1.0957217493420802e-28,
         "shape_avg": 0.24751
       },
-      "distance": 13.886058479498585
+      "distance": 15.078095994016621
     },
     {
       "compound": "water",
@@ -997,7 +997,7 @@
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1168.0542616829189
+      "distance": 1168.069041022121
     },
     {
       "compound": "carbon_dioxide",
@@ -1030,7 +1030,7 @@
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1168.0542616829189
+      "distance": 1168.069041022121
     },
     {
       "compound": "nitrogen",
@@ -1063,7 +1063,7 @@
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1168.0542616829189
+      "distance": 1168.069041022121
     }
   ]
 }

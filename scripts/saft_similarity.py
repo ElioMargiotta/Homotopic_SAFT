@@ -48,7 +48,7 @@ W_M  = 0.7              # Weight for chain-length distance component
 W_P  = 1.0              # Weight for packing (sigma^3) distance component
 W_SH = 0.5              # Weight for shape-factor distance component
 
-S0  = 1e-28             # Association floor [m³] to regularise log(0)
+S0  = 5e-29            # Association floor [m³] to regularise log(0)
 
 LAMBDA_A_DEFAULT = 6.0  # Default attractive exponent when not specified
 
@@ -184,7 +184,7 @@ def load_database(xml_path: str):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODULE 2 — SAFT-γ Mie combining rules  (Refs [1–3])
+# MODULE 2 — SAFT-γ Mie combining rules  (Refs [1–3], incl. association)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def combining_sigma(sig_kk: float, sig_ll: float) -> float:
@@ -224,6 +224,54 @@ def combining_epsilon(eps_kk: float, eps_ll: float,
     return (math.sqrt(abs(eps_kk * eps_ll))
             * math.sqrt(sig_kk**3 * sig_ll**3)
             / sig_kl**3)
+
+
+# Site-type aliases: map variant names to a canonical type so that
+# groups using different labels for the same physical site (e.g. "e1" vs "e")
+# can be matched when applying combining rules.
+_SITE_CANONICAL = {
+    "e":  "e",
+    "e1": "e",
+    "e2": "e",
+    "H":  "H",
+    "a1": "a",
+    "a2": "a",
+}
+
+
+def _canonical_site(name: str) -> str:
+    """Return canonical site type for *name*, or *name* itself if unknown."""
+    return _SITE_CANONICAL.get(name, name)
+
+
+def combining_eps_assoc(ea_kk: float, ea_ll: float) -> float:
+    """
+    SAFT-γ Mie combining rule for cross association energy:
+
+        ε^{assoc}_{kl,ab} = √( ε^{assoc}_{kk,aa} · ε^{assoc}_{ll,bb} )
+
+    Geometric mean — consistent with the standard SAFT-γ Mie framework.
+    Symmetric: ε^{assoc}_{kl,ab} = ε^{assoc}_{lk,ba}.
+    """
+    return math.sqrt(abs(ea_kk * ea_ll))
+
+
+def combining_bond_vol(kv_kk: float, kv_ll: float) -> float:
+    """
+    SAFT-γ Mie combining rule for cross bonding volume:
+
+        K_{kl,ab} = [ ( ∛K_{kk,aa} + ∛K_{ll,bb} ) / 2 ]³
+
+    Cubic mean of cube roots — accounts for the volumetric nature of
+    the bonding parameter.
+    Symmetric: K_{kl,ab} = K_{lk,ba}.
+    """
+    if kv_kk == 0.0 and kv_ll == 0.0:
+        return 0.0
+    cbrt_k = math.copysign(abs(kv_kk) ** (1.0 / 3.0), kv_kk)
+    cbrt_l = math.copysign(abs(kv_ll) ** (1.0 / 3.0), kv_ll)
+    avg = (cbrt_k + cbrt_l) / 2.0
+    return avg ** 3
 
 
 def get_pair_params(k: str, l: str, groups: dict, cross: dict):
@@ -454,7 +502,21 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
         assoc_list = groups[k]["self_assoc"]
     else:
         ci = cross.get((k, l))
-        assoc_list = ci["association"] if ci is not None else []
+        if ci is not None:
+            assoc_list = ci["association"]
+        else:
+            assoc_list = []
+
+    # ── Association combining-rule fallback ────────────────────────────
+    # When no explicit cross entry exists (assoc_list empty) but both
+    # groups carry association sites, estimate Δ_{kl} from the self-
+    # association parameters using SAFT-γ Mie combining rules:
+    #     ε^{assoc}_{kl} = √( ε^{assoc}_{kk} · ε^{assoc}_{ll} )
+    #     K_{kl}         = [ (∛K_{kk} + ∛K_{ll}) / 2 ]³
+    # Site types are matched via canonical aliases (e.g. "e1" ↔ "e").
+    # Ref [1] (Papaioannou et al.).
+    if not assoc_list and k != l:
+        assoc_list = _cr1_association_fallback(k, l, groups)
 
     total = 0.0
     for inter in assoc_list:
@@ -469,6 +531,86 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
         total += m1 * m2 * delta_site_pair(ea, bv, sig_kl, T, eta)
 
     return total
+
+
+def _cr1_association_fallback(k: str, l: str,
+                              groups: dict) -> list[dict]:
+    """
+    Build a synthetic association interaction list for the cross pair
+    (k, l) using the SAFT-γ Mie combining rules applied to compatible
+    self-association site pairs.
+
+    For every self-interaction  (a, b) on group k  and  (a', b') on
+    group l, if the canonical types of (a, b) match (a', b') — in
+    either order — a combined interaction is generated:
+
+        ε^{assoc}_{kl} = √( ε^{assoc}_{kk} · ε^{assoc}_{ll} )   (geometric mean)
+        K_{kl}         = [ (∛K_{kk} + ∛K_{ll}) / 2 ]³            (cubic mean of cube roots)
+
+    The returned interaction uses the **actual site names** of group k
+    (site1) and group l (site2) so that the multiplicity lookup in
+    ``delta_pair`` works correctly.
+
+    Returns an empty list if no compatible site pairs are found.
+    """
+    self_k = groups[k]["self_assoc"]
+    self_l = groups[l]["self_assoc"]
+    if not self_k or not self_l:
+        return []
+
+    # Index self-interactions by canonical site-type pair
+    def _canon_key(s1: str, s2: str) -> tuple[str, str]:
+        return (_canonical_site(s1), _canonical_site(s2))
+
+    result: list[dict] = []
+    used: set[tuple[str, str]] = set()   # avoid duplicate site combos
+
+    for ik in self_k:
+        ck = _canon_key(ik["site1"], ik["site2"])
+        for il in self_l:
+            cl = _canon_key(il["site1"], il["site2"])
+
+            # Match: same canonical pair in same or swapped order
+            # (a,b)_k  matches (a,b)_l  →  site1_k(a) donates to site2_l(b)
+            # (a,b)_k  matches (b,a)_l  →  site1_k(a) donates to site1_l(b)
+            if ck == cl:
+                # site1 on k ↔ site1 on l  (a-type),  site2 on k ↔ site2 on l
+                # Cross interaction:  site1_k → site2_l
+                s1_out = ik["site1"]    # actual name on group k
+                s2_out = il["site2"]    # actual name on group l
+                tag = (s1_out, s2_out)
+                if tag not in used:
+                    used.add(tag)
+                    result.append({
+                        "site1":        s1_out,
+                        "site2":        s2_out,
+                        "epsilonAssoc": combining_eps_assoc(
+                                            ik["epsilonAssoc"],
+                                            il["epsilonAssoc"]),
+                        "bondingVolume": combining_bond_vol(
+                                            ik["bondingVolume"],
+                                            il["bondingVolume"]),
+                    })
+            elif ck == (cl[1], cl[0]):
+                # Swapped canonical match:  (a,b)_k matches (b,a)_l
+                # site1_k(a) ↔ site2_l(a),  site2_k(b) ↔ site1_l(b)
+                s1_out = ik["site1"]    # actual name on group k
+                s2_out = il["site1"]    # actual name on group l  (swapped)
+                tag = (s1_out, s2_out)
+                if tag not in used:
+                    used.add(tag)
+                    result.append({
+                        "site1":        s1_out,
+                        "site2":        s2_out,
+                        "epsilonAssoc": combining_eps_assoc(
+                                            ik["epsilonAssoc"],
+                                            il["epsilonAssoc"]),
+                        "bondingVolume": combining_bond_vol(
+                                            ik["bondingVolume"],
+                                            il["bondingVolume"]),
+                    })
+
+    return result
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
