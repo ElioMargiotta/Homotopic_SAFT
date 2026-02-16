@@ -1,0 +1,68 @@
+    <group name = "CH2OH_Short">
+	      <mw>31.0337</mw>
+         <heatCapacity>
+            <a>24.791</a>
+            <b>2.59e-2</b>
+            <c>1.226e-4</c>
+            <d>-8.69e-8</d>
+          </heatCapacity>
+	  <enthalpyOfFormation>-228.68e3</enthalpyOfFormation>
+	  <entropyOfFormation>-160.7382</entropyOfFormation>
+          <numberOfSegments>2</numberOfSegments>
+          <shapeFactor>0.58538</shapeFactor>
+          <associationSites>
+            <siteMultiplicity name = "e">2</siteMultiplicity>
+            <siteMultiplicity name = "H">1</siteMultiplicity>
+          </associationSites>
+          <selfInteraction>
+             <dispersion>
+               <epsilon>407.22</epsilon>
+               <lambdaRepulsive>22.699</lambdaRepulsive>
+               <lambdaAttractive>6.0</lambdaAttractive>
+               <sigma>3.4054E-10</sigma>
+             </dispersion>
+             <association>
+               <interaction site1 = "e" site2 = "H">
+                 <epsilonAssoc>2097.912</epsilonAssoc>
+                 <bondingVolume>62.309e-30</bondingVolume>
+               </interaction>
+              </association>
+           </selfInteraction>
+      </group>
+      
+      <group name = "N_2nd">
+	     <mw>14.00674</mw>
+         <heatCapacity>
+            <a>-31.1</a>
+            <b>0.227</b>
+            <c>-0.00032</c>
+            <d>0.000000146</d>
+         </heatCapacity>
+	 <enthalpyOfFormation>123340.0</enthalpyOfFormation>
+	 <entropyOfFormation>-133.6242</entropyOfFormation>
+         <numberOfSegments>1</numberOfSegments>
+         <shapeFactor>0.15069520747167</shapeFactor>
+         <associationSites>
+           <siteMultiplicity name = "e">1</siteMultiplicity>
+         </associationSites>
+         <selfInteraction>
+            <dispersion>
+               <epsilon>62.9705708550046</epsilon>
+               <lambdaRepulsive>8.8970799546714</lambdaRepulsive>
+               <lambdaAttractive>6.0</lambdaAttractive>
+               <sigma>3.07548828306603E-10</sigma>
+             </dispersion>
+         </selfInteraction>
+      </group>
+
+     <crossInteraction group1="N_2nd" group2="CH2OH_Short">
+        <dispersion>
+           <epsilon>440.99</epsilon>
+        </dispersion>
+        <association>
+           <interaction site1="e" site2="H">									  
+              <epsilonAssoc>1210.9</epsilonAssoc>							
+              <bondingVolume>950.43e-30</bondingVolume>
+           </interaction>    																											
+        </association>																										
+     </crossInteraction>
