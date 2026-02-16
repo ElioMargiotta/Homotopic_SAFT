@@ -9,13 +9,20 @@ Two complementary approaches are implemented, both reading from the same XML par
 
 ```
 ├── database/
-│   └── database.xml           # SAFT-γ Mie group parameters (self + cross)
+│   └── database.xml               # SAFT-γ Mie group parameters (self + cross)
 ├── scripts/
-│   ├── compute_similarity.py  # Approach 1 – feature-based cosine similarity matrix
-│   └── saft_similarity.py     # Approach 2 – SAFT-γ Mie physics-based ranking
-├── similarity_matrix.npy      # 40×40 output of Approach 1
-├── saft_pair_tables.json      # D_{kl} / Δ_{kl} pair tables (Approach 2)
-├── ranking_vs_MEA.json        # Example ranking output (Approach 2)
+│   ├── compute_similarity.py      # Approach 1 – feature-based cosine similarity matrix
+│   ├── saft_similarity.py         # Approach 2 – SAFT-γ Mie physics-based ranking
+│   └── plot_group_similarity.py   # Visualisation – group-level similarity figures
+├── figures/
+│   ├── group_distance_heatmap.png
+│   ├── group_mds_map.png
+│   ├── group_similarity_network.png
+│   ├── amine_hydroxyl_distances.png
+│   └── group_radar_descriptors.png
+├── similarity_matrix.npy          # 40×40 output of Approach 1
+├── saft_pair_tables.json          # D_{kl} / Δ_{kl} pair tables (Approach 2)
+├── ranking_vs_MEA.json            # Example ranking output (Approach 2)
 └── README.md
 ```
 
@@ -114,7 +121,7 @@ and saved as `similarity_matrix.npy`.
 
 ### What it does
 
-Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using three physics-derived scalars — **dispersion strength** $\bar{D}$, **association strength** $\bar{A}$, and **total chain length** $m$ — without running a full equation of state.
+Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using five physics-derived scalars — **dispersion strength** $\bar{D}$, **association strength** $\bar{A}$, **chain length** $m$, **packing proxy** $\bar{\sigma}^3$, and **shape average** $\bar{S}$ — without running a full equation of state.
 
 The method strictly follows the SAFT-γ Mie group-contribution framework as described by Papaioannou et al. [1], Dufal et al. [2], and Haslam et al. [3].
 
@@ -310,11 +317,11 @@ These sum to unity: $\sum_k x_{s,k} = 1$.
 
 ---
 
-#### Step 8 — Molecule signature $\{\bar{D},\;\bar{A},\;m\}$
+#### Step 8 — Molecule signature $\{\bar{D},\;\bar{A},\;m,\;\bar{\sigma}^3,\;\bar{S}\}$
 
-Each molecule is characterised by a 3-scalar signature.
+Each molecule is characterised by a **5-scalar signature**.
 
-##### Dispersion signature
+##### 1. Dispersion signature
 
 The pair-averaged dispersion, using the same double-sum structure as the monomer Helmholtz contribution ([1] Eq. 19):
 
@@ -322,37 +329,62 @@ The pair-averaged dispersion, using the same double-sum structure as the monomer
 \bar{D}_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;D_{kl}
 ```
 
-##### Association signature
+##### 2. Association signature
 
 ```math
 \bar{A}_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;\Delta_{kl}
 ```
 
-##### Chain length
+##### 3. Chain length
 
 ```math
 m_i = \sum_k n_k\,\nu_k\,S_k
 ```
 
-**Key property**: because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $\bar{D} = D_{kk}$ and $\bar{A} = \Delta_{kk}$ regardless of how many copies of that group are present. The chain length $m_i$ is the only quantity that distinguishes molecules with identical group composition but different sizes (e.g. cyclobutane, cyclopentane, cyclohexane all contain only `cCH2`).
+##### 4. Packing proxy (segment-averaged excluded volume)
+
+The mean cubic segment diameter, weighted by segment fractions:
+
+```math
+\bar{\sigma}^3_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;\sigma_{kl}^3
+```
+
+This quantity is proportional to the effective excluded volume of the molecule's segments. It captures **size differences** between molecules that share similar dispersion energies but differ in segment diameter (e.g. groups with large $\sigma$ but moderate $\varepsilon$). In the full SAFT-γ Mie theory, $\sigma_{kl}^3$ appears in the hard-sphere reference term and in the $\varepsilon$ combining rule.
+
+##### 5. Shape average (segment-fraction-weighted shape factor)
+
+```math
+\bar{S}_i = \sum_k x_{s,k}\;S_k
+```
+
+The shape factor $S_k$ controls what fraction of each segment participates in the fused chain. A single sum (not a double sum) is used because the shape factor is a **per-group** property, not a pair interaction. Molecules with the same groups but different shape-factor distributions will differ in this component.
+
+##### Key properties
+
+- Because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $\bar{D} = D_{kk}$, $\bar{A} = \Delta_{kk}$, and $\bar{\sigma}^3 = \sigma_{kk}^3$ regardless of how many copies of that group are present.
+- The chain length $m_i$, packing proxy $\bar{\sigma}^3_i$, and shape average $\bar{S}_i$ together distinguish molecules with identical group *types* but different *sizes* or *architectures* (e.g. cyclobutane, cyclopentane, cyclohexane all contain only `cCH2` but differ in $m$).
 
 ---
 
 #### Step 9 — Log-Euclidean distance
 
-Compare a candidate signature $(\bar{D}_c,\,\bar{A}_c,\,m_c)$ against the target $(\bar{D}_t,\,\bar{A}_t,\,m_t)$ using a **log-Euclidean metric** in 3-D signature space:
+Compare a candidate signature $(\bar{D}_c,\,\bar{A}_c,\,m_c,\,\bar{\sigma}^3_c,\,\bar{S}_c)$ against the target $(\bar{D}_t,\,\bar{A}_t,\,m_t,\,\bar{\sigma}^3_t,\,\bar{S}_t)$ using a **log-Euclidean metric** in 5-D signature space:
 
 ```math
 d_D = \ln\frac{|\bar{D}_c|}{|\bar{D}_t|}, \qquad d_A = \ln\frac{\bar{A}_c + S_0}{\bar{A}_t + S_0}, \qquad d_m = \ln\frac{m_c}{m_t}
 ```
 
 ```math
-\mathcal{D} = \sqrt{w_D\,d_D^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2}
+d_{\sigma} = \ln\frac{\bar{\sigma}^3_c}{\bar{\sigma}^3_t}, \qquad d_S = \ln\frac{\bar{S}_c}{\bar{S}_t}
+```
+
+```math
+\mathcal{D} = \sqrt{w_D\,d_D^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
 ```
 
 ##### Why logarithmic?
 
-The three signature components span many orders of magnitude ($D \sim 10^{-26}$, $A \sim 10^{-25}$, $m \sim 1$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{D}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
+The five signature components span many orders of magnitude ($D \sim 10^{-26}$, $A \sim 10^{-25}$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{D}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
 
 ##### Association floor $S_0$
 
@@ -364,13 +396,23 @@ This prevents $\ln(0)$ singularities when one or both molecules have zero associ
 
 ##### Weights
 
-Default: $w_D = w_A = w_m = 1$. These can be adjusted to emphasise dispersion, association, or size matching.
+Default values:
+
+| Weight | Symbol | Default | Role |
+|--------|--------|---------|------|
+| Dispersion | $w_D$ | 1.0 | Mie attraction strength |
+| Association | $w_A$ | 3.0 | H-bonding — upweighted as it is the primary differentiator for amine/alkanolamine screening |
+| Chain length | $w_m$ | 0.7 | Molecular size — downweighted to avoid over-penalising small size differences |
+| Packing | $w_{\sigma}$ | 1.0 | Segment excluded volume |
+| Shape | $w_S$ | 0.5 | Shape factor contribution — downweighted as it varies less across the candidate set |
+
+These can be adjusted to emphasise specific physical aspects. An alternative **inverse-variance** weighting mode is also implemented, which automatically normalises each component by its variance across the candidate set so that all features contribute equally on average.
 
 ---
 
 #### Step 10 — Rank candidates
 
-Sort all candidates by ascending $\mathcal{D}$. The output includes each candidate's group-count vector, 3-scalar signature, and distance.
+Sort all candidates by ascending $\mathcal{D}$. The output includes each candidate's group-count vector, full 5-scalar signature, and distance.
 
 ---
 
@@ -383,9 +425,111 @@ Sort all candidates by ascending $\mathcal{D}$. The output includes each candida
 | 3 | **Association kernel $I_{kl} \approx g^{HS}$** — Mie RDF reduced to Carnahan–Starling hard-sphere contact value | The HS contribution is the dominant term; $a_1$/$a_2$ corrections to the RDF require the full EOS and are state-dependent |
 | 4 | **Fixed reference state** $(\eta_{\mathrm{ref}} = 0.40,\;T_{\mathrm{ref}} = 298.15\;\mathrm{K})$ | The proxy is evaluated at a single liquid-like state point; any monotonic rescaling by $\eta$ cancels in the log-ratio distance |
 | 5 | **Segment fractions** $x_{s,k}$ used instead of intramolecular pair counts | Consistent with SAFT-γ Mie monomer contribution formalism ([1] Eqs. 7–8, 19) |
-| 6 | **Chain length** $m_i$ included as a third distance component | Necessary to distinguish molecules with identical group types but different multiplicities (e.g. cycloalkanes); $m$ enters SAFT via the chain term $A^{\mathrm{chain}}$ |
-| 7 | **Cross parameters**: database values have priority; combining rules used as fallback | Standard practice in SAFT-γ Mie; the nonlinear $\lambda$ and $\sigma^3$-corrected $\varepsilon$ rules are physically motivated |
-| 8 | **Association**: only site-site interactions present in the database are included; no "inferred" cross-association | Conservative approach — avoids spurious association between groups not parameterised to interact |
+| 6 | **Chain length** $m_i$ included as a distance component | Necessary to distinguish molecules with identical group types but different multiplicities (e.g. cycloalkanes); $m$ enters SAFT via the chain term $A^{\mathrm{chain}}$ |
+| 7 | **Packing proxy** $\bar{\sigma}^3_i$ included as a distance component | Captures segment-size differences; $\sigma^3$ appears in the HS reference and the $\varepsilon$ combining rule |
+| 8 | **Shape average** $\bar{S}_i$ included as a distance component | The shape factor $S_k$ modulates how each group contributes to the chain; averaging over segment fractions gives a molecular-level architecture indicator |
+| 9 | **Cross parameters**: database values have priority; combining rules used as fallback | Standard practice in SAFT-γ Mie; the nonlinear $\lambda$ and $\sigma^3$-corrected $\varepsilon$ rules are physically motivated |
+| 10 | **Association**: only site-site interactions present in the database are included; no "inferred" cross-association | Conservative approach — avoids spurious association between groups not parameterised to interact |
+
+---
+
+## Visualisation – Group-level similarity (`plot_group_similarity.py`)
+
+This script reuses the **same SAFT-γ Mie pair tables** computed by `saft_similarity.py` — specifically $D_{kl}$, $\Delta_{kl}$, and $\sigma_{kl}$ — to visualise group-level similarity. All figures are saved to `figures/`.
+
+### Group-group distance metric
+
+The distance between two groups $k$ and $l$ measures how much their **cross interaction** deviates from the geometric mean of their self interactions, in three components:
+
+```math
+d_D = \ln \frac{|D_{kl}|}{\sqrt{|D_{kk}|\,|D_{ll}|}}
+```
+
+```math
+d_{\Delta} = \ln \frac{\Delta_{kl} + S_0}{\sqrt{(\Delta_{kk} + S_0)(\Delta_{ll} + S_0)}}
+```
+
+```math
+d_{\sigma} = \ln \frac{\sigma_{kl}^3}{\sqrt{\sigma_{kk}^3\,\sigma_{ll}^3}}
+```
+
+```math
+d_{kl} = \sqrt{d_D^2 + d_{\Delta}^2 + d_{\sigma}^2}
+```
+
+Each ratio equals 1 (and the log equals 0) when the cross quantity matches the geometric mean of the self quantities — i.e. when the two groups interact with each other just as strongly as they interact with themselves. Groups with $d_{kl} \approx 0$ are **thermodynamically compatible** in the SAFT-γ Mie sense.
+
+The same floor $S_0 = 10^{-28}\;\mathrm{m^3}$ is used for association to avoid $\ln(0)$ singularities.
+
+---
+
+### Figure 1 — Distance heatmap
+
+![Group distance heatmap](figures/group_distance_heatmap.png)
+
+Symmetric matrix of all pairwise group distances, with numerical annotations. Rows and columns are reordered by a **greedy nearest-neighbour chain** (starting from the first group, repeatedly jump to the nearest unvisited group) so that similar groups cluster together visually. Colourmap: `YlOrRd` (yellow = close, red = far).
+
+---
+
+### Figure 2 — 2-D MDS embedding
+
+![MDS map](figures/group_mds_map.png)
+
+The $N \times N$ distance matrix is embedded into 2 dimensions using **classical (metric) Multi-Dimensional Scaling** (Torgerson, 1952):
+
+1. Square the distance matrix: $\mathbf{D}^{(2)}$
+2. Double-centre: $\mathbf{B} = -\tfrac{1}{2}\,\mathbf{H}\,\mathbf{D}^{(2)}\,\mathbf{H}$, where $\mathbf{H} = \mathbf{I} - \tfrac{1}{N}\mathbf{11}^\top$
+3. Eigendecompose $\mathbf{B}$ and take the two largest eigenvalues $\lambda_1, \lambda_2$ with corresponding eigenvectors $\mathbf{v}_1, \mathbf{v}_2$
+4. Coordinates: $\mathbf{X} = [\mathbf{v}_1\sqrt{\lambda_1},\;\mathbf{v}_2\sqrt{\lambda_2}]$
+
+Groups are colour-coded by **chemical family** (Alkyl, Cycloalkyl, Hydroxyl, Amine, Cyclo-N, Small molecule). Light grey lines connect the closest 30% of pairs.
+
+---
+
+### Figure 3 — Similarity network
+
+![Similarity network](figures/group_similarity_network.png)
+
+Each group is a node positioned by a **Fruchterman–Reingold force-directed layout** (initialised from MDS). Edges connect each group to its **4 nearest neighbours**. Edge properties encode distance:
+
+- **Thickness** $\propto 1/d$ — thicker lines mean more similar groups
+- **Opacity** $\propto 1/d$ — faint lines mean distant groups
+- **Midpoint labels** show the numerical distance
+
+Nodes are coloured by chemical family.
+
+---
+
+### Figure 4 — Amine & hydroxyl distance ranking
+
+![Amine/hydroxyl distances](figures/amine_hydroxyl_distances.png)
+
+Horizontal bar chart of all pairwise distances among 14 nitrogen- and oxygen-containing groups (6 amine types, 4 cyclo-N types, 4 hydroxyl types), sorted from most similar (top) to most different (bottom). Bar colour indicates the pair type:
+
+- **Purple** — Amine ↔ Amine
+- **Red** — Hydroxyl ↔ Hydroxyl
+- **Gold** — Amine ↔ Hydroxyl (cross-family)
+
+This figure directly answers questions like *"how far is `NH2` from `NH`?"* or *"is `NH2` more similar to `OH` or to `N`?"*
+
+---
+
+### Figure 5 — Radar chart of group descriptors
+
+![Radar chart](figures/group_radar_descriptors.png)
+
+Spider plot of 6 self-pair SAFT-γ Mie descriptors for a representative subset of groups (`CH3`, `CH2`, `cCH2`, `CH2OH`, `OH`, `NH2`, `NH`, `N`, `cNH`, `H2O`). The 6 axes are:
+
+| Axis | Quantity | Source |
+|------|----------|--------|
+| $\varepsilon_{kk}$ | Dispersion well depth | Database self-interaction |
+| $\sigma_{kk}$ | Segment diameter | Database self-interaction |
+| $\lambda^r_{kk}$ | Repulsive exponent | Database self-interaction |
+| $\lambda^a_{kk}$ | Attractive exponent | Database self-interaction |
+| $\|D_{kk}\|$ | Dispersion proxy (a₁) | Computed by `saft_similarity.py` |
+| $\Delta_{kk}$ | Self-association strength | Computed by `saft_similarity.py` |
+
+All axes are **min-max normalised** to $[0, 1]$ across the displayed groups. This shows at a glance which descriptors differentiate groups: for example, associating groups (`NH2`, `OH`, `H2O`) extend far on the $\Delta_{kk}$ axis while alkyl groups (`CH3`, `CH2`) collapse to zero there.
 
 ---
 
@@ -397,6 +541,9 @@ python scripts/compute_similarity.py
 
 # Approach 2: rank compounds against MEA (default target)
 python scripts/saft_similarity.py
+
+# Visualisation: generate all 5 group-similarity figures
+python scripts/plot_group_similarity.py
 ```
 
 ### Outputs
@@ -406,7 +553,12 @@ python scripts/saft_similarity.py
 | `similarity_matrix.npy` | 40×40 group similarity matrix (Approach 1) |
 | `similarity_matrix_plot.png` | Heatmap visualisation of $\mathbf{S}$ |
 | `saft_pair_tables.json` | $D_{kl}$ and $\Delta_{kl}$ pair tables (Approach 2) |
-| `ranking_vs_MEA.json` | Full ranking with 3-scalar signatures and distances |
+| `ranking_vs_MEA.json` | Full ranking with 5-scalar signatures, weights, and distances |
+| `figures/group_distance_heatmap.png` | Group-group distance heatmap |
+| `figures/group_mds_map.png` | 2-D MDS embedding of groups |
+| `figures/group_similarity_network.png` | 4-NN similarity network graph |
+| `figures/amine_hydroxyl_distances.png` | Amine/hydroxyl pairwise distance bar chart |
+| `figures/group_radar_descriptors.png` | Radar chart of raw SAFT descriptors |
 
 ---
 
@@ -436,4 +588,4 @@ The XML database (`database/database.xml`) follows the SAFT-γ Mie group-contrib
 
 - Python ≥ 3.10
 - `numpy`
-- `matplotlib` (only for Approach 1 plotting)
+- `matplotlib` (Approach 1 plotting + group-similarity visualisation)

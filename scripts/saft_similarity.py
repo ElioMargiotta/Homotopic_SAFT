@@ -42,9 +42,11 @@ T_REF     = 298.15      # Reference temperature  [K]
 RHO_REF   = 10000.0     # Reference number density [mol/m³] — liquid-like order
 ETA_REF   = 0.40        # Reference packing fraction for a1 evaluation  (≈ liquid)
 
-W_J = 1.0               # Weight for dispersion distance component
-W_S = 1.0               # Weight for association distance component
-W_M = 1.0               # Weight for chain-length distance component
+W_J  = 1.0              # Weight for dispersion distance component
+W_S  = 3.0              # Weight for association distance component
+W_M  = 0.7              # Weight for chain-length distance component
+W_P  = 1.0              # Weight for packing (sigma^3) distance component
+W_SH = 0.5              # Weight for shape-factor distance component
 
 S0  = 1e-28             # Association floor [m³] to regularise log(0)
 
@@ -549,33 +551,44 @@ def segment_fractions(vector, group_names: list[str], groups: dict):
 
 
 def signature(vector, group_names: list[str], groups: dict,
-              disp_table: dict, delta_table: dict):
+              disp_table: dict, delta_table: dict,
+              param_table: dict):
     """
     Compute the SAFT-consistent thermodynamic signature of a molecule.
 
-    Dispersion signature  (proportional to a₁ of the whole molecule):
+    Five components:
 
-        D̄ = Σ_k Σ_l  x_{s,k} · x_{s,l} · D_{kl}
+    1. Dispersion  (proportional to a₁ of the whole molecule):
+           D̄ = Σ_k Σ_l  x_{s,k} · x_{s,l} · D_{kl}
 
-    Association signature:
+    2. Association:
+           Ā = Σ_k Σ_l  x_{s,k} · x_{s,l} · Δ_{kl}
 
-        Ā = Σ_k Σ_l  x_{s,k} · x_{s,l} · Δ_{kl}
+    3. Chain length:
+           m = Σ_k n_k · ν_k · S_k
 
-    Ref [1] Eqs. (19), (38); the double sum uses segment fractions
-    exactly as in the monomer Helmholtz contribution.
+    4. Packing proxy  (segment-averaged excluded volume):
+           σ̄³ = Σ_k Σ_l  x_{s,k} · x_{s,l} · σ_{kl}³
+
+    5. Shape average  (segment-fraction-weighted shape factor):
+           S̄ = Σ_k  x_{s,k} · S_k
+
+    Ref [1] Eqs. (7)–(8), (19), (38).
 
     Returns
     -------
-    dict  {"D_bar": float, "A_bar": float, "m_total": float}
+    dict  {"D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"}
     """
     xs, m_i = segment_fractions(vector, group_names, groups)
 
     if m_i == 0.0:
-        return {"D_bar": 0.0, "A_bar": 0.0, "m_total": 0.0}
+        return {"D_bar": 0.0, "A_bar": 0.0, "m_total": 0.0,
+                "sigma3_avg": 0.0, "shape_avg": 0.0}
 
     G = len(group_names)
     D_sum = 0.0
     A_sum = 0.0
+    sig3_sum = 0.0
 
     for i in range(G):
         if xs[i] == 0.0:
@@ -586,10 +599,19 @@ def signature(vector, group_names: list[str], groups: dict,
                 continue
             gj = group_names[j]
             w = xs[i] * xs[j]
-            D_sum += w * disp_table[(gi, gj)]
-            A_sum += w * delta_table[(gi, gj)]
+            D_sum   += w * disp_table[(gi, gj)]
+            A_sum   += w * delta_table[(gi, gj)]
+            sig3_sum += w * param_table[(gi, gj)]["sigma"] ** 3
 
-    return {"D_bar": D_sum, "A_bar": A_sum, "m_total": m_i}
+    # Shape average: single sum  S̄ = Σ_k x_{s,k} · S_k
+    shape_sum = 0.0
+    for i in range(G):
+        if xs[i] == 0.0:
+            continue
+        shape_sum += xs[i] * groups[group_names[i]]["shapeFactor"]
+
+    return {"D_bar": D_sum, "A_bar": A_sum, "m_total": m_i,
+            "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -597,21 +619,31 @@ def signature(vector, group_names: list[str], groups: dict,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
-                           w_J: float = W_J, w_S: float = W_S,
-                           w_M: float = W_M, s0: float = S0) -> float:
+                           weights: dict | None = None,
+                           s0: float = S0) -> float:
     """
-    Scale-consistent log-relative distance in 3-D signature space:
+    Scale-consistent log-relative distance in 5-D signature space:
 
-        d_D = ln( |D̄_c| / |D̄_t| )
-        d_A = ln( (Ā_c + S₀) / (Ā_t + S₀) )
-        d_m = ln( m_c / m_t )
-        D   = √( w_D · d_D² + w_A · d_A² + w_m · d_m² )
+        d_D  = ln( |D̄_c| / |D̄_t| )               dispersion
+        d_A  = ln( (Ā_c + S₀) / (Ā_t + S₀) )       association
+        d_m  = ln( m_c / m_t )                       chain length
+        d_σ  = ln( σ̄³_c / σ̄³_t )                    packing proxy
+        d_sh = ln( S̄_c / S̄_t )                      shape average
+
+        D = √( w_D·d_D² + w_A·d_A² + w_m·d_m² + w_σ·d_σ² + w_sh·d_sh² )
 
     The floor S₀ ≈ 1e-28 m³ prevents singularities when association
-    is absent for one or both molecules.  Including the total
-    chain length m distinguishes molecules with identical group
-    *types* but different *sizes* (e.g. cyclobutane vs cyclohexane).
+    is absent for one or both molecules.
+
+    Parameters
+    ----------
+    weights : dict  {"w_J", "w_S", "w_M", "w_P", "w_SH"}
+        If None, defaults to module-level constants.
     """
+    if weights is None:
+        weights = {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+                   "w_P": W_P, "w_SH": W_SH}
+
     D_c = max(abs(sig_cand["D_bar"]), 1e-300)
     D_t = max(abs(sig_targ["D_bar"]), 1e-300)
     dD  = math.log(D_c / D_t)
@@ -624,38 +656,104 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
     m_t = max(sig_targ["m_total"], 1e-300)
     dm  = math.log(m_c / m_t)
 
-    return math.sqrt(w_J * dD**2 + w_S * dA**2 + w_M * dm**2)
+    s3_c = max(sig_cand["sigma3_avg"], 1e-300)
+    s3_t = max(sig_targ["sigma3_avg"], 1e-300)
+    ds3  = math.log(s3_c / s3_t)
+
+    sh_c = max(sig_cand["shape_avg"], 1e-300)
+    sh_t = max(sig_targ["shape_avg"], 1e-300)
+    dsh  = math.log(sh_c / sh_t)
+
+    return math.sqrt(weights["w_J"]  * dD**2
+                   + weights["w_S"]  * dA**2
+                   + weights["w_M"]  * dm**2
+                   + weights["w_P"]  * ds3**2
+                   + weights["w_SH"] * dsh**2)
+
+
+def _inverse_variance_weights(signatures: list[dict]) -> dict:
+    """
+    Compute inverse-variance weights across the candidate set.
+
+    For each log-signature component, the variance across candidates is
+    computed and the weight is set to 1/var.  This normalises the distance
+    so that each feature contributes equally on average, regardless of
+    its natural scale.
+
+    Falls back to 1.0 if variance is zero (all candidates identical
+    in that component).
+    """
+    keys = ["D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"]
+    weight_names = ["w_J", "w_S", "w_M", "w_P", "w_SH"]
+    floors = [1e-300, S0, 1e-300, 1e-300, 1e-300]
+    use_abs = [True, False, False, False, False]
+
+    weights = {}
+    for key, wname, floor, do_abs in zip(keys, weight_names, floors, use_abs):
+        vals = []
+        for sig in signatures:
+            v = sig[key]
+            if do_abs:
+                v = abs(v)
+            vals.append(math.log(max(v, floor) + (floor if key == "A_bar" else 0.0)))
+        if len(vals) < 2:
+            weights[wname] = 1.0
+            continue
+        mean = sum(vals) / len(vals)
+        var = sum((v - mean)**2 for v in vals) / len(vals)
+        weights[wname] = 1.0 / var if var > 1e-30 else 1.0
+
+    return weights
 
 
 def rank_candidates(target_vector, candidate_vectors,
                     group_names: list[str], groups: dict,
                     disp_table: dict, delta_table: dict,
-                    w_J: float = W_J, w_S: float = W_S,
-                    w_M: float = W_M):
+                    param_table: dict,
+                    auto_weights: bool = False):
     """
     Rank *candidate_vectors* by proximity to *target_vector*.
+
+    Parameters
+    ----------
+    param_table   : resolved pair parameters (for sigma3_avg)
+    auto_weights  : if True, use inverse-variance weights computed across
+                    the candidate set; otherwise use module-level W_* constants.
 
     Returns
     -------
     ranking   : list[dict]  sorted by ascending distance
     sig_targ  : dict        target signature
+    weights   : dict        the weights used for the distance
     """
     sig_targ = signature(target_vector, group_names, groups,
-                         disp_table, delta_table)
+                         disp_table, delta_table, param_table)
+
+    # Pre-compute all candidate signatures
+    cand_sigs = []
+    for cv in candidate_vectors:
+        cand_sigs.append(signature(cv, group_names, groups,
+                                   disp_table, delta_table, param_table))
+
+    # Determine weights
+    if auto_weights:
+        weights = _inverse_variance_weights(cand_sigs)
+    else:
+        weights = {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+                   "w_P": W_P, "w_SH": W_SH}
 
     results = []
-    for idx, cv in enumerate(candidate_vectors):
-        sig_c = signature(cv, group_names, groups, disp_table, delta_table)
-        d = log_euclidean_distance(sig_c, sig_targ, w_J, w_S, w_M)
+    for idx, sig_c in enumerate(cand_sigs):
+        d = log_euclidean_distance(sig_c, sig_targ, weights)
         results.append({
             "candidate_index":  idx,
-            "candidate_vector": list(cv),
+            "candidate_vector": list(candidate_vectors[idx]),
             "signature":        sig_c,
             "distance":         d,
         })
 
     results.sort(key=lambda r: r["distance"])
-    return results, sig_targ
+    return results, sig_targ, weights
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -781,23 +879,30 @@ def main():
     cand_names = [n for n in compounds if n != target_name]
     cand_vecs  = [compounds[n] for n in cand_names]
 
-    ranking, sig_target = rank_candidates(
+    ranking, sig_target, used_weights = rank_candidates(
         target_vec, cand_vecs, group_names, groups,
-        disp_table, delta_table, w_J=W_J, w_S=W_S, w_M=W_M)
+        disp_table, delta_table, param_table, auto_weights=False)
 
-    print(f"\nTarget signature:  D̄ = {sig_target['D_bar']:.6e},  "
-          f"Ā = {sig_target['A_bar']:.6e},  "
-          f"m = {sig_target['m_total']:.4f}\n")
+    print(f"\nTarget signature:")
+    print(f"  D_bar      = {sig_target['D_bar']:.6e}   (dispersion, J.m3)")
+    print(f"  A_bar      = {sig_target['A_bar']:.6e}   (association, m3)")
+    print(f"  m          = {sig_target['m_total']:.4f}           (chain length)")
+    print(f"  sigma3_avg = {sig_target['sigma3_avg']:.6e}   (packing, m3)")
+    print(f"  shape_avg  = {sig_target['shape_avg']:.6f}         (shape factor)")
+    print(f"\nWeights (inverse-variance):")
+    for wk, wv in used_weights.items():
+        print(f"  {wk:>5s} = {wv:.6f}")
 
-    print(f"{'Rank':>4s}  {'Compound':<40s}  {'D̄':>14s}  {'Ā':>14s}  "
-          f"{'m':>8s}  {'Distance':>12s}")
-    print("─" * 100)
+    print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'D_bar':>13s}  {'A_bar':>13s}  "
+          f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'Distance':>10s}")
+    print("\u2500" * 120)
     for rank, entry in enumerate(ranking, 1):
         cname = cand_names[entry["candidate_index"]]
         sig   = entry["signature"]
         dist  = entry["distance"]
-        print(f"{rank:4d}  {cname:<40s}  {sig['D_bar']:14.6e}  "
-              f"{sig['A_bar']:14.6e}  {sig['m_total']:8.4f}  {dist:12.6f}")
+        print(f"{rank:4d}  {cname:<35s}  {sig['D_bar']:13.6e}  "
+              f"{sig['A_bar']:13.6e}  {sig['m_total']:7.4f}  "
+              f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {dist:10.6f}")
 
     # ── Export pair tables ──
     D_json = {f"{k[0]}|{k[1]}": v for k, v in disp_table.items()}
@@ -831,8 +936,8 @@ def main():
             "target": target_name,
             "target_vector": target_vec,
             "target_signature": sig_target,
-            "settings": {"T_ref_K": T_REF, "eta_ref": ETA_REF,
-                         "w_J": W_J, "w_S": W_S, "w_M": W_M, "S0": S0},
+            "settings": {"T_ref_K": T_REF, "eta_ref": ETA_REF, "S0": S0},
+            "weights_used": used_weights,
             "ranking": ranking_out,
         }, f, indent=2)
     print(f"Ranking saved to {rank_path}")
