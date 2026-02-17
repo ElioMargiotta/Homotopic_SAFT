@@ -28,7 +28,7 @@
    ```bash
    python scripts/app.py
    ```
-   This runs a simple test comparing MEA vs DMEA molecules.
+   This runs a simple test comparing MEA vs DEA molecules.
 
 ## Vector Format
 
@@ -37,7 +37,7 @@ Molecule vectors are 20-element lists representing group counts in this order:
 
 Example vectors:
 - MEA (monoethanolamine): `[1,0,0,0,1,0,0,0,1,0,0,0,0,0]`
-- DMEA (diethanolamine): `[1,0,0,0,2,0,0,0,1,0,0,0,0,0]`
+- DEA (diethanolamine): `[1,0,0,0,2,0,0,0,1,0,0,0,0,0]`
 
 ## API Usage
 
@@ -46,7 +46,7 @@ from scripts.compute_distance import distance
 
 # Compute distance between two vectors
 base = [1,0,0,0,1,0,0,0,1,0,0,0,0,0]  # MEA
-target = [1,0,0,0,2,0,0,0,1,0,0,0,0,0]  # DMEA
+target = [1,0,0,0,2,0,0,0,1,0,0,0,0,0]  # DEA
 dist = distance(base, target)
 print(f"Distance: {dist:.6f}")
 ```
