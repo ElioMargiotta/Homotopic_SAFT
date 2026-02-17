@@ -155,7 +155,7 @@ def _signature(vector, tables: dict) -> dict:
             "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
 
 
-def compute_distance(vec_a, vec_b, tables: dict,
+def compute_distance(vec_a, vec_b, tables: dict | None = None,
                      weights: dict | None = None,
                      s0: float | None = None) -> tuple[float, dict, dict, dict]:
     """
@@ -165,8 +165,8 @@ def compute_distance(vec_a, vec_b, tables: dict,
     ----------
     vec_a, vec_b : list[int]
         Group-count vectors aligned with ``tables["group_names"]``.
-    tables : dict
-        Output of ``load_tables()``.
+    tables : dict, optional
+        Output of ``load_tables()``. If None, loads from default JSON path.
     weights : dict, optional
         {"w_J", "w_S", "w_M", "w_P", "w_SH"}.  Defaults to values
         stored in the JSON.
@@ -181,6 +181,9 @@ def compute_distance(vec_a, vec_b, tables: dict,
     components : dict   – per-component log-ratio contributions
                           {"d_D", "d_A", "d_m", "d_sigma", "d_shape"}
     """
+    if tables is None:
+        tables = load_tables()
+
     if weights is None:
         weights = tables["weights"]
     if s0 is None:
@@ -217,6 +220,27 @@ def compute_distance(vec_a, vec_b, tables: dict,
                   "d_sigma": ds3, "d_shape": dsh}
 
     return dist, sig_a, sig_b, components
+
+
+def distance(base_vector, target_vector) -> float:
+    """
+    Compute the SAFT-γ Mie distance between two molecule vectors.
+
+    This is a simplified interface that loads tables automatically and
+    returns only the distance value.
+
+    Parameters
+    ----------
+    base_vector, target_vector : list[int]
+        Group-count vectors aligned with the standard group order.
+
+    Returns
+    -------
+    distance : float
+        The log-Euclidean distance between the two molecules.
+    """
+    dist, _, _, _ = compute_distance(base_vector, target_vector)
+    return dist
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

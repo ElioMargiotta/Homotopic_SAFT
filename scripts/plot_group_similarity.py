@@ -63,12 +63,12 @@ from saft_similarity import (
 GROUPS_OF_INTEREST = [
     "CH3", "CH2", "CH", "C",
     "cCH2", "cCH",
-    "CH2OH", "CH2OH_Short",
-    "OH", "OH_Short",
-    "NH2", "NH2_2nd", "NH", "NH_2nd",
-    "N", "N_2nd",
-    "cNH", "cN",
-    "cCHNH", "cCHN",
+    "CH2OH", "CH2OH_Short","CHOH",
+    "OH_Short",
+    #"NH2", "NH2_2nd", "NH", "NH_2nd",
+    #"N", "N_2nd",
+    #"cNH", "cN",
+    #"cCHNH", "cCHN",
     #"H2O", "CO2",
 ]
 
@@ -86,7 +86,7 @@ def _family(g: str) -> str:
         return "Alkyl"
     if g in ("cCH2", "cCH"):
         return "Cycloalkyl"
-    if g in ("CH2OH", "CH2OH_Short", "OH", "OH_Short"):
+    if g in ("CH2OH", "CH2OH_Short", "CHOH", "OH_Short"):
         return "Hydroxyl"
     if g in ("NH2", "NH2_2nd", "NH", "NH_2nd", "N", "N_2nd"):
         return "Amine"
@@ -405,8 +405,7 @@ def _spring_layout(D: np.ndarray, k_neighbours: int = 4,
 def plot_amine_distances(D: np.ndarray, labels: list[str], out_path: str):
     """Bar chart of distances among N- and O-containing groups."""
     focus = {"NH2", "NH2_2nd", "NH", "NH_2nd", "N", "N_2nd",
-             "CH2OH", "CH2OH_Short", "OH", "OH_Short",
-             "cNH", "cN", "cCHNH", "cCHN"}
+             "CH2OH", "CH2OH_Short", "CHOH", "OH_Short"}
     focus_idx = [(i, g) for i, g in enumerate(labels) if g in focus]
     if len(focus_idx) < 2:
         print("  Too few amine/hydroxyl groups to plot bar chart.")
@@ -424,9 +423,8 @@ def plot_amine_distances(D: np.ndarray, labels: list[str], out_path: str):
     pairs = [pairs[o] for o in order]
     dists = [dists[o] for o in order]
 
-    amines = {"NH2", "NH2_2nd", "NH", "NH_2nd", "N", "N_2nd",
-              "cNH", "cN", "cCHNH", "cCHN"}
-    hydroxyl = {"CH2OH", "CH2OH_Short", "OH", "OH_Short"}
+    amines = {"NH2", "NH2_2nd", "NH", "NH_2nd", "N", "N_2nd"}
+    hydroxyl = {"CH2OH", "CH2OH_Short", "CHOH", "OH_Short"}
 
     colours = []
     for p in pairs:
@@ -481,8 +479,8 @@ def plot_radar(group_names: list[str], groups: dict,
     all min-max normalised to [0, 1].
     """
     # Select a readable subset (skip near-duplicates for clarity)
-    show = ["CH3", "CH2", "cCH2", "CH2OH", "OH",
-            "NH2", "NH", "N", "cNH", "H2O"]
+    show = ["CH3", "CH2", "CH2OH", "CHOH",
+            "NH2", "NH", "N", "H2O"]
     show = [g for g in show if g in group_names]
     if len(show) < 3:
         show = group_names[:min(8, len(group_names))]
@@ -546,7 +544,7 @@ def plot_radar(group_names: list[str], groups: dict,
 def main():
     base_dir = os.path.normpath(
         os.path.join(os.path.dirname(__file__), ".."))
-    xml_path = os.path.join(base_dir, "database", "database.xml")
+    xml_path = os.path.join(base_dir, "database", "CCS_Mie_Databank_221020.xml")
     fig_dir  = os.path.join(base_dir, "figures")
     os.makedirs(fig_dir, exist_ok=True)
 
@@ -573,8 +571,8 @@ def main():
     idx_map = {g: i for i, g in enumerate(group_names)}
     key_pairs = [("NH2", "NH"), ("NH2", "N"), ("NH", "N"),
                  ("NH2_2nd", "NH_2nd"), ("NH2_2nd", "N_2nd"),
-                 ("NH2", "OH"), ("CH2OH", "OH"),
-                 ("CH3", "CH2"), ("cCH2", "cCH")]
+                 ("NH2", "CHOH"), ("CH2OH", "CHOH"),
+                 ("CH3", "CH2")]
     print("\n  Cross-pair based distances (selected):")
     for g1, g2 in key_pairs:
         if g1 in idx_map and g2 in idx_map:
