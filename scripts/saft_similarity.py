@@ -43,12 +43,12 @@ RHO_REF   = 10000.0     # Reference number density [mol/m³] — liquid-like ord
 ETA_REF   = 0.40        # Reference packing fraction for a1 evaluation  (≈ liquid)
 
 W_J  = 1.0              # Weight for dispersion distance component
-W_S  = 3.0              # Weight for association distance component
+W_S  = 0.05         # Weight for association distance component
 W_M  = 0.7              # Weight for chain-length distance component
 W_P  = 1.0              # Weight for packing (sigma^3) distance component
 W_SH = 0.5              # Weight for shape-factor distance component
 
-S0  = 5e-29            # Association floor [m³] to regularise log(0)
+S0  = 5e-28            # Association floor [m³] to regularise log(0)
 
 LAMBDA_A_DEFAULT = 6.0  # Default attractive exponent when not specified
 
@@ -942,10 +942,8 @@ GROUPS_OF_INTEREST = [
     "CH3", "CH2", "CH", "C",
     "CH2OH", "CH2OH_Short",
     "NH2", "NH", "N",
-    "OH", "OH_Short",
-    "cCH2", "cCH",
-    "cNH", "cN",
-    "cCHNH", "cCHN",
+    "CHOH",
+    "OH_Short",
 ]
 
 
@@ -966,7 +964,7 @@ def _print_matrix(table: dict, group_names: list[str], title: str):
 def main():
     import os
 
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "database.xml")
+    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "CCS_Mie_Databank_221020.xml")
     xml_path = os.path.normpath(xml_path)
 
     print(f"Loading database from: {xml_path}")
@@ -1050,15 +1048,35 @@ def main():
     D_json = {f"{k[0]}|{k[1]}": v for k, v in disp_table.items()}
     A_json = {f"{k[0]}|{k[1]}": v for k, v in delta_table.items()}
 
+    # σ³_kl pair table  (needed for sigma3_avg in the signature)
+    sig3_json = {}
+    for (k, l), pdict in param_table.items():
+        sig3_json[f"{k}|{l}"] = pdict["sigma"] ** 3
+
+    # Per-group metadata (needed for segment fractions & shape average)
+    group_meta = {}
+    for gname in group_names:
+        gd = groups[gname]
+        group_meta[gname] = {
+            "nu":          gd["nu"],
+            "shapeFactor": gd["shapeFactor"],
+            "sigma":       gd["sigma"],
+        }
+
     out_path = os.path.join(os.path.dirname(__file__), "..", "saft_pair_tables.json")
     out_path = os.path.normpath(out_path)
     with open(out_path, "w") as f:
         json.dump({
             "D_kl_dispersion": D_json,
             "Delta_kl_association": A_json,
+            "sigma3_kl": sig3_json,
             "groups": group_names,
+            "group_metadata": group_meta,
             "T_ref_K": T_REF,
             "eta_ref": ETA_REF,
+            "weights": {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+                        "w_P": W_P, "w_SH": W_SH},
+            "S0": S0,
         }, f, indent=2)
     print(f"\nPair tables saved to {out_path}")
 
