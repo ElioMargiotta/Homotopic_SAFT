@@ -11,12 +11,12 @@ def main():
     print("SAFT-γ Mie Molecule Distance Calculator")
     print("=" * 40)
 
-    # Define test vectors (MEA vs DMEA)
-    base_vector = [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]  # MEA: CH2 + NH2
-    target_vector = [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]  # DMEA: 2×CH3 + NH
+    # Define test vectors (MEA vs DEA)
+    base_vector = [1,0,0,0,1,0,0,0,1,0,0,0,0,0]  # MEA:
+    target_vector = [1,0,0,0,2,0,0,0,1,0,0,0,0,0]  # DEA
 
     print(f"Base vector (MEA): {base_vector}")
-    print(f"Target vector (DMEA): {target_vector}")
+    print(f"Target vector (DEA): {target_vector}")
 
     # Compute distance
     try:
