@@ -1,5 +1,5 @@
 """
-SAFT-γ Mie group-contribution similarity metric  –  Haslam et al. formalism.
+SAFT-γ Mie group-contribution similarity metric  –  Haslam et al. formalism
 
 Composition-agnostic ranking of candidate molecules by thermodynamic similarity
 to a TARGET molecule, using **only** SAFT-γ Mie group parameters (self + cross)
@@ -38,19 +38,30 @@ from itertools import combinations_with_replacement
 # MODULE 0 — Constants & configurable settings
 # ═══════════════════════════════════════════════════════════════════════════════
 
-T_REF     = 298.15      # Reference temperature  [K]
-RHO_REF   = 10000.0     # Reference number density [mol/m³] — liquid-like order
-ETA_REF   = 0.40        # Reference packing fraction for a1 evaluation  (≈ liquid)
+KB        = 1.380649e-23  # Boltzmann constant  [J/K]
+T_REF     = 298.15        # Reference temperature  [K]
+ETA_REF   = 0.40          # Reference packing fraction  (≈ liquid state)
 
-W_J  = 1.0              # Weight for dispersion distance component
-W_S  = 0.05         # Weight for association distance component
-W_M  = 0.7              # Weight for chain-length distance component
-W_P  = 1.0              # Weight for packing (sigma^3) distance component
-W_SH = 0.5              # Weight for shape-factor distance component
+W_MONO    = 1.0             # Weight for dispersion distance component
+W_S    = 0.05            # Weight for association distance component
+W_M    = 0.7             # Weight for chain-length distance component
+W_P    = 1.0             # Weight for packing (sigma^3) distance component
+W_SH   = 0.5             # Weight for shape-factor distance component
 
-S0  = 5e-28            # Association floor [m³] to regularise log(0)
+S0  = 5e-28              # Association floor [m³] to regularise log(0)
 
-LAMBDA_A_DEFAULT = 6.0  # Default attractive exponent when not specified
+LAMBDA_A_DEFAULT = 6.0   # Default attractive exponent when not specified
+
+# Effective packing-fraction parameterisation coefficients
+# (Papaioannou et al. [1] Eq. 27, from Lafitte et al. [4] Table)
+# ζ_eff(ζ_x; λ) = c1·ζ_x + c2·ζ_x² + c3·ζ_x³ + c4·ζ_x⁴
+# where (c1,c2,c3,c4) = M · (1, 1/λ, 1/λ², 1/λ³)^T
+_ZETA_EFF_MATRIX = np.array([
+    [ 0.81096,   1.7888, -37.578,  92.284],
+    [ 1.0205,  -19.341,  151.26, -463.50],
+    [-1.9057,   22.845, -228.14,  973.92],
+    [ 1.0885,   -6.1962, 106.98, -677.64],
+])
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -779,11 +790,11 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
 
     Parameters
     ----------
-    weights : dict  {"w_J", "w_S", "w_M", "w_P", "w_SH"}
+    weights : dict  {"W_MONO", "w_S", "w_M", "w_P", "w_SH"}
         If None, defaults to module-level constants.
     """
     if weights is None:
-        weights = {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+        weights = {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
                    "w_P": W_P, "w_SH": W_SH}
 
     D_c = max(abs(sig_cand["D_bar"]), 1e-300)
@@ -806,7 +817,7 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
     sh_t = max(sig_targ["shape_avg"], 1e-300)
     dsh  = math.log(sh_c / sh_t)
 
-    return math.sqrt(weights["w_J"]  * dD**2
+    return math.sqrt(weights["W_MONO"]  * dD**2
                    + weights["w_S"]  * dA**2
                    + weights["w_M"]  * dm**2
                    + weights["w_P"]  * ds3**2
@@ -826,7 +837,7 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
     in that component).
     """
     keys = ["D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"]
-    weight_names = ["w_J", "w_S", "w_M", "w_P", "w_SH"]
+    weight_names = ["W_MONO", "w_S", "w_M", "w_P", "w_SH"]
     floors = [1e-300, S0, 1e-300, 1e-300, 1e-300]
     use_abs = [True, False, False, False, False]
 
@@ -881,7 +892,7 @@ def rank_candidates(target_vector, candidate_vectors,
     if auto_weights:
         weights = _inverse_variance_weights(cand_sigs)
     else:
-        weights = {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+        weights = {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
                    "w_P": W_P, "w_SH": W_SH}
 
     results = []
@@ -1074,7 +1085,7 @@ def main():
             "group_metadata": group_meta,
             "T_ref_K": T_REF,
             "eta_ref": ETA_REF,
-            "weights": {"w_J": W_J, "w_S": W_S, "w_M": W_M,
+            "weights": {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
                         "w_P": W_P, "w_SH": W_SH},
             "S0": S0,
         }, f, indent=2)

@@ -43,7 +43,7 @@ Two complementary approaches are implemented, both reading from the same XML par
 │   ├── amine_hydroxyl_distances.png
 │   └── group_radar_descriptors.png
 ├── similarity_matrix.npy          # 40×40 output of Approach 1
-├── saft_pair_tables.json          # D_{kl} / Δ_{kl} pair tables (Approach 2)
+├── saft_pair_tables.json          # a₁,kl / Δ_{kl} pair tables (Approach 2)
 ├── ranking_vs_MEA.json            # Example ranking output (Approach 2)
 └── README.md
 ```
@@ -145,7 +145,9 @@ and saved as `similarity_matrix.npy`.
 
 ### What it does
 
-Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using five physics-derived scalars — **dispersion strength** $\bar{D}$, **association strength** $\bar{A}$, **chain length** $m$, **packing proxy** $\bar{\sigma}^3$, and **shape average** $\bar{S}$ — without running a full equation of state.
+Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using five physics-derived scalars — **monomer free energy** $\bar{F}^{\mathrm{mono}}$ (dimensionless, $A^{\mathrm{mono}}/Nk_BT$), **association strength** $\bar{A}$, **chain length** $m$, **packing proxy** $\bar{\sigma}^3$, and **shape average** $\bar{S}$ — without running a full equation of state.
+
+The monomer term is expressed as a proper **dimensionless free-energy contribution** following the SAFT-γ Mie perturbation expansion truncated at first order: $\bar{F}^{\mathrm{mono}} = a^{HS}(\eta) + m\,a_1/T$.  The $a_1^S$ integral uses the full effective-packing-fraction parameterisation from Lafitte et al.
 
 The method strictly follows the SAFT-γ Mie group-contribution framework as described by Papaioannou et al. [1], Dufal et al. [2], and Haslam et al. [3].
 
@@ -157,15 +159,23 @@ The SAFT-γ Mie equation of state writes the residual Helmholtz energy as a sum 
 \frac{A^{\mathrm{res}}}{Nk_BT} = \frac{A^{\mathrm{mono}}}{Nk_BT} + \frac{A^{\mathrm{chain}}}{Nk_BT} + \frac{A^{\mathrm{assoc}}}{Nk_BT}
 ```
 
-Rather than evaluating the full Helmholtz function, this script extracts **proxy quantities** that capture the dominant group-level contributions to each term:
+The **monomer** term is itself a perturbation expansion around a hard-sphere reference ([1] Eq. 9):
 
-| Helmholtz term | Physical origin | Proxy quantity | Symbol |
-|----------------|-----------------|----------------|--------|
-| $A^{\mathrm{mono}}$ (dispersion) | Van der Waals attraction between Mie segments | First-order perturbation integral $a_1$ | $D_{kl}$ |
-| $A^{\mathrm{chain}}$ | Connectivity of fused segments | Total chain length | $m_i$ |
-| $A^{\mathrm{assoc}}$ | Hydrogen bonding via Wertheim TPT1 | Site-summed association strength | $\Delta_{kl}$ |
-| HS reference | Excluded volume of segments | Averaged cubic diameter | $\bar{\sigma}^3$ |
-| Segment architecture | Fraction of each segment in the chain | Shape-weighted average | $\bar{S}$ |
+```math
+\frac{A^{\mathrm{mono}}}{Nk_BT} = \underbrace{m\,a^{HS}}_{\text{hard-sphere reference}} + \underbrace{\frac{m}{k_BT}\,a_1}_{\text{1st-order perturbation}} + \underbrace{\frac{m}{(k_BT)^2}\,a_2}_{\text{2nd-order}} + \cdots
+```
+
+This script **truncates after first order**: $A^{\mathrm{mono}} \approx m\,a^{HS} + (m/k_BT)\,a_1$.  The second- and third-order terms ($a_2$, $a_3$) are corrections and are omitted.
+
+The script extracts **proxy quantities** that capture the dominant group-level contributions to each Helmholtz term:
+
+| Helmholtz term | Physical origin | Proxy quantity | Symbol | Units |
+|----------------|-----------------|----------------|--------|-------|
+| $A^{\mathrm{mono}}$ (HS + perturbation) | Repulsion + van der Waals attraction between Mie segments | $m\,a^{HS} + (m/k_BT)\,a_1$ | $\bar{F}^{\mathrm{mono}}$ | dimensionless ($A/Nk_BT$) |
+| $A^{\mathrm{chain}}$ | Connectivity of fused segments | Total chain length | $m_i$ | dimensionless |
+| $A^{\mathrm{assoc}}$ | Hydrogen bonding via Wertheim TPT1 | Site-summed association strength | $\Delta_{kl}$ | m³ |
+| HS reference | Excluded volume of segments | Averaged cubic diameter | $\bar{\sigma}^3$ | m³ |
+| Segment architecture | Fraction of each segment in the chain | Shape-weighted average | $\bar{S}$ | dimensionless |
 
 The workflow below describes how each proxy is computed from the database parameters.
 
@@ -260,7 +270,25 @@ The CR-1 combining rules systematically underestimate cross-association for grou
 
 ---
 
-#### Step 3 — Mie prefactor $C_{kl}$ (Module 3a)
+#### Step 3 — Effective hard-sphere diameter $d_{kk}$ (Module 3a)
+
+The Barker–Henderson effective hard-sphere diameter is obtained by numerical integration of the Mie potential ([1] Eq. 10):
+
+```math
+d_{kk} = \int_0^{\sigma_{kk}} \left[1 - \exp\!\left(-\frac{u^{\mathrm{Mie}}_{kk}(r)}{k_BT}\right)\right] \mathrm{d}r
+```
+
+This integral is evaluated by **5-point Gauss–Legendre quadrature** on $[0, \sigma_{kk}]$, following Paricaud (2006).  The result $d_{kk}$ is temperature-dependent and satisfies $d_{kk} \lesssim \sigma_{kk}$ (typically $d/\sigma \approx 0.97$–$0.99$ at 298 K).
+
+For cross pairs, the arithmetic combining rule is used:
+
+```math
+d_{kl} = \frac{d_{kk} + d_{ll}}{2}
+```
+
+---
+
+#### Step 3b — Mie prefactor $C_{kl}$ (Module 3a)
 
 The Mie potential between segments of groups $k$ and $l$ is:
 
@@ -276,25 +304,72 @@ C_{kl} = \frac{\lambda^r_{kl}}{\lambda^r_{kl} - \lambda^a_{kl}} \left(\frac{\lam
 
 ---
 
-#### Step 4 — Dispersion proxy $D_{kl}$: first-order perturbation (Module 3a)
+#### Step 4 — Monomer free-energy proxy $\bar{F}^{\mathrm{mono}}$ (Module 3a)
 
-The dominant contribution to intermolecular attraction in SAFT comes from the first-order monomer perturbation term $a_1$ ([1] Eqs. 19–20). For each group pair we compute a **proxy** proportional to $a_1$:
-
-```math
-D_{kl} = C_{kl}\,\varepsilon_{kl}\,\sigma_{kl}^3 \left[a_1^S(\eta;\,\lambda^a_{kl}) - a_1^S(\eta;\,\lambda^r_{kl})\right]
-```
-
-where $a_1^S(\eta;\lambda)$ is the Sutherland-$\lambda$ perturbation integral evaluated at a fixed reference packing fraction $\eta_{\mathrm{ref}}$.
-
-##### Sutherland perturbation integral
-
-In the full SAFT-γ Mie theory, the Sutherland integral $a_1^S$ is parameterised by a polynomial in $\eta$ with $\lambda$-dependent coefficients. For the **proxy** we use the leading-order mean-field / contact-value approximation:
+The monomer Helmholtz contribution is truncated after first order ([1] Eq. 9):
 
 ```math
-a_1^S(\eta;\lambda) \approx -\frac{1}{\lambda - 3}\;\frac{1 - \eta/2}{(1 - \eta)^3}
+\frac{A^{\mathrm{mono}}}{Nk_BT} \approx m_i\,a^{HS}(\eta) \;+\; \frac{m_i}{k_BT}\,a_1
 ```
 
-This captures the dominant dependence on both $\lambda$ (potential range) and $\eta$ (packing), and is exact in the van-der-Waals-1-fluid limit.
+This is **dimensionless** ($A/Nk_BT$).
+
+##### Hard-sphere free energy per segment
+
+The Carnahan–Starling expression for a one-fluid reference at packing fraction $\eta$ ([1] Eq. 12, reduced to the one-component vdW-1-fluid case):
+
+```math
+a^{HS}(\eta) = \frac{4\eta - 3\eta^2}{(1 - \eta)^2}
+```
+
+##### First-order perturbation per segment
+
+The mean-attractive energy per segment is the double sum over group pairs ([1] Eq. 18):
+
+```math
+a_1 = \sum_k \sum_l x_{s,k}\,x_{s,l}\,a_{1,kl}
+```
+
+Each pair contribution follows [1] Eq. 19:
+
+```math
+a_{1,kl} = C_{kl}\left[x_0^{\lambda^a_{kl}}\,a_1^S(\rho_s;\,\lambda^a_{kl}) \;-\; x_0^{\lambda^r_{kl}}\,a_1^S(\rho_s;\,\lambda^r_{kl})\right]
+```
+
+where $x_0 = \sigma_{kl} / d_{kl}$ and the Sutherland perturbation integral is ([1] Eq. 25):
+
+```math
+a_1^S(\rho_s;\,\lambda) = -\frac{2\pi\rho_s\,\varepsilon_{kl}\,d_{kl}^3}{\lambda - 3}\;\frac{1 - \zeta^{\mathrm{eff}}_x/2}{(1 - \zeta^{\mathrm{eff}}_x)^3}
+```
+
+##### Effective packing fraction
+
+The effective packing fraction $\zeta^{\mathrm{eff}}_x$ is **not** the same as $\eta$ — it is obtained from a polynomial parameterisation fitted to simulation data ([1] Eqs. 26–27):
+
+```math
+\zeta^{\mathrm{eff}}_{kl} = c_1\,\zeta_x + c_2\,\zeta_x^2 + c_3\,\zeta_x^3 + c_4\,\zeta_x^4
+```
+
+where the coefficients $(c_1, c_2, c_3, c_4)$ depend on $\lambda_{kl}$ via the matrix relation from Lafitte et al. [4]:
+
+```math
+\begin{pmatrix} c_1 \\ c_2 \\ c_3 \\ c_4 \end{pmatrix}
+=
+\begin{pmatrix}
+ 0.81096 &  1.7888 & -37.578 &  92.284 \\
+ 1.0205  & -19.341 & 151.26  & -463.50 \\
+-1.9057  &  22.845 & -228.14 &  973.92 \\
+ 1.0885  &  -6.1962 & 106.98 & -677.64
+\end{pmatrix}
+\begin{pmatrix} 1 \\ 1/\lambda \\ 1/\lambda^2 \\ 1/\lambda^3 \end{pmatrix}
+```
+
+This is the **exact SAFT-γ Mie parameterisation** — not a simplified contact-value approximation.
+
+##### Simplifications retained
+
+- The $B_{kl}$ residual correction ([1] Eq. 20) is set to zero.  This term involves the integrals $I(\lambda)$ and $J(\lambda)$ and partially cancels between the attractive and repulsive branches; omitting it is equivalent to the mean-field / Sutherland-only approximation.
+- A one-fluid reference packing fraction $\zeta_x = \eta_{\mathrm{ref}}$ is used at the pair level, rather than the composition-dependent vdW mixing rule.
 
 ##### Reference packing fraction
 
@@ -302,7 +377,13 @@ This captures the dominant dependence on both $\lambda$ (potential range) and $\
 \eta_{\mathrm{ref}} = 0.40
 ```
 
-This is a liquid-like reference state; the proxy does not depend on the actual density of the system. Any monotonic change of $\eta_{\mathrm{ref}}$ rescales all $D_{kl}$ values by the same factor and therefore does not affect the ranking.
+##### Segment number density
+
+Derived from the reference packing fraction and effective diameter:
+
+```math
+\rho_s = \frac{6\,\eta_{\mathrm{ref}}}{\pi\,d_{kl}^3}
+```
 
 ---
 
@@ -365,13 +446,13 @@ T_{\mathrm{ref}} = 298.15\;\mathrm{K}
 
 #### Step 6 — Build pair tables (Module 4)
 
-Pre-compute $D_{kl}$ and $\Delta_{kl}(T_{\mathrm{ref}}, \eta_{\mathrm{ref}})$ for every unordered pair among the 20 groups of interest, yielding two symmetric $20 \times 20$ tables plus a parameter table:
+Pre-compute $a_{1,kl}$ and $\Delta_{kl}(T_{\mathrm{ref}}, \eta_{\mathrm{ref}})$ for every unordered pair among the 20 groups of interest, yielding two symmetric $20 \times 20$ tables plus a parameter table:
 
 | Table | Contents | Units |
 |-------|----------|-------|
-| $D_{kl}$ | Dispersion a₁-proxy | J·m³ (all values negative — net attractive) |
+| $a_{1,kl}$ | First-order perturbation per segment | K (all values negative — net attractive) |
 | $\Delta_{kl}$ | Association strength | m³ (zero for non-associating pairs) |
-| param_table | Resolved $\varepsilon_{kl}$, $\sigma_{kl}$, $\lambda^r_{kl}$, $\lambda^a_{kl}$ | K, m, dimensionless |
+| param_table | Resolved $\varepsilon_{kl}$, $\sigma_{kl}$, $d_{kl}$, $\lambda^r_{kl}$, $\lambda^a_{kl}$ | K, m, m, dimensionless |
 
 These tables are exported as `saft_pair_tables.json`.
 
@@ -401,15 +482,21 @@ These sum to unity: $\sum_k x_{s,k} = 1$.
 
 Each molecule is characterised by a **5-scalar thermodynamic signature**:
 
-##### 1. Dispersion  $\bar{D}$
+##### 1. Monomer free energy  $\bar{F}^{\mathrm{mono}}$
 
-The pair-averaged dispersion, using the same double-sum structure as the monomer Helmholtz contribution ([1] Eq. 19):
+The SAFT monomer Helmholtz contribution, truncated after first order ([1] Eqs. 9, 11, 17–18):
 
 ```math
-\bar{D}_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;D_{kl}
+\bar{F}^{\mathrm{mono}}_i = m_i\,a^{HS}(\eta_{\mathrm{ref}}) \;+\; \frac{m_i}{k_BT_{\mathrm{ref}}}\,a_1
 ```
 
-**Physical meaning**: measures the overall cohesive (van der Waals) attraction of the molecule. Higher $|\bar{D}|$ → stronger dispersion → higher boiling point, lower vapour pressure.
+where the first-order perturbation per segment is the pair-averaged mean-attractive energy:
+
+```math
+a_1 = \sum_k \sum_l x_{s,k}\;x_{s,l}\;a_{1,kl}
+```
+
+**Physical meaning**: this is the **dimensionless** monomer free energy ($A^{\mathrm{mono}}/Nk_BT$).  It combines the hard-sphere repulsion ($a^{HS} > 0$) with the van der Waals attraction ($a_1/k_BT < 0$).  Higher $|\bar{F}^{\mathrm{mono}}|$ (more negative) → stronger cohesion → higher boiling point, lower vapour pressure.  Because $\bar{F}^{\mathrm{mono}}$ includes both the HS reference **and** the perturbation, the packing ($\sigma^3$) contribution is already absorbed into this term through $d_{kl}$, $\rho_s$, and $\zeta^{\mathrm{eff}}_x$.
 
 ##### 2. Association  $\bar{A}$
 
@@ -445,7 +532,8 @@ m_i = \sum_k n_k\,\nu_k\,S_k
 
 ##### Key properties
 
-- Because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $\bar{D} = D_{kk}$, $\bar{A} = \Delta_{kk}$, and $\bar{\sigma}^3 = \sigma_{kk}^3$ regardless of how many copies of that group are present.
+- Because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $a_1 = a_{1,kk}$, $\bar{A} = \Delta_{kk}$, and $\bar{\sigma}^3 = \sigma_{kk}^3$ regardless of how many copies of that group are present.
+- The monomer free energy $\bar{F}^{\mathrm{mono}}$ is **dimensionless** ($A/Nk_BT$) and includes both the hard-sphere repulsion and the first-order attractive perturbation.  The packing information ($\sigma^3$, $d^3$) is already encoded in this term through $\rho_s$ and $\zeta^{\mathrm{eff}}_x$.
 - The chain length $m_i$, packing proxy $\bar{\sigma}^3_i$, and shape average $\bar{S}_i$ together distinguish molecules with identical group *types* but different *sizes* or *architectures*.
 
 ---
@@ -455,7 +543,7 @@ m_i = \sum_k n_k\,\nu_k\,S_k
 Compare a candidate signature against the target using a **log-Euclidean metric** in 5-D signature space:
 
 ```math
-d_D = \ln\frac{|\bar{D}_c|}{|\bar{D}_t|}, \qquad d_A = \ln\frac{\bar{A}_c + S_0}{\bar{A}_t + S_0}, \qquad d_m = \ln\frac{m_c}{m_t}
+d_F = \ln\frac{|\bar{F}^{\mathrm{mono}}_c|}{|\bar{F}^{\mathrm{mono}}_t|}, \qquad d_A = \ln\frac{\bar{A}_c + S_0}{\bar{A}_t + S_0}, \qquad d_m = \ln\frac{m_c}{m_t}
 ```
 
 ```math
@@ -463,12 +551,12 @@ d_{\sigma} = \ln\frac{\bar{\sigma}^3_c}{\bar{\sigma}^3_t}, \qquad d_S = \ln\frac
 ```
 
 ```math
-\mathcal{D} = \sqrt{w_D\,d_D^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
+\mathcal{D} = \sqrt{w_{\mathrm{mono}}\,d_F^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
 ```
 
 ##### Why logarithmic?
 
-The five signature components span many orders of magnitude ($D \sim 10^{-26}$, $A \sim 10^{-25}$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{D}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
+The five signature components span different scales ($F^{\mathrm{mono}} \sim 1\text{–}10$, $A \sim 10^{-25}$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{F}^{\mathrm{mono}}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
 
 ##### Association floor $S_0$
 
@@ -484,8 +572,8 @@ Default values:
 
 | Weight | Symbol | Default | Role |
 |--------|--------|---------|------|
-| Dispersion | $w_D$ | 1.0 | Mie attraction strength |
-| Association | $w_A$ | 3.0 | H-bonding — upweighted as it is the primary differentiator for amine/alkanolamine screening |
+| Monomer | $w_{\mathrm{mono}}$ | 1.0 | Monomer free energy (HS + first-order perturbation) |
+| Association | $w_A$ | 0.05 | H-bonding — association strength in m³ |
 | Chain length | $w_m$ | 0.7 | Molecular size — downweighted to avoid over-penalising small size differences |
 | Packing | $w_{\sigma}$ | 1.0 | Segment excluded volume |
 | Shape | $w_S$ | 0.5 | Shape factor contribution — downweighted as it varies less across the candidate set |
@@ -504,8 +592,8 @@ Sort all candidates by ascending $\mathcal{D}$. The output includes each candida
 
 | # | Assumption | Justification |
 |---|-----------|---------------|
-| 1 | **No full Helmholtz evaluation** — only proxy quantities $D_{kl}$ and $\Delta_{kl}$ are computed | We need *relative* ordering, not absolute thermodynamic properties; the leading-order terms dominate the ranking |
-| 2 | **Sutherland $a_1^S$ in mean-field limit** — polynomial parameterisation replaced by contact-value expression | The mean-field form captures the correct $\lambda$ and $\eta$ dependence; polynomial coefficients are not needed for a proxy |
+| 1 | **Monomer truncated at first order** — $A^{\mathrm{mono}}/Nk_BT \approx a^{HS} + m\,a_1/k_BT$; second- and third-order terms ($a_2$, $a_3$) are omitted | The first-order term dominates the perturbation expansion; $a_2$ and $a_3$ contribute progressively smaller corrections. For a *ranking* (not absolute properties), the first-order term captures the correct ordering |
+| 2 | **Sutherland $a_1^S$ with effective packing fraction** — the full $\zeta_{\mathrm{eff}}(\zeta_x; \lambda)$ parameterisation from Lafitte et al. is used, but the $B_{kl}$ correction term in $a_{1,kl}$ is dropped | The effective packing fraction captures the correct $\lambda$ and $\eta$ dependence as fitted to simulation data; $B_{kl}$ is a small density-gradient correction at the liquid-like reference state |
 | 3 | **Association kernel $I_{kl} \approx g^{HS}$** — Mie RDF reduced to Carnahan–Starling hard-sphere contact value | The HS contribution is the dominant term; $a_1$/$a_2$ corrections to the RDF require the full EOS and are state-dependent |
 | 4 | **Fixed reference state** $(\eta_{\mathrm{ref}} = 0.40,\;T_{\mathrm{ref}} = 298.15\;\mathrm{K})$ | The proxy is evaluated at a single liquid-like state point; any monotonic rescaling by $\eta$ cancels in the log-ratio distance |
 | 5 | **Segment fractions** $x_{s,k}$ used instead of intramolecular pair counts | Consistent with SAFT-γ Mie monomer contribution formalism ([1] Eqs. 7–8, 19) |
@@ -520,7 +608,7 @@ Sort all candidates by ascending $\mathcal{D}$. The output includes each candida
 
 ## Visualisation – Group-level similarity (`plot_group_similarity.py`)
 
-This script reuses the **same SAFT-γ Mie pair tables** computed by `saft_similarity.py` — specifically $D_{kl}$, $\Delta_{kl}$, and $\sigma_{kl}$ — to visualise how similar the 20 functional groups are to each other.
+This script reuses the **same SAFT-γ Mie pair tables** computed by `saft_similarity.py` — specifically $a_{1,kl}$, $\Delta_{kl}$, and $\sigma_{kl}$ — to visualise how similar the 20 functional groups are to each other.
 
 The visualisation operates at the **group level** (not the molecule level): it asks "how differently do two groups interact with each other compared to how they interact with themselves?" This is complementary to the molecule-level ranking in Approach 2.
 
@@ -531,7 +619,7 @@ All figures are saved to `figures/`.
 The distance between two groups $k$ and $l$ measures how much their **cross interaction** deviates from the geometric mean of their self interactions. Three components, each a log-ratio:
 
 ```math
-d_D = \ln \frac{|D_{kl}|}{\sqrt{|D_{kk}|\,|D_{ll}|}}
+d_{a_1} = \ln \frac{|a_{1,kl}|}{\sqrt{|a_{1,kk}|\,|a_{1,ll}|}}
 ```
 
 ```math
@@ -543,7 +631,7 @@ d_{\sigma} = \ln \frac{\sigma_{kl}^3}{\sqrt{\sigma_{kk}^3\,\sigma_{ll}^3}}
 ```
 
 ```math
-d_{kl} = \sqrt{d_D^2 + d_{\Delta}^2 + d_{\sigma}^2}
+d_{kl} = \sqrt{d_{a_1}^2 + d_{\Delta}^2 + d_{\sigma}^2}
 ```
 
 **Physical interpretation**: each ratio measures *thermodynamic compatibility*. When the cross quantity matches the geometric mean of the self quantities ($d = 0$), the two groups interact with each other just as strongly as they interact with themselves — they are perfectly interchangeable in the SAFT-γ Mie sense. Positive/negative deviations indicate the cross interaction is stronger/weaker than what the geometric-mean reference would predict.
@@ -640,7 +728,7 @@ Rows and columns are reordered by a **greedy nearest-neighbour chain** (starting
 | $\sigma_{kk}$ | Segment diameter | Database self-interaction |
 | $\lambda^r_{kk}$ | Repulsive exponent | Database self-interaction |
 | $\lambda^a_{kk}$ | Attractive exponent | Database self-interaction |
-| $|D_{kk}|$ | Dispersion proxy (a₁) | Computed (Step 4) |
+| $|a_{1,kk}|$ | First-order perturbation (a₁) | Computed (Step 4) |
 | $\Delta_{kk}$ | Self-association strength | Computed (Step 5) |
 
 **How to read it**:
@@ -673,7 +761,7 @@ python scripts/plot_group_similarity.py
 |------|-------------|
 | `similarity_matrix.npy` | 40×40 group similarity matrix (Approach 1) |
 | `similarity_matrix_plot.png` | Heatmap visualisation of $\mathbf{S}$ |
-| `saft_pair_tables.json` | $D_{kl}$ and $\Delta_{kl}$ pair tables (Approach 2) |
+| `saft_pair_tables.json` | $a_{1,kl}$ and $\Delta_{kl}$ pair tables (Approach 2) |
 | `ranking_vs_MEA.json` | Full ranking with 5-scalar signatures, weights, and distances |
 | `figures/group_distance_heatmap.png` | Group-group distance heatmap |
 | `figures/group_mds_map.png` | 2-D MDS embedding of groups |
@@ -702,6 +790,7 @@ The XML database (`database/database.xml`) follows the SAFT-γ Mie group-contrib
 1. V. Papaioannou, T. Lafitte, C. Avendaño, C. S. Adjiman, G. Jackson, E. A. Müller, A. Galindo, *J. Chem. Phys.* **140**, 054107 (2014).
 2. S. Dufal, T. Lafitte, A. J. Haslam, A. Galindo, G. N. I. Clark, C. Vega, G. Jackson, *J. Chem. Eng. Data* **59**, 3272–3288 (2014).
 3. A. J. Haslam, A. Galindo, G. Jackson, "SAFT-γ Mie group-contribution framework" — comprehensive review of the group-contribution methodology.
+4. T. Lafitte, A. Apostolakou, C. Avendaño, A. Galindo, C. S. Adjiman, E. A. Müller, G. Jackson, *J. Chem. Phys.* **139**, 154504 (2013).
 
 ---
 
