@@ -17,7 +17,8 @@
     0
   ],
   "target_signature": {
-    "D_bar": -4.2900772785697624e-26,
+    "F_mono": -5.765260680852147,
+    "F_chain": -1.552747831609169,
     "A_bar": 2.855765475981999e-25,
     "m_total": 2.196826481230568,
     "sigma3_avg": 4.4211700774688755e-29,
@@ -26,11 +27,12 @@
   "settings": {
     "T_ref_K": 298.15,
     "eta_ref": 0.4,
-    "S0": 5e-28
+    "S0": 5e-29
   },
   "weights_used": {
-    "W_MONO": 1.0,
-    "w_S": 0.05,
+    "w_MONO": 1.0,
+    "w_CHAIN": 1.0,
+    "w_A": 3.0,
     "w_M": 0.7,
     "w_P": 1.0,
     "w_SH": 0.5
@@ -55,40 +57,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.520485286314531e-26,
+        "F_mono": -7.464689930234114,
+        "F_chain": -2.857731772208562,
         "A_bar": 3.539281669868219e-25,
         "m_total": 3.166050261690291,
         "sigma3_avg": 4.8308362115637875e-29,
         "shape_avg": 0.5084347195058168
       },
-      "distance": 0.35727252034210444
-    },
-    {
-      "compound": "DMMEA",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        2,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -5.0683567776328487e-26,
-        "A_bar": 1.086638871183364e-25,
-        "m_total": 2.6958778074716703,
-        "sigma3_avg": 5.609689340854949e-29,
-        "shape_avg": 0.5253450426427506
-      },
-      "distance": 0.41865449773817354
+      "distance": 0.8363884707206609
     },
     {
       "compound": "absorbent",
@@ -109,13 +85,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.957974347411899e-26,
+        "F_mono": -8.813639496215751,
+        "F_chain": -3.303664259254504,
         "A_bar": 2.430434612039803e-25,
         "m_total": 3.52340680747167,
         "sigma3_avg": 5.19365309755375e-29,
         "shape_avg": 0.5183558152182332
       },
-      "distance": 0.47100782582425726
+      "distance": 1.0138063293714752
     },
     {
       "compound": "MDEA",
@@ -136,13 +113,42 @@
         0
       ],
       "signature": {
-        "D_bar": -4.957974347411899e-26,
+        "F_mono": -8.813639496215751,
+        "F_chain": -3.303664259254504,
         "A_bar": 2.430434612039803e-25,
         "m_total": 3.52340680747167,
         "sigma3_avg": 5.19365309755375e-29,
         "shape_avg": 0.5183558152182332
       },
-      "distance": 0.47100782582425726
+      "distance": 1.0138063293714752
+    },
+    {
+      "compound": "DMMEA",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        2,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -5.769175089208559,
+        "F_chain": -2.1714557537154957,
+        "A_bar": 1.086638871183364e-25,
+        "m_total": 2.6958778074716703,
+        "sigma3_avg": 5.609689340854949e-29,
+        "shape_avg": 0.5253450426427506
+      },
+      "distance": 1.7357460377465022
     },
     {
       "compound": "DEEA",
@@ -163,13 +169,14 @@
         0
       ],
       "signature": {
-        "D_bar": -6.005249984682988e-26,
+        "F_mono": -7.273159596028265,
+        "F_chain": -2.7863087164500753,
         "A_bar": 7.936327240297509e-26,
         "m_total": 3.1545182074716704,
         "sigma3_avg": 6.391409740878299e-29,
         "shape_avg": 0.48230552176820596
       },
-      "distance": 0.67492286374525
+      "distance": 2.360550608449082
     },
     {
       "compound": "MAPA",
@@ -190,13 +197,14 @@
         0
       ],
       "signature": {
-        "D_bar": -5.85671689392596e-26,
+        "F_mono": -4.758455153968388,
+        "F_chain": -1.7995150077799742,
         "A_bar": 9.628782918873919e-27,
         "m_total": 2.4231479429208593,
         "sigma3_avg": 6.256953058158629e-29,
         "shape_avg": 0.5176151832628753
       },
-      "distance": 0.8944506193242503
+      "distance": 5.879901186974968
     },
     {
       "compound": "3_Aminopropyl_cyclohexyl_amine_S1N",
@@ -217,13 +225,14 @@
         0
       ],
       "signature": {
-        "D_bar": -7.367231368952597e-26,
+        "F_mono": -4.158400895197516,
+        "F_chain": -0.626374789086874,
         "A_bar": 7.1684794933168e-27,
         "m_total": 1.4847068812305682,
         "sigma3_avg": 6.819667812772285e-29,
         "shape_avg": 0.533821125946393
       },
-      "distance": 1.120268085073031
+      "distance": 6.467035939576045
     },
     {
       "compound": "hexylamine",
@@ -244,40 +253,14 @@
         0
       ],
       "signature": {
-        "D_bar": -7.678061143309332e-26,
+        "F_mono": -6.16858543575442,
+        "F_chain": -1.9628406132194591,
         "A_bar": 2.4964465039775602e-27,
         "m_total": 2.515898481230568,
         "sigma3_avg": 7.617415364922549e-29,
         "shape_avg": 0.4871254913739359
       },
-      "distance": 1.310647206886243
-    },
-    {
-      "compound": "dimethyl_cyclohexyl_amine_DMCA",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -4.9373676340390637e-26,
-        "A_bar": 0.0,
-        "m_total": 1.1451024,
-        "sigma3_avg": 6.778042084812131e-29,
-        "shape_avg": 0.5725512
-      },
-      "distance": 1.587143783054675
+      "distance": 8.199644174259618
     },
     {
       "compound": "diethyl_cyclohexyl_amine_DECA",
@@ -298,22 +281,23 @@
         0
       ],
       "signature": {
-        "D_bar": -6.992527545122232e-26,
+        "F_mono": -2.731484547719176,
+        "F_chain": -0.7747018414548802,
         "A_bar": 0.0,
         "m_total": 1.6037428,
         "sigma3_avg": 8.074909560140288e-29,
         "shape_avg": 0.47439356329391474
       },
-      "distance": 1.6506110865790875
+      "distance": 15.033320643230036
     },
     {
-      "compound": "ethyl_cyclohexane",
+      "compound": "dimethyl_cyclohexyl_amine_DMCA",
       "candidate_vector": [
         0,
         0,
         0,
-        1,
-        1,
+        2,
+        0,
         0,
         0,
         0,
@@ -325,121 +309,14 @@
         0
       ],
       "signature": {
-        "D_bar": -6.992527545122232e-26,
+        "F_mono": -1.0987820212397752,
+        "F_chain": -0.18145814454333653,
         "A_bar": 0.0,
-        "m_total": 0.8018714,
-        "sigma3_avg": 8.074909560140288e-29,
-        "shape_avg": 0.47439356329391474
+        "m_total": 1.1451024,
+        "sigma3_avg": 6.778042084812131e-29,
+        "shape_avg": 0.5725512
       },
-      "distance": 1.8347194052673406
-    },
-    {
-      "compound": "ethyl_cyclopentane",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -6.992527545122232e-26,
-        "A_bar": 0.0,
-        "m_total": 0.8018714,
-        "sigma3_avg": 8.074909560140288e-29,
-        "shape_avg": 0.47439356329391474
-      },
-      "distance": 1.8347194052673406
-    },
-    {
-      "compound": "1_ethyl_piperidine_EPD",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -6.992527545122232e-26,
-        "A_bar": 0.0,
-        "m_total": 0.8018714,
-        "sigma3_avg": 8.074909560140288e-29,
-        "shape_avg": 0.47439356329391474
-      },
-      "distance": 1.8347194052673406
-    },
-    {
-      "compound": "1_ethyl_piperazine_EPZ",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -6.992527545122232e-26,
-        "A_bar": 0.0,
-        "m_total": 0.8018714,
-        "sigma3_avg": 8.074909560140288e-29,
-        "shape_avg": 0.47439356329391474
-      },
-      "distance": 1.8347194052673406
-    },
-    {
-      "compound": "ethyl_cyclohexyl_amine_ECA",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "D_bar": -6.992527545122232e-26,
-        "A_bar": 0.0,
-        "m_total": 0.8018714,
-        "sigma3_avg": 8.074909560140288e-29,
-        "shape_avg": 0.47439356329391474
-      },
-      "distance": 1.8347194052673406
+      "distance": 15.24234416780194
     },
     {
       "compound": "propyl_cyclohexane",
@@ -460,13 +337,154 @@
         0
       ],
       "signature": {
-        "D_bar": -8.262749516328245e-26,
+        "F_mono": -2.2032343958586704,
+        "F_chain": -0.040491557472644525,
         "A_bar": 0.0,
         "m_total": 1.0311916,
         "sigma3_avg": 8.825551889463478e-29,
         "shape_avg": 0.41989324280523627
       },
-      "distance": 1.8446139170142002
+      "distance": 15.48128001828227
+    },
+    {
+      "compound": "ethyl_cyclohexane",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -1.365742273859588,
+        "F_chain": 0.0,
+        "A_bar": 0.0,
+        "m_total": 0.8018714,
+        "sigma3_avg": 8.074909560140288e-29,
+        "shape_avg": 0.47439356329391474
+      },
+      "distance": 691.3802261778909
+    },
+    {
+      "compound": "ethyl_cyclopentane",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -1.365742273859588,
+        "F_chain": 0.0,
+        "A_bar": 0.0,
+        "m_total": 0.8018714,
+        "sigma3_avg": 8.074909560140288e-29,
+        "shape_avg": 0.47439356329391474
+      },
+      "distance": 691.3802261778909
+    },
+    {
+      "compound": "1_ethyl_piperidine_EPD",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -1.365742273859588,
+        "F_chain": 0.0,
+        "A_bar": 0.0,
+        "m_total": 0.8018714,
+        "sigma3_avg": 8.074909560140288e-29,
+        "shape_avg": 0.47439356329391474
+      },
+      "distance": 691.3802261778909
+    },
+    {
+      "compound": "1_ethyl_piperazine_EPZ",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -1.365742273859588,
+        "F_chain": 0.0,
+        "A_bar": 0.0,
+        "m_total": 0.8018714,
+        "sigma3_avg": 8.074909560140288e-29,
+        "shape_avg": 0.47439356329391474
+      },
+      "distance": 691.3802261778909
+    },
+    {
+      "compound": "ethyl_cyclohexyl_amine_ECA",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -1.365742273859588,
+        "F_chain": 0.0,
+        "A_bar": 0.0,
+        "m_total": 0.8018714,
+        "sigma3_avg": 8.074909560140288e-29,
+        "shape_avg": 0.47439356329391474
+      },
+      "distance": 691.3802261778909
     },
     {
       "compound": "methyl_cyclohexane",
@@ -487,13 +505,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.9373676340390637e-26,
+        "F_mono": -0.5493910106198876,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.5725512,
         "sigma3_avg": 6.778042084812131e-29,
         "shape_avg": 0.5725512
       },
-      "distance": 1.8675066805714995
+      "distance": 691.3829688790693
     },
     {
       "compound": "methyl_cyclopentane",
@@ -514,13 +533,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.9373676340390637e-26,
+        "F_mono": -0.5493910106198876,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.5725512,
         "sigma3_avg": 6.778042084812131e-29,
         "shape_avg": 0.5725512
       },
-      "distance": 1.8675066805714995
+      "distance": 691.3829688790693
     },
     {
       "compound": "1_methyl_piperidine_MPD",
@@ -541,13 +561,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.9373676340390637e-26,
+        "F_mono": -0.5493910106198876,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.5725512,
         "sigma3_avg": 6.778042084812131e-29,
         "shape_avg": 0.5725512
       },
-      "distance": 1.8675066805714995
+      "distance": 691.3829688790693
     },
     {
       "compound": "1_methyl_piperazine_MPZ",
@@ -568,13 +589,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.9373676340390637e-26,
+        "F_mono": -0.5493910106198876,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.5725512,
         "sigma3_avg": 6.778042084812131e-29,
         "shape_avg": 0.5725512
       },
-      "distance": 1.8675066805714995
+      "distance": 691.3829688790693
     },
     {
       "compound": "methyl_cyclohexyl_amine_MCA",
@@ -595,13 +617,14 @@
         0
       ],
       "signature": {
-        "D_bar": -4.9373676340390637e-26,
+        "F_mono": -0.5493910106198876,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.5725512,
         "sigma3_avg": 6.778042084812131e-29,
         "shape_avg": 0.5725512
       },
-      "distance": 1.8675066805714995
+      "distance": 691.3829688790693
     },
     {
       "compound": "cyclobutane",
@@ -622,13 +645,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "cyclopentane",
@@ -649,13 +673,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "cyclohexane",
@@ -676,13 +701,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "piperazine",
@@ -703,13 +729,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "piperidine",
@@ -730,13 +757,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "pyrrolidine",
@@ -757,13 +785,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "water",
@@ -784,13 +813,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "carbon_dioxide",
@@ -811,13 +841,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     },
     {
       "compound": "nitrogen",
@@ -838,13 +869,14 @@
         0
       ],
       "signature": {
-        "D_bar": 0.0,
+        "F_mono": 0.0,
+        "F_chain": 0.0,
         "A_bar": 0.0,
         "m_total": 0.0,
         "sigma3_avg": 0.0,
         "shape_avg": 0.0
       },
-      "distance": 1167.97380586047
+      "distance": 1386.316480280741
     }
   ]
 }

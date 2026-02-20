@@ -145,9 +145,9 @@ and saved as `similarity_matrix.npy`.
 
 ### What it does
 
-Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using five physics-derived scalars — **monomer free energy** $\bar{F}^{\mathrm{mono}}$ (dimensionless, $A^{\mathrm{mono}}/Nk_BT$), **association strength** $\bar{A}$, **chain length** $m$, **packing proxy** $\bar{\sigma}^3$, and **shape average** $\bar{S}$ — without running a full equation of state.
+Given a **target molecule** (as a group-count vector) and a set of **candidate molecules**, ranks candidates by "nearest thermodynamic behaviour" using six physics-derived scalars — **monomer free energy** $\bar{F}^{\mathrm{mono}}$ (dimensionless, $A^{\mathrm{mono}}/Nk_BT$), **chain free energy** $\bar{F}^{\mathrm{chain}}$ (dimensionless, $A^{\mathrm{chain}}/Nk_BT$), **association strength** $\bar{A}$, **chain length** $m$, **packing proxy** $\bar{\sigma}^3$, and **shape average** $\bar{S}$ — without running a full equation of state.
 
-The monomer term is expressed as a proper **dimensionless free-energy contribution** following the SAFT-γ Mie perturbation expansion truncated at first order: $\bar{F}^{\mathrm{mono}} = a^{HS}(\eta) + m\,a_1/T$.  The $a_1^S$ integral uses the full effective-packing-fraction parameterisation from Lafitte et al.
+The monomer term is expressed as a proper **dimensionless free-energy contribution** following the SAFT-γ Mie perturbation expansion truncated at first order: $\bar{F}^{\mathrm{mono}} = m\,a^{HS} + m\,a_1/T$.  The chain term uses the Wertheim TPT1 expression $\bar{F}^{\mathrm{chain}} = -(m-1)\ln g^{HS}(\bar{\sigma}; \eta)$ with the Boublík HS radial distribution function.  The $a_1^S$ integral uses the full effective-packing-fraction parameterisation from Lafitte et al.
 
 The method strictly follows the SAFT-γ Mie group-contribution framework as described by Papaioannou et al. [1], Dufal et al. [2], and Haslam et al. [3].
 
@@ -172,12 +172,12 @@ The script extracts **proxy quantities** that capture the dominant group-level c
 | Helmholtz term | Physical origin | Proxy quantity | Symbol | Units |
 |----------------|-----------------|----------------|--------|-------|
 | $A^{\mathrm{mono}}$ (HS + perturbation) | Repulsion + van der Waals attraction between Mie segments | $m\,a^{HS} + (m/k_BT)\,a_1$ | $\bar{F}^{\mathrm{mono}}$ | dimensionless ($A/Nk_BT$) |
-| $A^{\mathrm{chain}}$ | Connectivity of fused segments | Total chain length | $m_i$ | dimensionless |
+| $A^{\mathrm{chain}}$ (Wertheim TPT1) | Connectivity of fused segments | $-(m-1)\ln g^{HS}(\bar{\sigma};\eta)$ | $\bar{F}^{\mathrm{chain}}$ | dimensionless ($A/Nk_BT$) |
 | $A^{\mathrm{assoc}}$ | Hydrogen bonding via Wertheim TPT1 | Site-summed association strength | $\Delta_{kl}$ | m³ |
 | HS reference | Excluded volume of segments | Averaged cubic diameter | $\bar{\sigma}^3$ | m³ |
 | Segment architecture | Fraction of each segment in the chain | Shape-weighted average | $\bar{S}$ | dimensionless |
 
-The workflow below describes how each proxy is computed from the database parameters.
+The monomer and chain terms are now expressed as **proper dimensionless free-energy contributions** ($A/Nk_BT$), following the SAFT-γ Mie formalism.  The association term will be converted to free-energy units in a future refinement.
 
 ---
 
@@ -506,57 +506,84 @@ a_1 = \sum_k \sum_l x_{s,k}\;x_{s,l}\;a_{1,kl}
 
 **Physical meaning**: measures the total hydrogen-bonding capacity of the molecule. Molecules with $\bar{A} \gg 0$ (amines, alcohols, water) behave very differently from non-associating molecules ($\bar{A} \approx 0$, alkanes) in terms of excess mixing properties, activity coefficients, and heat of absorption.
 
-##### 3. Chain length  $m$
+##### 3. Chain free energy  $\bar{F}^{\mathrm{chain}}$
+
+The chain contribution follows the Wertheim TPT1 treatment ([1] Eq. 46):
+
+```math
+\bar{F}^{\mathrm{chain}}_i = -(m_i - 1)\;\ln\,g^{HS}_d(\bar{\sigma}_i;\;\eta_{\mathrm{ref}})
+```
+
+where $g^{HS}_d(\bar{\sigma})$ is the hard-sphere RDF at distance $\bar{\sigma}$ evaluated at packing fraction $\eta$ using the Boublík exponential form ([1] Eq. 48):
+
+```math
+g^{HS}_d(\bar{\sigma}) = \exp\!\left(k_0 + k_1\bar{x}_0 + k_2\bar{x}_0^2 + k_3\bar{x}_0^3\right)
+```
+
+with $\bar{x}_0 = \bar{\sigma}/\bar{d}$ and coefficients $k_0\ldots k_3$ from Eqs. 49–52.
+
+The molecular-averaged diameters are obtained from vdW one-fluid mixing rules ([1] Eqs. 40–42):
+
+```math
+\bar{\sigma}^3_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;\sigma_{kl}^3, \qquad
+\bar{d}^3_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;d_{kl}^3
+```
+
+**Physical meaning**: the dimensionless chain free energy ($A^{\mathrm{chain}}/Nk_BT$).  For $m > 1$, bonding segments into a chain **reduces** the free energy ($\bar{F}^{\mathrm{chain}} < 0$) because the connectivity constraint restricts configuration space.  The magnitude increases with chain length and with $g^{HS}$ (denser packing → stronger chain bonding).  This replaces the raw chain-length $m_i$ as the primary chain descriptor, putting it on the same free-energy footing as $\bar{F}^{\mathrm{mono}}$.
+
+The full SAFT-γ Mie theory uses $g^{\mathrm{Mie}} = g^{HS}\exp(\beta\bar{\varepsilon}\,g_1/g^{HS} + \ldots)$ (Eq. 47), but the zeroth-order $g^{HS}$ approximation is consistent with truncating the monomer term at first order.
+
+##### 4. Chain length  $m$
 
 ```math
 m_i = \sum_k n_k\,\nu_k\,S_k
 ```
 
-**Physical meaning**: effective number of spherical segments in the chain. Distinguishes molecules with identical group types but different multiplicities (e.g. ethane vs propane vs butane; cyclopentane vs cyclohexane).
+**Physical meaning**: effective number of spherical segments in the chain. Although $m$ is now also captured through $\bar{F}^{\mathrm{chain}}$, it is retained as a separate signature component to distinguish molecules with identical group types but different multiplicities (e.g. ethane vs propane vs butane).
 
-##### 4. Packing proxy  $\bar{\sigma}^3$
+##### 5. Packing proxy  $\bar{\sigma}^3$
 
 ```math
 \bar{\sigma}^3_i = \sum_k \sum_l x_{s,k}\;x_{s,l}\;\sigma_{kl}^3
 ```
 
-**Physical meaning**: proportional to the effective excluded volume of the molecule's segments. Captures **size differences** between molecules that share similar dispersion energies but differ in segment diameter. In the full SAFT-γ Mie theory, $\sigma_{kl}^3$ appears in the hard-sphere reference term and in the $\varepsilon$ combining rule.
+**Physical meaning**: proportional to the effective excluded volume of the molecule's segments. Captures **size differences** between molecules that share similar dispersion energies but differ in segment diameter.
 
-##### 5. Shape average  $\bar{S}$
+##### 6. Shape average  $\bar{S}$
 
 ```math
 \bar{S}_i = \sum_k x_{s,k}\;S_k
 ```
 
-**Physical meaning**: the fraction of each segment that participates in the fused chain, averaged over the molecule. A single sum (not a double sum) is used because the shape factor is a **per-group** property, not a pair interaction. Groups with $S_k < 1$ contribute less to the chain connectivity than groups with $S_k \approx 1$.
+**Physical meaning**: the fraction of each segment that participates in the fused chain, averaged over the molecule. Groups with $S_k < 1$ contribute less to the chain connectivity than groups with $S_k \approx 1$.
 
 ##### Key properties
 
 - Because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $a_1 = a_{1,kk}$, $\bar{A} = \Delta_{kk}$, and $\bar{\sigma}^3 = \sigma_{kk}^3$ regardless of how many copies of that group are present.
-- The monomer free energy $\bar{F}^{\mathrm{mono}}$ is **dimensionless** ($A/Nk_BT$) and includes both the hard-sphere repulsion and the first-order attractive perturbation.  The packing information ($\sigma^3$, $d^3$) is already encoded in this term through $\rho_s$ and $\zeta^{\mathrm{eff}}_x$.
-- The chain length $m_i$, packing proxy $\bar{\sigma}^3_i$, and shape average $\bar{S}_i$ together distinguish molecules with identical group *types* but different *sizes* or *architectures*.
+- The monomer free energy $\bar{F}^{\mathrm{mono}}$ and chain free energy $\bar{F}^{\mathrm{chain}}$ are both **dimensionless** ($A/Nk_BT$).  Together they capture the cohesive and connectivity contributions to the total Helmholtz free energy.
+- The chain length $m_i$, packing proxy $\bar{\sigma}^3_i$, and shape average $\bar{S}_i$ provide additional resolution for distinguishing molecules with identical group *types* but different *sizes* or *architectures*.
 
 ---
 
 #### Step 9 — Log-Euclidean distance (Module 6)
 
-Compare a candidate signature against the target using a **log-Euclidean metric** in 5-D signature space:
+Compare a candidate signature against the target using a **log-Euclidean metric** in 6-D signature space:
 
 ```math
-d_F = \ln\frac{|\bar{F}^{\mathrm{mono}}_c|}{|\bar{F}^{\mathrm{mono}}_t|}, \qquad d_A = \ln\frac{\bar{A}_c + S_0}{\bar{A}_t + S_0}, \qquad d_m = \ln\frac{m_c}{m_t}
+d_F = \ln\frac{|\bar{F}^{\mathrm{mono}}_c|}{|\bar{F}^{\mathrm{mono}}_t|}, \qquad d_C = \ln\frac{|\bar{F}^{\mathrm{chain}}_c|}{|\bar{F}^{\mathrm{chain}}_t|}, \qquad d_A = \ln\frac{\bar{A}_c + S_0}{\bar{A}_t + S_0}
 ```
 
 ```math
-d_{\sigma} = \ln\frac{\bar{\sigma}^3_c}{\bar{\sigma}^3_t}, \qquad d_S = \ln\frac{\bar{S}_c}{\bar{S}_t}
+d_m = \ln\frac{m_c}{m_t}, \qquad d_{\sigma} = \ln\frac{\bar{\sigma}^3_c}{\bar{\sigma}^3_t}, \qquad d_S = \ln\frac{\bar{S}_c}{\bar{S}_t}
 ```
 
 ```math
-\mathcal{D} = \sqrt{w_{\mathrm{mono}}\,d_F^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
+\mathcal{D} = \sqrt{w_{\mathrm{mono}}\,d_F^2 \;+\; w_{\mathrm{chain}}\,d_C^2 \;+\; w_A\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
 ```
 
 ##### Why logarithmic?
 
-The five signature components span different scales ($F^{\mathrm{mono}} \sim 1\text{–}10$, $A \sim 10^{-25}$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{F}^{\mathrm{mono}}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
+The six signature components span different scales ($F^{\mathrm{mono}} \sim 1\text{–}10$, $F^{\mathrm{chain}} \sim 0.1\text{–}5$, $A \sim 10^{-25}$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{F}^{\mathrm{mono}}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
 
 ##### Association floor $S_0$
 
@@ -573,7 +600,8 @@ Default values:
 | Weight | Symbol | Default | Role |
 |--------|--------|---------|------|
 | Monomer | $w_{\mathrm{mono}}$ | 1.0 | Monomer free energy (HS + first-order perturbation) |
-| Association | $w_A$ | 0.05 | H-bonding — association strength in m³ |
+| Chain | $w_{\mathrm{chain}}$ | 1.0 | Chain free energy (Wertheim TPT1 bonding) |
+| Association | $w_A$ | 3.0 | H-bonding — upweighted as it is the primary differentiator for amine/alkanolamine screening |
 | Chain length | $w_m$ | 0.7 | Molecular size — downweighted to avoid over-penalising small size differences |
 | Packing | $w_{\sigma}$ | 1.0 | Segment excluded volume |
 | Shape | $w_S$ | 0.5 | Shape factor contribution — downweighted as it varies less across the candidate set |
@@ -597,7 +625,8 @@ Sort all candidates by ascending $\mathcal{D}$. The output includes each candida
 | 3 | **Association kernel $I_{kl} \approx g^{HS}$** — Mie RDF reduced to Carnahan–Starling hard-sphere contact value | The HS contribution is the dominant term; $a_1$/$a_2$ corrections to the RDF require the full EOS and are state-dependent |
 | 4 | **Fixed reference state** $(\eta_{\mathrm{ref}} = 0.40,\;T_{\mathrm{ref}} = 298.15\;\mathrm{K})$ | The proxy is evaluated at a single liquid-like state point; any monotonic rescaling by $\eta$ cancels in the log-ratio distance |
 | 5 | **Segment fractions** $x_{s,k}$ used instead of intramolecular pair counts | Consistent with SAFT-γ Mie monomer contribution formalism ([1] Eqs. 7–8, 19) |
-| 6 | **Chain length** $m_i$ included as a distance component | Necessary to distinguish molecules with identical group types but different multiplicities; $m$ enters SAFT via the chain term $A^{\mathrm{chain}}$ |
+| 6 | **Chain free energy uses HS RDF only** — $g^{\mathrm{Mie}} \approx g^{HS}_d$ (Boublík recipe, zeroth order) | Consistent with first-order monomer truncation; the first-order Mie correction $g_1/g^{HS}$ can be added later using the $a_1$ already computed |
+| 7 | **Chain length** $m_i$ retained as a separate signature component alongside $\bar{F}^{\mathrm{chain}}$ | Provides additional resolution: two molecules can have similar $\bar{F}^{\mathrm{chain}}$ but different $m$ if their $g^{HS}$ values compensate |
 | 7 | **Packing proxy** $\bar{\sigma}^3_i$ included as a distance component | Captures segment-size differences; $\sigma^3$ appears in the HS reference and the $\varepsilon$ combining rule |
 | 8 | **Shape average** $\bar{S}_i$ included as a distance component | The shape factor $S_k$ modulates how each group contributes to the chain; averaging over segment fractions gives a molecular-level architecture indicator |
 | 9 | **Dispersion cross parameters**: database values have priority; combining rules used as fallback | Standard practice in SAFT-γ Mie; the nonlinear $\lambda$ and $\sigma^3$-corrected $\varepsilon$ rules are physically motivated |

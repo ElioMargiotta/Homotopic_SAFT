@@ -1,5 +1,5 @@
 """
-SAFT-γ Mie group-contribution similarity metric  –  Haslam et al. formalism
+SAFT-γ Mie group-contribution similarity metric  –  Haslam et al. formalism.
 
 Composition-agnostic ranking of candidate molecules by thermodynamic similarity
 to a TARGET molecule, using **only** SAFT-γ Mie group parameters (self + cross)
@@ -7,8 +7,14 @@ from an XML database.  No full Helmholtz-energy evaluation is performed.
 
 Theoretical basis  (Haslam, Galindo, Jackson et al.)
 -----------------------------------------------------
-1. Dispersion proxy  –  proportional to the first-order monomer perturbation
-   term a₁ of SAFT-γ Mie, evaluated at a reference packing fraction.
+1. Monomer free-energy proxy  –  A^mono/NkBT ≈ m·a^HS + (m/kBT)·a₁
+   where a^HS is the Carnahan–Starling hard-sphere free energy per segment,
+   and a₁ is the first-order perturbation term (Barker–Henderson) with
+   the Sutherland integral evaluated at reference packing fraction via
+   the SAFT-γ Mie effective-packing-fraction parameterisation.  The
+   effective hard-sphere diameter d_{kk} is computed by Gauss–Legendre
+   quadrature of the Barker–Henderson integral.
+   Second-order (a₂) and higher terms are omitted.
 2. Association proxy  –  Wertheim TPT1 association strength Δ_{kl}^{ab},
    including the Mayer-f function F, the bonding volume K, and a
    radial-distribution-function integral I(T, ρ).
@@ -24,6 +30,7 @@ References
 [1] Papaioannou et al., J. Chem. Phys. 140, 054107 (2014).
 [2] Dufal et al., J. Chem. Eng. Data 59, 3272 (2014).
 [3] Haslam et al. (SAFT-γ Mie review / group-contribution framework).
+[4] Lafitte et al., J. Chem. Phys. 139, 154504 (2013).
 """
 
 from __future__ import annotations
@@ -42,13 +49,14 @@ KB        = 1.380649e-23  # Boltzmann constant  [J/K]
 T_REF     = 298.15        # Reference temperature  [K]
 ETA_REF   = 0.40          # Reference packing fraction  (≈ liquid state)
 
-W_MONO    = 1.0             # Weight for dispersion distance component
-W_S    = 0.05            # Weight for association distance component
-W_M    = 0.7             # Weight for chain-length distance component
-W_P    = 1.0             # Weight for packing (sigma^3) distance component
-W_SH   = 0.5             # Weight for shape-factor distance component
+W_MONO  = 1.0            # Weight for monomer free-energy distance component
+W_CHAIN = 1.0            # Weight for chain free-energy distance component
+W_A     = 3.0            # Weight for association distance component
+W_M     = 0.7            # Weight for chain-length distance component
+W_P     = 1.0            # Weight for packing (sigma^3) distance component
+W_SH    = 0.5            # Weight for shape-factor distance component
 
-S0  = 5e-28              # Association floor [m³] to regularise log(0)
+S0  = 5e-29              # Association floor [m³] to regularise log(0)
 
 LAMBDA_A_DEFAULT = 6.0   # Default attractive exponent when not specified
 
@@ -337,7 +345,17 @@ def get_pair_params(k: str, l: str, groups: dict, cross: dict):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODULE 3a — Dispersion proxy  (a₁-like cohesion measure)
+# MODULE 3a — Monomer free-energy proxy  (a^HS + a₁ perturbation)
+#
+# The monomer Helmholtz contribution is (Papaioannou Eq. 9, truncated):
+#
+#   A^mono / NkBT  ≈  m_i · a^HS  +  (m_i / kBT) · a₁
+#
+# where a^HS is the hard-sphere free energy per segment (BMCSL, Eq. 12),
+# and a₁ is the first-order mean-attractive perturbation per segment
+# (Eq. 17–18), with pair contributions a_{1,kl} (Eq. 19).
+#
+# Higher-order terms (a₂, a₃) are omitted — they are corrections to a₁.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def mie_prefactor(lr: float, la: float) -> float:
@@ -354,59 +372,367 @@ def mie_prefactor(lr: float, la: float) -> float:
     return (lr / diff) * (lr / la) ** (la / diff)
 
 
-def _sutherland_a1(lam: float, eta: float) -> float:
+def _effective_hs_diameter(sig: float, eps: float, lr: float, la: float,
+                            T: float) -> float:
     """
-    Effective first-order perturbation integral for a Sutherland potential
-    of exponent λ, evaluated at packing fraction η.
+    Barker–Henderson effective hard-sphere diameter (Ref [1], Eq. 10):
 
-    Uses the parameterisation from the SAFT-γ Mie paper (Ref [1], Appendix):
-        a₁^S(η; λ) ≈ −12η · [ c₁/(λ-3) + c₂(η)/(λ-4) + ... ]
+        d_{kk} = ∫₀^{σ} [1 − exp(−u^Mie(r)/kBT)] dr
 
-    For a *proxy* (not full EOS) we use the leading-order contact-value
-    expression that captures the dominant η and λ dependence:
+    Evaluated by 5-point Gauss–Legendre quadrature on [0, σ], following
+    Paricaud (2006) as recommended in the SAFT-VR Mie framework.
 
-        a₁^S ≈ − 1/(λ−3) · (1 − η/2) / (1 − η)³
-
-    This is the mean-field / van-der-Waals-1-fluid approximation to the
-    Sutherland-λ perturbation integral.
-
-    Ref [1] Eq. (A2) in the low-density / mean-field limit.
+    For cross pairs, d_{kl} = (d_{kk} + d_{ll}) / 2  (arithmetic mean).
     """
-    if lam <= 3.0:
+    if sig == 0.0 or eps == 0.0 or lr <= la:
+        return sig  # fall back to σ when potential is degenerate
+
+    C = mie_prefactor(lr, la)
+
+    # 5-point Gauss–Legendre nodes and weights on [0, 1]
+    nodes = np.array([
+        0.04691007703067,
+        0.23076534494716,
+        0.50000000000000,
+        0.76923465505284,
+        0.95308992296933,
+    ])
+    weights = np.array([
+        0.11846344252810,
+        0.23931433524968,
+        0.28444444444444,
+        0.23931433524968,
+        0.11846344252810,
+    ])
+
+    # Map to [0, σ]:  r = σ · t,  dr = σ · dt
+    # Note: eps is in Kelvin (= ε/kB from the database), so
+    #   u^Mie(r) / kBT  =  C · (ε/kB) · [ (σ/r)^λr − (σ/r)^λa ] / T
+    d = 0.0
+    for t, w in zip(nodes, weights):
+        if t == 0.0:
+            d += w  # integrand → 1 as r → 0  (potential → +∞)
+            continue
+        ratio = 1.0 / t   # σ / r  where r = σ·t
+        beta_u = C * eps * (ratio**lr - ratio**la) / T  # u^Mie / kBT
+        if beta_u > 500.0:
+            integrand = 1.0   # exp(−u/kBT) → 0 for large repulsion
+        elif beta_u < -500.0:
+            integrand = 0.0
+        else:
+            integrand = 1.0 - math.exp(-beta_u)
+        d += w * integrand
+
+    return sig * d
+
+
+def _zeta_eff_coeffs(lam: float) -> tuple[float, float, float, float]:
+    """
+    Effective packing-fraction polynomial coefficients for exponent λ.
+
+    (c1, c2, c3, c4) = M · (1, 1/λ, 1/λ², 1/λ³)^T
+
+    Ref [1] Eq. 27.
+    """
+    lam_vec = np.array([1.0, 1.0/lam, 1.0/lam**2, 1.0/lam**3])
+    c = _ZETA_EFF_MATRIX @ lam_vec
+    return tuple(c)
+
+
+def _zeta_eff(zeta_x: float, lam: float) -> float:
+    """
+    Effective packing fraction ζ_eff(ζ_x; λ) (Ref [1] Eq. 26):
+
+        ζ_eff = c1·ζ_x + c2·ζ_x² + c3·ζ_x³ + c4·ζ_x⁴
+    """
+    c1, c2, c3, c4 = _zeta_eff_coeffs(lam)
+    z = zeta_x
+    return c1*z + c2*z**2 + c3*z**3 + c4*z**4
+
+
+def _sutherland_a1s(eps_kl: float, d_kl: float, lam: float,
+                    rho_s: float, zeta_x: float) -> float:
+    """
+    Sutherland first-order perturbation integral per segment
+    (Ref [1] Eq. 25):
+
+        a₁ˢ(ρ_s; λ) = −2π ρ_s · (ε_{kl} d³_{kl}) / (λ − 3)
+                       · (1 − ζ_eff/2) / (1 − ζ_eff)³
+
+    Note: ε_{kl} here is in Kelvin (database convention); the factor kB
+    is applied at the molecule level when forming A₁/NkBT = m·a₁/kBT.
+
+    The effective packing fraction ζ_eff is obtained from the polynomial
+    parameterisation (Eq. 26–27) evaluated at the vdW one-fluid ζ_x.
+
+    Returns a₁ˢ in units of [K·m³]  (energy-volume per segment).
+    """
+    if lam <= 3.0 or d_kl == 0.0:
         return 0.0
-    return -1.0 / (lam - 3.0) * (1.0 - eta / 2.0) / (1.0 - eta) ** 3
+    ze = _zeta_eff(zeta_x, lam)
+    if ze >= 1.0:
+        ze = 0.9999  # safeguard
+    cs = (1.0 - ze / 2.0) / (1.0 - ze)**3
+    return -2.0 * math.pi * rho_s * eps_kl * d_kl**3 / (lam - 3.0) * cs
 
 
-def dispersion_a1_proxy(eps: float, sig: float, lr: float, la: float,
-                        eta: float = ETA_REF) -> float:
+def _B_kl(eps_kl: float, d_kl: float, lam: float,
+           rho_s: float, zeta_x: float) -> float:
     """
-    SAFT-consistent dispersion proxy for the group pair (k, l).
+    Residual of the first-order perturbation beyond the Sutherland
+    integral (Ref [1] Eq. 20):
 
-    Proportional to the first-order monomer perturbation term:
+        B_{kl}(ρ_s; λ) = 2π ρ_s d³_{kl} ε_{kl}
+                         · [ (1 − ζ_x/2)/(1−ζ_x)³ · I(λ)
+                            − 9ζ_x(1+ζ_x) / (2(1−ζ_x)³) · J(λ) ]
 
-        D_{kl} = C_{kl} · ε_{kl} · σ_{kl}³
-                 · [ a₁^S(η; λ^a) − a₁^S(η; λ^r) ]
+    where I(λ) and J(λ) depend on x₀ = σ/d  (Ref [1] Eqs. 23–24).
+    Since this function is called for a specific pair, we pass x0 via
+    the pair-level wrapper.
 
-    where a₁^S is the Sutherland-λ integral at packing fraction η.
+    For the *proxy* we omit the B term (it is a correction that partly
+    cancels between attractive and repulsive branches). Setting B=0 is
+    equivalent to the mean-field / Sutherland-only approximation and is
+    consistent with the proxy philosophy.
 
-    The overall sign is positive (attractive), because
-    a₁^S(λ^a) < 0 and |a₁^S(λ^a)| > |a₁^S(λ^r)| for λ^a < λ^r.
-
-    We retain the factor σ_{kl}³ so that the proxy carries correct
-    dimensions of [energy · volume].
-
-    Ref [1] Eqs. (19)–(20).
+    Returns 0.0.
     """
-    if sig == 0.0 or lr <= 3.0 or la <= 3.0:
+    return 0.0
+
+
+def _a1_pair(eps_kl: float, sig_kl: float, d_kl: float,
+             lr: float, la: float,
+             rho_s: float, zeta_x: float) -> float:
+    """
+    First-order perturbation pair term a_{1,kl} (Ref [1] Eq. 19):
+
+        a_{1,kl} = C_{kl} · [ x₀^{λᵃ} · (a₁ˢ(λᵃ) + B(λᵃ))
+                              − x₀^{λʳ} · (a₁ˢ(λʳ) + B(λʳ)) ]
+
+    where x₀ = σ_{kl} / d_{kl}.
+
+    Returns a_{1,kl} in units of [K·m³].
+    """
+    if sig_kl == 0.0 or d_kl == 0.0 or lr <= la:
         return 0.0
 
     C = mie_prefactor(lr, la)
-    # a1_S returns negative values; the difference (attractive − repulsive)
-    # gives the net attraction (positive for well-behaved Mie potentials).
-    a1s_att = _sutherland_a1(la, eta)
-    a1s_rep = _sutherland_a1(lr, eta)
+    x0 = sig_kl / d_kl
 
-    return C * eps * sig**3 * (a1s_att - a1s_rep)
+    a1s_a = _sutherland_a1s(eps_kl, d_kl, la, rho_s, zeta_x)
+    a1s_r = _sutherland_a1s(eps_kl, d_kl, lr, rho_s, zeta_x)
+    B_a   = _B_kl(eps_kl, d_kl, la, rho_s, zeta_x)
+    B_r   = _B_kl(eps_kl, d_kl, lr, rho_s, zeta_x)
+
+    return C * (x0**la * (a1s_a + B_a) - x0**lr * (a1s_r + B_r))
+
+
+def _a_hs_pure(eta: float) -> float:
+    """
+    Hard-sphere Helmholtz free energy per segment for a pure fluid
+    (Carnahan–Starling, Ref [1] Eq. 12 reduced to the one-component case):
+
+        a^HS = (4η − 3η²) / (1 − η)²
+
+    This is the standard CS expression A^HS/(N_seg · kBT).
+    For the multi-component BMCSL form used in the full theory, we would
+    need all ζ_m moment densities.  In the proxy we use the one-fluid
+    approximation with packing fraction η = ζ_x (Eq. 22).
+
+    Returns dimensionless a^HS.
+    """
+    if eta >= 1.0:
+        eta = 0.9999
+    if eta <= 0.0:
+        return 0.0
+    return (4.0 * eta - 3.0 * eta**2) / (1.0 - eta)**2
+
+
+def compute_monomer_proxy_pair(eps: float, sig: float, lr: float, la: float,
+                                T: float = T_REF, eta: float = ETA_REF):
+    """
+    Compute the pair-level ingredients for the monomer free-energy proxy.
+
+    Returns
+    -------
+    d_kl      : effective HS diameter [m]
+    a1_kl     : first-order perturbation per segment [K·m³]
+
+    These are stored in pair tables.  The molecule-level monomer proxy
+    is assembled in ``signature()`` as:
+
+        F^mono_i / NkBT  =  m_i · a^HS(η)  +  (m_i / kBT) · a₁
+
+    where a₁ = Σ_k Σ_l x_{s,k} x_{s,l} a_{1,kl}.
+    """
+    # Effective HS diameter (self-pair: Gauss–Legendre; cross: arithmetic)
+    d = _effective_hs_diameter(sig, eps, lr, la, T)
+
+    # Segment number density from packing fraction:
+    #   η = (π/6) ρ_s d³   →   ρ_s = 6η / (π d³)
+    if d == 0.0:
+        return 0.0, 0.0
+    rho_s = 6.0 * eta / (math.pi * d**3)
+    zeta_x = eta  # one-fluid approximation at reference state
+
+    a1 = _a1_pair(eps, sig, d, lr, la, rho_s, zeta_x)
+
+    return d, a1
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODULE 3c — Chain free energy  (Wertheim TPT1)
+#
+# The chain contribution to A/NkBT is (Papaioannou Eq. 46):
+#
+#   A^chain / NkBT  =  -(m_i - 1) · ln g^Mie(σ̄_ii; ζ_x)
+#
+# where g^Mie is the RDF of the hypothetical one-fluid Mie system
+# evaluated at the effective molecular diameter σ̄_ii and packing
+# fraction ζ_x.
+#
+# For the proxy, we approximate g^Mie by its leading (zeroth-order)
+# term g^HS_d (the HS RDF at σ̄ evaluated with HS diameter d̄), using
+# the Boublík recipe (Eq. 48–52).  This is consistent with truncating
+# the monomer term at first order.
+#
+# The molecular-averaged parameters (σ̄, d̄, ε̄, λ̄) are obtained from
+# the segment-fraction-weighted mixing rules (Eqs. 40–45):
+#
+#   σ̄³  = Σ_k Σ_l  z_k z_l σ³_kl       (vdW one-fluid)
+#   d̄³  = Σ_k Σ_l  z_k z_l d³_kl
+#   ε̄   = Σ_k Σ_l  z_k z_l ε_kl σ³_kl / σ̄³
+#   λ̄   = Σ_k Σ_l  z_k z_l λ_kl
+#
+# where z_{k,i} ∝ x_{s,k} σ³_{kk} / Σ_l x_{s,l} σ³_{ll}  (Eq. 41).
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _g_HS_boublik(x0: float, zeta_x: float) -> float:
+    """
+    Hard-sphere radial distribution function at distance σ̄, evaluated
+    for a one-fluid system of HS diameter d̄ at packing fraction ζ_x.
+
+    Uses Boublík's exponential form (Ref [1] Eq. 48):
+
+        g^HS_d(σ̄) = exp( k0 + k1·x̄0 + k2·x̄0² + k3·x̄0³ )
+
+    where x̄0 = σ̄/d̄  (≥ 1, typically ∈ [1.00, 1.05]).
+
+    Coefficients k0..k3 are functions of ζ_x (Eqs. 49–52).
+
+    Parameters
+    ----------
+    x0     : σ̄ / d̄  (must be ≥ 1)
+    zeta_x : vdW one-fluid packing fraction
+
+    Returns
+    -------
+    float : g^HS_d(σ̄; ζ_x)
+    """
+    if zeta_x >= 1.0:
+        zeta_x = 0.9999
+    if zeta_x <= 0.0:
+        return 1.0
+
+    z  = zeta_x
+    z2 = z * z
+    z3 = z2 * z
+    z4 = z3 * z
+    denom3 = (1.0 - z) ** 3
+    denom2 = (1.0 - z) ** 2
+
+    # Eq. 49
+    k0 = -math.log(1.0 - z) + (42.0*z - 39.0*z2 + 9.0*z3 - 2.0*z4) / (6.0 * denom3)
+    # Eq. 50
+    k1 = (z4 + 6.0*z2 - 12.0*z) / (2.0 * denom3)
+    # Eq. 51
+    k2 = -3.0 * z2 / (8.0 * denom2)
+    # Eq. 52
+    k3 = (-z4 + 3.0*z2 + 3.0*z) / (6.0 * denom3)
+
+    exponent = k0 + k1 * x0 + k2 * x0**2 + k3 * x0**3
+
+    # Guard against overflow
+    if exponent > 500.0:
+        return math.exp(500.0)
+    return math.exp(exponent)
+
+
+def chain_free_energy(m_i: float, xs: np.ndarray,
+                      group_names: list[str], groups: dict,
+                      param_table: dict,
+                      eta: float = ETA_REF) -> float:
+    """
+    Chain contribution to the Helmholtz free energy (Ref [1] Eq. 46):
+
+        A^chain / NkBT  =  -(m_i - 1) · ln g^Mie(σ̄; ζ_x)
+
+    where g^Mie ≈ g^HS_d(σ̄; ζ_x) at zeroth order (Boublík, Eq. 48).
+
+    The molecular-averaged parameters σ̄ and d̄ are obtained from the
+    vdW one-fluid mixing rules (Eqs. 40–45).
+
+    Parameters
+    ----------
+    m_i         : total chain length (Σ n_k ν_k S_k)
+    xs          : segment fractions, shape (G,)
+    group_names : list of group names
+    groups      : group data dict
+    param_table : resolved pair parameters (sigma, d_kl, etc.)
+    eta         : reference packing fraction
+
+    Returns
+    -------
+    float : A^chain / NkBT  (dimensionless, typically negative)
+    """
+    if m_i <= 1.0:
+        return 0.0  # single-segment molecule has no chain contribution
+
+    G = len(group_names)
+
+    # ── Molecular-averaged σ̄³ and d̄³ (vdW one-fluid, Eqs. 40, 42) ──
+    # Using segment fractions z_k directly (Eq. 41 simplification):
+    # In the full theory z_k involves σ³_kk weighting, but for the proxy
+    # we use z_k = x_{s,k} as a consistent first-order approximation.
+    # This is exact for homonuclear chains.
+
+    sig3_bar = 0.0
+    d3_bar   = 0.0
+
+    for i in range(G):
+        if xs[i] == 0.0:
+            continue
+        gi = group_names[i]
+        for j in range(G):
+            if xs[j] == 0.0:
+                continue
+            gj = group_names[j]
+            w = xs[i] * xs[j]
+            p = param_table[(gi, gj)]
+            sig3_bar += w * p["sigma"] ** 3
+            d3_bar   += w * p["d_kl"] ** 3
+
+    if sig3_bar <= 0.0 or d3_bar <= 0.0:
+        return 0.0
+
+    # x̄₀ = σ̄ / d̄
+    sig_bar = sig3_bar ** (1.0 / 3.0)
+    d_bar   = d3_bar ** (1.0 / 3.0)
+    x0_bar  = sig_bar / d_bar  if d_bar > 0.0 else 1.0
+
+    # Clamp x0 to valid range [1, √2]
+    if x0_bar < 1.0:
+        x0_bar = 1.0
+    if x0_bar > 1.4142:
+        x0_bar = 1.4142
+
+    # g^HS at σ̄ (Boublík, Eq. 48)
+    g_hs = _g_HS_boublik(x0_bar, eta)
+
+    if g_hs <= 0.0:
+        return 0.0
+
+    return -(m_i - 1.0) * math.log(g_hs)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -631,33 +957,55 @@ def _cr1_association_fallback(k: str, l: str,
 def build_pair_tables(group_names: list[str], groups: dict, cross: dict,
                       T: float = T_REF, eta: float = ETA_REF):
     """
-    Compute pair-level dispersion and association proxies for every
+    Compute pair-level monomer and association proxies for every
     unordered pair (k, l) among *group_names*.
 
     Returns
     -------
-    disp_table  : dict[(str,str), float]   D_{kl} = a₁-proxy
-    delta_table : dict[(str,str), float]   Δ_{kl}(T, η)
-    param_table : dict[(str,str), dict]    {eps, sig, lr, la} resolved params
+    a1_table    : dict[(str,str), float]   a_{1,kl}  [K·m³]
+    delta_table : dict[(str,str), float]   Δ_{kl}(T, η)  [m³]
+    param_table : dict[(str,str), dict]    {eps, sig, d_kl, lr, la} resolved
     """
-    disp_table:  dict[tuple[str, str], float] = {}
+    a1_table:    dict[tuple[str, str], float] = {}
     delta_table: dict[tuple[str, str], float] = {}
     param_table: dict[tuple[str, str], dict]  = {}
+
+    # Pre-compute self d_{kk} for all groups (needed for cross d_{kl})
+    d_self: dict[str, float] = {}
+    for g in group_names:
+        gd = groups[g]
+        d_self[g] = _effective_hs_diameter(
+            gd["sigma"], gd["epsilon"],
+            gd["lambdaRepulsive"], gd["lambdaAttractive"], T)
 
     for k, l in combinations_with_replacement(group_names, 2):
         eps, sig, lr, la = get_pair_params(k, l, groups, cross)
 
-        d_val = dispersion_a1_proxy(eps, sig, lr, la, eta)
-        a_val = delta_pair(k, l, groups, cross, sig, T, eta)
+        # Effective HS diameter: self → Gauss–Legendre, cross → arithmetic
+        if k == l:
+            d_kl = d_self[k]
+        else:
+            d_kl = (d_self[k] + d_self[l]) / 2.0
+
+        # Segment number density from reference packing fraction
+        if d_kl > 0.0:
+            rho_s = 6.0 * eta / (math.pi * d_kl**3)
+        else:
+            rho_s = 0.0
+        zeta_x = eta  # one-fluid approximation
+
+        a1_val = _a1_pair(eps, sig, d_kl, lr, la, rho_s, zeta_x)
+        a_val  = delta_pair(k, l, groups, cross, sig, T, eta)
 
         # Store in both orderings for O(1) lookup
         for key in [(k, l), (l, k)]:
-            disp_table[key]  = d_val
+            a1_table[key]    = a1_val
             delta_table[key] = a_val
             param_table[key] = {"epsilon": eps, "sigma": sig,
+                                "d_kl": d_kl,
                                 "lambdaR": lr, "lambdaA": la}
 
-    return disp_table, delta_table, param_table
+    return a1_table, delta_table, param_table
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -704,43 +1052,52 @@ def segment_fractions(vector, group_names: list[str], groups: dict):
 
 
 def signature(vector, group_names: list[str], groups: dict,
-              disp_table: dict, delta_table: dict,
-              param_table: dict):
+              a1_table: dict, delta_table: dict,
+              param_table: dict,
+              T: float = T_REF, eta: float = ETA_REF):
     """
     Compute the SAFT-consistent thermodynamic signature of a molecule.
 
-    Five components:
+    Six components:
 
-    1. Dispersion  (proportional to a₁ of the whole molecule):
-           D̄ = Σ_k Σ_l  x_{s,k} · x_{s,l} · D_{kl}
+    1. **Monomer free energy** F^mono / (NkBT) — dimensionless:
+           a1 = Σ_k Σ_l  x_{s,k} · x_{s,l} · a₁,kl       [K]
+           F^mono = m_i · a^HS(η) + m_i · a1 / T            [—]
+       Papaioannou Eqs. 9, 11, 17.
 
-    2. Association:
-           Ā = Σ_k Σ_l  x_{s,k} · x_{s,l} · Δ_{kl}
+    2. **Chain free energy** F^chain / (NkBT) — dimensionless:
+           F^chain = -(m_i - 1) · ln g^HS(σ̄; η)            [—]
+       Papaioannou Eq. 46, with g^Mie ≈ g^HS (Boublík, Eq. 48).
 
-    3. Chain length:
-           m = Σ_k n_k · ν_k · S_k
+    3. **Association** (Wertheim TPT1 strength):
+           Ā = Σ_k Σ_l  x_{s,k} · x_{s,l} · Δ_{kl}        [m³]
 
-    4. Packing proxy  (segment-averaged excluded volume):
-           σ̄³ = Σ_k Σ_l  x_{s,k} · x_{s,l} · σ_{kl}³
+    4. **Chain length**:
+           m = Σ_k n_k · ν_k · S_k                          [—]
 
-    5. Shape average  (segment-fraction-weighted shape factor):
-           S̄ = Σ_k  x_{s,k} · S_k
+    5. **Packing proxy** (segment-averaged excluded volume):
+           σ̄³ = Σ_k Σ_l  x_{s,k} · x_{s,l} · σ_{kl}³     [m³]
 
-    Ref [1] Eqs. (7)–(8), (19), (38).
+    6. **Shape average** (segment-fraction-weighted shape factor):
+           S̄ = Σ_k  x_{s,k} · S_k                          [—]
+
+    Ref [1] Eqs. (7)–(8), (9), (17)–(19), (38), (46)–(52).
 
     Returns
     -------
-    dict  {"D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"}
+    dict  {"F_mono", "F_chain", "A_bar", "m_total", "sigma3_avg", "shape_avg"}
     """
     xs, m_i = segment_fractions(vector, group_names, groups)
 
     if m_i == 0.0:
-        return {"D_bar": 0.0, "A_bar": 0.0, "m_total": 0.0,
-                "sigma3_avg": 0.0, "shape_avg": 0.0}
+        return {"F_mono": 0.0, "F_chain": 0.0, "A_bar": 0.0,
+                "m_total": 0.0, "sigma3_avg": 0.0, "shape_avg": 0.0}
 
     G = len(group_names)
-    D_sum = 0.0
-    A_sum = 0.0
+
+    # ── Double sums: a₁, Δ, σ³ ──
+    a1_sum   = 0.0
+    A_sum    = 0.0
     sig3_sum = 0.0
 
     for i in range(G):
@@ -752,9 +1109,18 @@ def signature(vector, group_names: list[str], groups: dict,
                 continue
             gj = group_names[j]
             w = xs[i] * xs[j]
-            D_sum   += w * disp_table[(gi, gj)]
-            A_sum   += w * delta_table[(gi, gj)]
+            a1_sum   += w * a1_table[(gi, gj)]
+            A_sum    += w * delta_table[(gi, gj)]
             sig3_sum += w * param_table[(gi, gj)]["sigma"] ** 3
+
+    # ── Hard-sphere free energy per segment ──
+    a_hs = _a_hs_pure(eta)
+
+    # ── Monomer free energy: A^mono / NkBT  (dimensionless) ──
+    F_mono = m_i * a_hs + m_i * a1_sum / T
+
+    # ── Chain free energy: A^chain / NkBT  (dimensionless) ──
+    F_chain = chain_free_energy(m_i, xs, group_names, groups, param_table, eta)
 
     # Shape average: single sum  S̄ = Σ_k x_{s,k} · S_k
     shape_sum = 0.0
@@ -763,8 +1129,8 @@ def signature(vector, group_names: list[str], groups: dict,
             continue
         shape_sum += xs[i] * groups[group_names[i]]["shapeFactor"]
 
-    return {"D_bar": D_sum, "A_bar": A_sum, "m_total": m_i,
-            "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
+    return {"F_mono": F_mono, "F_chain": F_chain, "A_bar": A_sum,
+            "m_total": m_i, "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -775,31 +1141,36 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
                            weights: dict | None = None,
                            s0: float = S0) -> float:
     """
-    Scale-consistent log-relative distance in 5-D signature space:
+    Scale-consistent log-relative distance in 6-D signature space:
 
-        d_D  = ln( |D̄_c| / |D̄_t| )               dispersion
-        d_A  = ln( (Ā_c + S₀) / (Ā_t + S₀) )       association
-        d_m  = ln( m_c / m_t )                       chain length
-        d_σ  = ln( σ̄³_c / σ̄³_t )                    packing proxy
-        d_sh = ln( S̄_c / S̄_t )                      shape average
+        d_mono  = ln( |F^mono_c| / |F^mono_t| )      monomer free energy
+        d_chain = ln( |F^chain_c| / |F^chain_t| )     chain free energy
+        d_A     = ln( (Ā_c + S₀) / (Ā_t + S₀) )      association
+        d_m     = ln( m_c / m_t )                      chain length
+        d_σ     = ln( σ̄³_c / σ̄³_t )                   packing proxy
+        d_sh    = ln( S̄_c / S̄_t )                     shape average
 
-        D = √( w_D·d_D² + w_A·d_A² + w_m·d_m² + w_σ·d_σ² + w_sh·d_sh² )
-
-    The floor S₀ ≈ 1e-28 m³ prevents singularities when association
-    is absent for one or both molecules.
+        D = √( w_mono·d_mono² + w_chain·d_chain² + w_A·d_A²
+              + w_m·d_m² + w_σ·d_σ² + w_sh·d_sh² )
 
     Parameters
     ----------
-    weights : dict  {"W_MONO", "w_S", "w_M", "w_P", "w_SH"}
+    weights : dict  {"w_MONO", "w_CHAIN", "w_A", "w_M", "w_P", "w_SH"}
         If None, defaults to module-level constants.
     """
     if weights is None:
-        weights = {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
-                   "w_P": W_P, "w_SH": W_SH}
+        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+                   "w_M": W_M, "w_P": W_P, "w_SH": W_SH}
 
-    D_c = max(abs(sig_cand["D_bar"]), 1e-300)
-    D_t = max(abs(sig_targ["D_bar"]), 1e-300)
-    dD  = math.log(D_c / D_t)
+    # Monomer free energy (dimensionless, typically negative)
+    Fm_c = max(abs(sig_cand["F_mono"]), 1e-300)
+    Fm_t = max(abs(sig_targ["F_mono"]), 1e-300)
+    dFm  = math.log(Fm_c / Fm_t)
+
+    # Chain free energy (dimensionless, typically negative)
+    Fc_c = max(abs(sig_cand["F_chain"]), 1e-300)
+    Fc_t = max(abs(sig_targ["F_chain"]), 1e-300)
+    dFc  = math.log(Fc_c / Fc_t)
 
     A_c = sig_cand["A_bar"]
     A_t = sig_targ["A_bar"]
@@ -817,11 +1188,12 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
     sh_t = max(sig_targ["shape_avg"], 1e-300)
     dsh  = math.log(sh_c / sh_t)
 
-    return math.sqrt(weights["W_MONO"]  * dD**2
-                   + weights["w_S"]  * dA**2
-                   + weights["w_M"]  * dm**2
-                   + weights["w_P"]  * ds3**2
-                   + weights["w_SH"] * dsh**2)
+    return math.sqrt(weights["w_MONO"]  * dFm**2
+                   + weights["w_CHAIN"] * dFc**2
+                   + weights["w_A"]     * dA**2
+                   + weights["w_M"]     * dm**2
+                   + weights["w_P"]     * ds3**2
+                   + weights["w_SH"]    * dsh**2)
 
 
 def _inverse_variance_weights(signatures: list[dict]) -> dict:
@@ -836,10 +1208,10 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
     Falls back to 1.0 if variance is zero (all candidates identical
     in that component).
     """
-    keys = ["D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"]
-    weight_names = ["W_MONO", "w_S", "w_M", "w_P", "w_SH"]
-    floors = [1e-300, S0, 1e-300, 1e-300, 1e-300]
-    use_abs = [True, False, False, False, False]
+    keys = ["F_mono", "F_chain", "A_bar", "m_total", "sigma3_avg", "shape_avg"]
+    weight_names = ["w_MONO", "w_CHAIN", "w_A", "w_M", "w_P", "w_SH"]
+    floors = [1e-300, 1e-300, S0, 1e-300, 1e-300, 1e-300]
+    use_abs = [True, True, False, False, False, False]
 
     weights = {}
     for key, wname, floor, do_abs in zip(keys, weight_names, floors, use_abs):
@@ -861,15 +1233,18 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
 
 def rank_candidates(target_vector, candidate_vectors,
                     group_names: list[str], groups: dict,
-                    disp_table: dict, delta_table: dict,
+                    a1_table: dict, delta_table: dict,
                     param_table: dict,
+                    T: float = T_REF, eta: float = ETA_REF,
                     auto_weights: bool = False):
     """
     Rank *candidate_vectors* by proximity to *target_vector*.
 
     Parameters
     ----------
-    param_table   : resolved pair parameters (for sigma3_avg)
+    a1_table      : pair-level first-order perturbation a_{1,kl} [K·m³]
+    delta_table   : pair-level association strength Δ_{kl} [m³]
+    param_table   : resolved pair parameters (for sigma3_avg, d_kl)
     auto_weights  : if True, use inverse-variance weights computed across
                     the candidate set; otherwise use module-level W_* constants.
 
@@ -880,20 +1255,20 @@ def rank_candidates(target_vector, candidate_vectors,
     weights   : dict        the weights used for the distance
     """
     sig_targ = signature(target_vector, group_names, groups,
-                         disp_table, delta_table, param_table)
+                         a1_table, delta_table, param_table, T, eta)
 
     # Pre-compute all candidate signatures
     cand_sigs = []
     for cv in candidate_vectors:
         cand_sigs.append(signature(cv, group_names, groups,
-                                   disp_table, delta_table, param_table))
+                                   a1_table, delta_table, param_table, T, eta))
 
     # Determine weights
     if auto_weights:
         weights = _inverse_variance_weights(cand_sigs)
     else:
-        weights = {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
-                   "w_P": W_P, "w_SH": W_SH}
+        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+                   "w_M": W_M, "w_P": W_P, "w_SH": W_SH}
 
     results = []
     for idx, sig_c in enumerate(cand_sigs):
@@ -991,22 +1366,22 @@ def main():
     print(f"Using {len(group_names)} groups.\n")
 
     # ── Build pair tables ──
-    disp_table, delta_table, param_table = build_pair_tables(
+    a1_table, delta_table, param_table = build_pair_tables(
         group_names, groups, cross, T=T_REF, eta=ETA_REF)
 
-    # ── Print resolved cross-parameter table (ε, σ, λr, λa) ──
-    print("\n" + "═"*76)
-    print("  Resolved pair parameters (ε_kl, σ_kl, λr_kl, λa_kl)")
-    print("═"*76)
-    print(f"{'Pair':<30s} {'ε (K)':>12s} {'σ (m)':>14s} {'λ_r':>10s} {'λ_a':>10s}")
-    print("─"*76)
+    # ── Print resolved cross-parameter table (ε, σ, d, λr, λa) ──
+    print("\n" + "═"*88)
+    print("  Resolved pair parameters (ε_kl, σ_kl, d_kl, λr_kl, λa_kl)")
+    print("═"*88)
+    print(f"{'Pair':<30s} {'ε (K)':>12s} {'σ (m)':>14s} {'d (m)':>14s} {'λ_r':>10s} {'λ_a':>10s}")
+    print("─"*88)
     for k, l in combinations_with_replacement(group_names, 2):
         p = param_table[(k, l)]
         print(f"{k+' | '+l:<30s} {p['epsilon']:12.4f} {p['sigma']:14.6e} "
-              f"{p['lambdaR']:10.4f} {p['lambdaA']:10.4f}")
+              f"{p['d_kl']:14.6e} {p['lambdaR']:10.4f} {p['lambdaA']:10.4f}")
 
-    # ── Print dispersion & association pair tables ──
-    _print_matrix(disp_table, group_names, "D_{kl}  (a1-proxy dispersion, J·m³)")
+    # ── Print a1 & association pair tables ──
+    _print_matrix(a1_table, group_names, "a_{1,kl}  (first-order perturbation per segment, K)")
     _print_matrix(delta_table, group_names, "Δ_{kl}  (association strength, m³)")
 
     # ── Load compounds ──
@@ -1032,39 +1407,41 @@ def main():
 
     ranking, sig_target, used_weights = rank_candidates(
         target_vec, cand_vecs, group_names, groups,
-        disp_table, delta_table, param_table, auto_weights=False)
+        a1_table, delta_table, param_table,
+        T=T_REF, eta=ETA_REF, auto_weights=False)
 
     print(f"\nTarget signature:")
-    print(f"  D_bar      = {sig_target['D_bar']:.6e}   (dispersion, J.m3)")
+    print(f"  F_mono     = {sig_target['F_mono']:.6f}   (monomer A^mono/NkBT, dimensionless)")
+    print(f"  F_chain    = {sig_target['F_chain']:.6f}   (chain   A^chain/NkBT, dimensionless)")
     print(f"  A_bar      = {sig_target['A_bar']:.6e}   (association, m3)")
     print(f"  m          = {sig_target['m_total']:.4f}           (chain length)")
     print(f"  sigma3_avg = {sig_target['sigma3_avg']:.6e}   (packing, m3)")
     print(f"  shape_avg  = {sig_target['shape_avg']:.6f}         (shape factor)")
-    print(f"\nWeights (inverse-variance):")
+    print(f"\nWeights:")
     for wk, wv in used_weights.items():
-        print(f"  {wk:>5s} = {wv:.6f}")
+        print(f"  {wk:>6s} = {wv:.6f}")
 
-    print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'D_bar':>13s}  {'A_bar':>13s}  "
+    print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'F_mono':>10s}  {'F_chain':>10s}  {'A_bar':>13s}  "
           f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'Distance':>10s}")
-    print("\u2500" * 120)
+    print("\u2500" * 130)
     for rank, entry in enumerate(ranking, 1):
         cname = cand_names[entry["candidate_index"]]
         sig   = entry["signature"]
         dist  = entry["distance"]
-        print(f"{rank:4d}  {cname:<35s}  {sig['D_bar']:13.6e}  "
+        print(f"{rank:4d}  {cname:<35s}  {sig['F_mono']:10.4f}  {sig['F_chain']:10.4f}  "
               f"{sig['A_bar']:13.6e}  {sig['m_total']:7.4f}  "
               f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {dist:10.6f}")
 
     # ── Export pair tables ──
-    D_json = {f"{k[0]}|{k[1]}": v for k, v in disp_table.items()}
-    A_json = {f"{k[0]}|{k[1]}": v for k, v in delta_table.items()}
+    a1_json = {f"{k[0]}|{k[1]}": v for k, v in a1_table.items()}
+    A_json  = {f"{k[0]}|{k[1]}": v for k, v in delta_table.items()}
 
-    # σ³_kl pair table  (needed for sigma3_avg in the signature)
+    # σ³_kl pair table
     sig3_json = {}
     for (k, l), pdict in param_table.items():
         sig3_json[f"{k}|{l}"] = pdict["sigma"] ** 3
 
-    # Per-group metadata (needed for segment fractions & shape average)
+    # Per-group metadata
     group_meta = {}
     for gname in group_names:
         gd = groups[gname]
@@ -1078,15 +1455,15 @@ def main():
     out_path = os.path.normpath(out_path)
     with open(out_path, "w") as f:
         json.dump({
-            "D_kl_dispersion": D_json,
+            "a1_kl_perturbation": a1_json,
             "Delta_kl_association": A_json,
             "sigma3_kl": sig3_json,
             "groups": group_names,
             "group_metadata": group_meta,
             "T_ref_K": T_REF,
             "eta_ref": ETA_REF,
-            "weights": {"W_MONO": W_MONO, "w_S": W_S, "w_M": W_M,
-                        "w_P": W_P, "w_SH": W_SH},
+            "weights": {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+                        "w_M": W_M, "w_P": W_P, "w_SH": W_SH},
             "S0": S0,
         }, f, indent=2)
     print(f"\nPair tables saved to {out_path}")
