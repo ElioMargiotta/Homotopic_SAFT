@@ -1,21 +1,6 @@
 <?xml version="1.0" ?>
 <gsaft theory="gc_mie">
  <compounds>
-    <compound name="absorbent_1">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH2OH_Short">1</groupMultiplicity>
-          <groupMultiplicity ref = "NH2_2nd">1</groupMultiplicity>
-	       <groupMultiplicity ref = "CH2">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="absorbent_2">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH3">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2">2</groupMultiplicity>
-          <groupMultiplicity ref = "N_2nd">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2OH_Short">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
     <compound name="MEA">
        <groupMultiplicities>
           <groupMultiplicity ref = "CH2OH_Short">1</groupMultiplicity>
@@ -68,13 +53,6 @@
            <groupMultiplicity ref="CH3">1</groupMultiplicity>
 	   <groupMultiplicity ref="CH2">5</groupMultiplicity>
        </groupMultiplicities>
-    </compound>
-    <compound name="cyclobutane">
-        <groupMultiplicities>
-            <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-        </groupMultiplicities>
-	<enthalpyOfFusion>1.09e3</enthalpyOfFusion>
-        <meltingTemperature>182.42</meltingTemperature>
     </compound>
     <compound name="cyclopentane">
        <groupMultiplicities>

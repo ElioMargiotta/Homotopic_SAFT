@@ -39,6 +39,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import math
 import json
+import csv
 from itertools import combinations_with_replacement
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -51,12 +52,12 @@ ETA_REF   = 0.40          # Reference packing fraction  (≈ liquid state)
 
 W_MONO  = 1.0            # Weight for monomer free-energy distance component
 W_CHAIN = 1.0            # Weight for chain free-energy distance component
-W_A     = 3.0            # Weight for association distance component
+W_ASSOC = 1.0            # Weight for association free-energy distance component
 W_M     = 0.7            # Weight for chain-length distance component
 W_P     = 1.0            # Weight for packing (sigma^3) distance component
 W_SH    = 0.5            # Weight for shape-factor distance component
 
-S0  = 5e-29              # Association floor [m³] to regularise log(0)
+S0  = 1             # Association floor [m³] to regularise log(0)
 
 LAMBDA_A_DEFAULT = 6.0   # Default attractive exponent when not specified
 
@@ -739,40 +740,39 @@ def chain_free_energy(m_i: float, xs: np.ndarray,
 # MODULE 3b — Association proxy  (Wertheim TPT1)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _g_hs_contact(eta: float) -> float:
-    """
-    Hard-sphere radial distribution function at contact (Carnahan-Starling):
-
-        g^{HS}(σ; η) = (1 − η/2) / (1 − η)³
-
-    Ref [1] Eq. (A7) / standard CS expression.
-    """
-    if eta >= 1.0:
-        return 1e30  # Safeguard
-    return (1.0 - eta / 2.0) / (1.0 - eta) ** 3
-
-
-def _I_assoc(sig_kl: float, eta: float) -> float:
+def _I_assoc(sig_kl: float, d_kl: float, eta: float) -> float:
     """
     Association kernel I_{kl}(T, ρ) in the SAFT-γ Mie framework.
 
-    In the full theory (Ref [1], Eq. 37 and Appendix):
-        Δ_{kl,ab} = F_{kl,ab} · K_{kl,ab} · I_{kl}
+    In the full theory (Ref [1], Eq. 67 and Appendix), the association
+    integral involves g^{Mie} over a range of distances.  For the proxy
+    we use the leading (zeroth-order) term:
 
-    where I_{kl} ∝ g^{Mie}(σ_{kl}) captures the probability of two
-    segments being at bonding distance.  The Mie g is approximated via
-    a high-temperature perturbation expansion around the hard-sphere
-    reference.  For our *proxy* (no full EOS), we use the leading term:
+        I_{kl} ≈ g^{HS}_d(σ_{kl}; η)
 
-        I_{kl} ≈ g^{HS}(σ_{kl}; η)
+    evaluated with the **Boublík exponential form** (Eq. 48):
 
-    This is the dominant contribution; higher-order a₁/a₂ corrections
-    are state-dependent and require the full Helmholtz machinery.
+        g^{HS}_d(σ) = exp( k0 + k1·x0 + k2·x0² + k3·x0³ )
 
-    The packing fraction η is evaluated at a tuneable liquid-like
-    reference point (ETA_REF ≈ 0.4).
+    where x0 = σ_{kl} / d_{kl}.  This is the same RDF used in the
+    chain term, ensuring consistency across all Helmholtz contributions.
+
+    The old Carnahan-Starling contact expression g^{CS} = (1-η/2)/(1-η)³
+    is only valid at x0 = 1 (exact contact).  For association, the
+    bonding sites are positioned at σ (not d), so x0 > 1 in general
+    and the Boublík form is required.
     """
-    return _g_hs_contact(eta)
+    if d_kl <= 0.0 or sig_kl <= 0.0:
+        return 1.0  # fallback: ideal gas RDF
+
+    x0 = sig_kl / d_kl
+    # Clamp to valid Boublík range [1, √2]
+    if x0 < 1.0:
+        x0 = 1.0
+    if x0 > 1.4142:
+        x0 = 1.4142
+
+    return _g_HS_boublik(x0, eta)
 
 
 def mayer_f(eps_assoc: float, T: float) -> float:
@@ -789,30 +789,31 @@ def mayer_f(eps_assoc: float, T: float) -> float:
 
 
 def delta_site_pair(eps_assoc: float, bond_vol: float,
-                    sig_kl: float, T: float, eta: float) -> float:
+                    sig_kl: float, d_kl: float,
+                    T: float, eta: float) -> float:
     """
     Association strength for a single site-site interaction:
 
-        Δ_{kl,ab} = F_{kl,ab} · K_{kl,ab} · I_{kl}(T, ρ)
+        Δ_{kl,ab} = F_{kl,ab} · K_{kl,ab} · g^{HS}_d(σ_{kl}; η)
 
     where
         F = exp(ε^{assoc}/T) − 1          (Mayer-f function)
         K = bondingVolume                   (bonding volume, m³)
-        I ≈ g^{HS}(σ_{kl}; η)             (RDF at contact)
+        g^{HS}_d = Boublík RDF at σ_{kl}  (Eq. 48, with x0 = σ/d)
 
-    Ref [1] Eqs. (36)–(37).
+    Ref [1] Eqs. (36)–(37), (48)–(52).
     """
     if bond_vol == 0.0 or eps_assoc == 0.0:
         return 0.0
     F = mayer_f(eps_assoc, T)
     K = bond_vol
-    I = _I_assoc(sig_kl, eta)
+    I = _I_assoc(sig_kl, d_kl, eta)
     return F * K * I
 
 
 def delta_pair(k: str, l: str, groups: dict, cross: dict,
-               sig_kl: float, T: float = T_REF,
-               eta: float = ETA_REF) -> float:
+               sig_kl: float, d_kl: float,
+               T: float = T_REF, eta: float = ETA_REF) -> float:
     """
     Total association strength between groups k and l, summed over
     all site-site interactions weighted by site multiplicities:
@@ -824,7 +825,8 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
     Parameters
     ----------
     k, l      : group names
-    sig_kl    : cross σ (needed for I_{kl})
+    sig_kl    : cross σ_{kl} [m]
+    d_kl      : effective HS diameter d_{kl} [m]
     T         : temperature [K]
     eta       : packing fraction
     """
@@ -838,20 +840,13 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
     if k == l:
         assoc_list = groups[k]["self_assoc"]
     else:
-        ci = cross.get((k, l))
+        ci = cross.get((k, l)) or cross.get((l, k))
         if ci is not None:
             assoc_list = ci["association"]
         else:
             assoc_list = []
 
     # ── Association combining-rule fallback ────────────────────────────
-    # When no explicit cross entry exists (assoc_list empty) but both
-    # groups carry association sites, estimate Δ_{kl} from the self-
-    # association parameters using SAFT-γ Mie combining rules:
-    #     ε^{assoc}_{kl} = √( ε^{assoc}_{kk} · ε^{assoc}_{ll} )
-    #     K_{kl}         = [ (∛K_{kk} + ∛K_{ll}) / 2 ]³
-    # Site types are matched via canonical aliases (e.g. "e1" ↔ "e").
-    # Ref [1] (Papaioannou et al.).
     if not assoc_list and k != l:
         assoc_list = _cr1_association_fallback(k, l, groups)
 
@@ -865,7 +860,7 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
         m1 = sites_k.get(s1, 0.0)
         m2 = sites_l.get(s2, 0.0)
 
-        total += m1 * m2 * delta_site_pair(ea, bv, sig_kl, T, eta)
+        total += m1 * m2 * delta_site_pair(ea, bv, sig_kl, d_kl, T, eta)
 
     return total
 
@@ -899,55 +894,237 @@ def _cr1_association_fallback(k: str, l: str,
     def _canon_key(s1: str, s2: str) -> tuple[str, str]:
         return (_canonical_site(s1), _canonical_site(s2))
 
+    idx_k: dict[tuple[str, str], dict] = {}
+    for inter in self_k:
+        key = _canon_key(inter["site1"], inter["site2"])
+        idx_k[key] = inter
+        idx_k[(key[1], key[0])] = inter   # both orderings
+
     result: list[dict] = []
     used: set[tuple[str, str]] = set()   # avoid duplicate site combos
+    for il in self_l:
+        key_l = _canon_key(il["site1"], il["site2"])
+        for try_key in [key_l, (key_l[1], key_l[0])]:
+            if try_key in idx_k:
+                ik = idx_k[try_key]
+                # Map canonical back to actual site names on groups k and l
+                actual_k_s1 = ik["site1"]   # site on k matching try_key[0]
+                actual_l_s2 = il["site2"]   # site on l matching try_key[1]
+                combo = (actual_k_s1, actual_l_s2)
+                if combo in used:
+                    continue
+                used.add(combo)
 
-    for ik in self_k:
-        ck = _canon_key(ik["site1"], ik["site2"])
-        for il in self_l:
-            cl = _canon_key(il["site1"], il["site2"])
+                e_k = ik["epsilonAssoc"]
+                e_l = il["epsilonAssoc"]
+                bv_k = ik["bondingVolume"]
+                bv_l = il["bondingVolume"]
+                eps_cross = math.sqrt(e_k * e_l) if e_k * e_l >= 0 else 0.0
+                bv_cross = ((bv_k**(1.0/3.0) + bv_l**(1.0/3.0)) / 2.0)**3
 
-            # Match: same canonical pair in same or swapped order
-            # (a,b)_k  matches (a,b)_l  →  site1_k(a) donates to site2_l(b)
-            # (a,b)_k  matches (b,a)_l  →  site1_k(a) donates to site1_l(b)
-            if ck == cl:
-                # site1 on k ↔ site1 on l  (a-type),  site2 on k ↔ site2 on l
-                # Cross interaction:  site1_k → site2_l
-                s1_out = ik["site1"]    # actual name on group k
-                s2_out = il["site2"]    # actual name on group l
-                tag = (s1_out, s2_out)
-                if tag not in used:
-                    used.add(tag)
-                    result.append({
-                        "site1":        s1_out,
-                        "site2":        s2_out,
-                        "epsilonAssoc": combining_eps_assoc(
-                                            ik["epsilonAssoc"],
-                                            il["epsilonAssoc"]),
-                        "bondingVolume": combining_bond_vol(
-                                            ik["bondingVolume"],
-                                            il["bondingVolume"]),
-                    })
-            elif ck == (cl[1], cl[0]):
-                # Swapped canonical match:  (a,b)_k matches (b,a)_l
-                # site1_k(a) ↔ site2_l(a),  site2_k(b) ↔ site1_l(b)
-                s1_out = ik["site1"]    # actual name on group k
-                s2_out = il["site1"]    # actual name on group l  (swapped)
-                tag = (s1_out, s2_out)
-                if tag not in used:
-                    used.add(tag)
-                    result.append({
-                        "site1":        s1_out,
-                        "site2":        s2_out,
-                        "epsilonAssoc": combining_eps_assoc(
-                                            ik["epsilonAssoc"],
-                                            il["epsilonAssoc"]),
-                        "bondingVolume": combining_bond_vol(
-                                            ik["bondingVolume"],
-                                            il["bondingVolume"]),
-                    })
+                result.append({
+                    "site1":         actual_k_s1,
+                    "site2":         actual_l_s2,
+                    "epsilonAssoc":  eps_cross,
+                    "bondingVolume": bv_cross,
+                })
+                break
 
     return result
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODULE 3d — Association free energy  (Wertheim TPT1, Eq. 64–65)
+#
+# The association Helmholtz free energy per molecule is:
+#
+#   A^assoc / NkBT = Σ_k ν_{k,i} Σ_a n_{k,a} [ ln X_{k,a} − X_{k,a}/2 + 1/2 ]
+#
+# where X_{k,a} is the fraction of molecules *not* bonded at site a on
+# group k, obtained from the mass-action equation:
+#
+#   X_{k,a} = 1 / (1 + ρ_s Σ_l Σ_b  n'_{l,b} X_{l,b} Δ_{kl,ab})
+#
+# Here n'_{l,b} = ν_{l,i} · n_{l,b} is the total count of site b on
+# group l across the whole molecule, and ρ_s is the segment number
+# density at the reference state.
+#
+# For a **pure component** the outer sum over components j collapses,
+# and the iteration involves only site–site pairs within or between
+# the groups of one molecule.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _get_site_site_delta(k: str, site_a: str,
+                         l: str, site_b: str,
+                         groups: dict, cross: dict,
+                         sig_kl: float, d_kl: float,
+                         T: float, eta: float) -> float:
+    """
+    Return Δ_{kl,ab} for a specific (group_k, site_a)–(group_l, site_b) pair.
+
+    Looks up the association interaction from self_assoc (if k==l) or
+    cross-interaction data, falling back to combining rules.
+    Uses the Boublík g^HS(x0; η) with x0 = σ_{kl}/d_{kl}.
+    """
+    # Get interaction list for this group pair
+    if k == l:
+        assoc_list = groups[k]["self_assoc"]
+    else:
+        ci = cross.get((k, l)) or cross.get((l, k))
+        if ci is not None:
+            assoc_list = ci["association"]
+        else:
+            assoc_list = _cr1_association_fallback(k, l, groups)
+
+    # Find the specific site-site interaction
+    ca = _canonical_site(site_a)
+    cb = _canonical_site(site_b)
+
+    for inter in assoc_list:
+        cs1 = _canonical_site(inter["site1"])
+        cs2 = _canonical_site(inter["site2"])
+        if (cs1 == ca and cs2 == cb) or (cs1 == cb and cs2 == ca):
+            ea = inter["epsilonAssoc"]
+            bv = inter["bondingVolume"]
+            if ea == 0.0 or bv == 0.0:
+                continue
+            return delta_site_pair(ea, bv, sig_kl, d_kl, T, eta)
+
+    return 0.0
+
+
+def assoc_free_energy(vector, group_names: list[str], groups: dict,
+                      cross: dict, param_table: dict,
+                      T: float = T_REF, eta: float = ETA_REF,
+                      max_iter: int = 200, tol: float = 1e-10) -> float:
+    """
+    Association contribution to A/NkBT for a pure molecule (Eq. 64–65).
+
+    1. Enumerates all (group, site_type) pairs present in the molecule
+       with their total site counts.
+    2. Builds the Δ_{kl,ab} matrix for all active site pairs.
+    3. Solves the mass-action equations iteratively for X_{k,a}.
+    4. Evaluates A^assoc / NkBT.
+
+    Parameters
+    ----------
+    vector      : group-count vector  [n_1, n_2, ..., n_G]
+    group_names : ordered list of group names
+    groups      : group database
+    cross       : cross-interaction database
+    param_table : pair parameters (for sigma_kl)
+    T, eta      : reference state
+    max_iter    : maximum iterations for mass-action solver
+    tol         : convergence tolerance on X
+
+    Returns
+    -------
+    float : A^assoc / NkBT  (dimensionless, ≤ 0 for associating molecules,
+            = 0 for non-associating molecules)
+    """
+    n = np.asarray(vector, dtype=float)
+    G = len(group_names)
+
+    # ── Step 0: compute total chain length m_i for density conversion ──
+    m_i = 0.0
+    for i in range(G):
+        if n[i] == 0:
+            continue
+        gd = groups[group_names[i]]
+        m_i += n[i] * gd["nu"] * gd["shapeFactor"]
+
+    # ── Step 1: enumerate all (group, site) with total counts ──
+    # site_info: list of (group_name, site_name, total_count)
+    # where total_count = n_k · n_{k,a}
+    # (n_k = number of group in molecule, n_{k,a} = site multiplicity)
+    site_info: list[tuple[str, str, float]] = []
+    for i in range(G):
+        if n[i] == 0:
+            continue
+        gname = group_names[i]
+        gd = groups[gname]
+        nk = n[i]          # number of this group in molecule
+        for site_name, n_ka in gd["sites"].items():
+            if n_ka > 0:
+                # Total sites of type a from group k in the molecule:
+                # ν_{k,i} · n_{k,a} in Papaioannou Eq. 65, where
+                # ν_{k,i} = n_k is the group count in molecule i.
+                total = nk * n_ka
+                site_info.append((gname, site_name, total))
+
+    if not site_info:
+        return 0.0  # non-associating molecule
+
+    NS = len(site_info)
+
+    # ── Step 2: estimate molecular number density ρ from reference packing ──
+    # Papaioannou Eq. 65 uses the molecular number density ρ (not ρ_s).
+    # From ρ_s = 6η/(πd³) and ρ = ρ_s / m_i:
+    d3_sum = 0.0
+    d3_count = 0
+    for i in range(G):
+        if n[i] == 0:
+            continue
+        gi = group_names[i]
+        p = param_table.get((gi, gi))
+        if p is not None and p["d_kl"] > 0:
+            d3_sum += p["d_kl"] ** 3
+            d3_count += 1
+    if d3_count > 0 and d3_sum > 0 and m_i > 0.0:
+        d3_avg = d3_sum / d3_count
+        rho_s = 6.0 * eta / (math.pi * d3_avg)
+        rho_mol = rho_s / m_i   # molecular number density [1/m³]
+    else:
+        return 0.0
+
+    # ── Step 3: build Δ matrix for all site pairs ──
+    # delta_mat[i][j] = Δ_{kl,ab} for site_info[i] and site_info[j]
+    delta_mat = np.zeros((NS, NS))
+    for i in range(NS):
+        gi, si, _ = site_info[i]
+        for j in range(NS):
+            gj, sj, _ = site_info[j]
+            sig_kl = param_table.get((gi, gj), {}).get("sigma", 0.0)
+            d_kl   = param_table.get((gi, gj), {}).get("d_kl", sig_kl)
+            delta_mat[i][j] = _get_site_site_delta(
+                gi, si, gj, sj, groups, cross, sig_kl, d_kl, T, eta)
+
+    # Check if any association exists
+    if np.all(delta_mat == 0.0):
+        return 0.0
+
+    # ── Step 4: solve mass-action for X  (Papaioannou Eq. 65) ──
+    # X_{k,a} = 1 / (1 + ρ Σ_{l,b} ν_{l,i} n_{l,b} X_{l,b} Δ_{kl,ab})
+    # where ρ is the molecular number density (not the segment density ρ_s).
+    X = np.ones(NS)  # initial guess: fully unbonded
+    n_counts = np.array([si[2] for si in site_info])  # total site counts
+
+    for iteration in range(max_iter):
+        X_new = np.zeros(NS)
+        for i in range(NS):
+            denom = 1.0
+            for j in range(NS):
+                denom += rho_mol * n_counts[j] * X[j] * delta_mat[i][j]
+            X_new[i] = 1.0 / denom
+
+        # Check convergence
+        if np.max(np.abs(X_new - X)) < tol:
+            X = X_new
+            break
+        X = X_new
+
+    # ── Step 5: evaluate A^assoc / NkBT  (Eq. 64) ──
+    # A^assoc/NkBT = Σ_k ν_{k,i} Σ_a n_{k,a} [ln X_{k,a} − X_{k,a}/2 + 1/2]
+    # In our site_info, each entry already carries the total count
+    # (n_k · n_{k,a}), and since ν_k is already absorbed into the group
+    # parameterisation (via shape factor), we use the total count directly.
+    F_assoc = 0.0
+    for i in range(NS):
+        _, _, count = site_info[i]
+        Xi = max(X[i], 1e-300)  # guard against log(0)
+        F_assoc += count * (math.log(Xi) - Xi / 2.0 + 0.5)
+
+    return F_assoc
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -995,7 +1172,7 @@ def build_pair_tables(group_names: list[str], groups: dict, cross: dict,
         zeta_x = eta  # one-fluid approximation
 
         a1_val = _a1_pair(eps, sig, d_kl, lr, la, rho_s, zeta_x)
-        a_val  = delta_pair(k, l, groups, cross, sig, T, eta)
+        a_val  = delta_pair(k, l, groups, cross, sig, d_kl, T, eta)
 
         # Store in both orderings for O(1) lookup
         for key in [(k, l), (l, k)]:
@@ -1053,12 +1230,13 @@ def segment_fractions(vector, group_names: list[str], groups: dict):
 
 def signature(vector, group_names: list[str], groups: dict,
               a1_table: dict, delta_table: dict,
-              param_table: dict,
+              param_table: dict, cross: dict,
               T: float = T_REF, eta: float = ETA_REF):
     """
     Compute the SAFT-consistent thermodynamic signature of a molecule.
 
-    Six components:
+    Six components — three dimensionless free-energy terms + three
+    auxiliary descriptors:
 
     1. **Monomer free energy** F^mono / (NkBT) — dimensionless:
            a1 = Σ_k Σ_l  x_{s,k} · x_{s,l} · a₁,kl       [K]
@@ -1069,8 +1247,10 @@ def signature(vector, group_names: list[str], groups: dict,
            F^chain = -(m_i - 1) · ln g^HS(σ̄; η)            [—]
        Papaioannou Eq. 46, with g^Mie ≈ g^HS (Boublík, Eq. 48).
 
-    3. **Association** (Wertheim TPT1 strength):
-           Ā = Σ_k Σ_l  x_{s,k} · x_{s,l} · Δ_{kl}        [m³]
+    3. **Association free energy** F^assoc / (NkBT) — dimensionless:
+           F^assoc = Σ_k ν_{k,i} Σ_a n_{k,a} [ ln X_{k,a} - X_{k,a}/2 + 1/2 ]
+       Papaioannou Eq. 64, with X_{k,a} from iterative solution of
+       the mass-action equations (Eq. 65).
 
     4. **Chain length**:
            m = Σ_k n_k · ν_k · S_k                          [—]
@@ -1081,23 +1261,22 @@ def signature(vector, group_names: list[str], groups: dict,
     6. **Shape average** (segment-fraction-weighted shape factor):
            S̄ = Σ_k  x_{s,k} · S_k                          [—]
 
-    Ref [1] Eqs. (7)–(8), (9), (17)–(19), (38), (46)–(52).
+    Ref [1] Eqs. (7)–(8), (9), (17)–(19), (46)–(52), (64)–(65).
 
     Returns
     -------
-    dict  {"F_mono", "F_chain", "A_bar", "m_total", "sigma3_avg", "shape_avg"}
+    dict  {"F_mono", "F_chain", "F_assoc", "m_total", "sigma3_avg", "shape_avg"}
     """
     xs, m_i = segment_fractions(vector, group_names, groups)
 
     if m_i == 0.0:
-        return {"F_mono": 0.0, "F_chain": 0.0, "A_bar": 0.0,
+        return {"F_mono": 0.0, "F_chain": 0.0, "F_assoc": 0.0,
                 "m_total": 0.0, "sigma3_avg": 0.0, "shape_avg": 0.0}
 
     G = len(group_names)
 
-    # ── Double sums: a₁, Δ, σ³ ──
+    # ── Double sums: a₁, σ³ ──
     a1_sum   = 0.0
-    A_sum    = 0.0
     sig3_sum = 0.0
 
     for i in range(G):
@@ -1110,7 +1289,6 @@ def signature(vector, group_names: list[str], groups: dict,
             gj = group_names[j]
             w = xs[i] * xs[j]
             a1_sum   += w * a1_table[(gi, gj)]
-            A_sum    += w * delta_table[(gi, gj)]
             sig3_sum += w * param_table[(gi, gj)]["sigma"] ** 3
 
     # ── Hard-sphere free energy per segment ──
@@ -1122,6 +1300,10 @@ def signature(vector, group_names: list[str], groups: dict,
     # ── Chain free energy: A^chain / NkBT  (dimensionless) ──
     F_chain = chain_free_energy(m_i, xs, group_names, groups, param_table, eta)
 
+    # ── Association free energy: A^assoc / NkBT  (dimensionless, ≤ 0) ──
+    F_assoc = assoc_free_energy(vector, group_names, groups, cross,
+                                param_table, T, eta)
+
     # Shape average: single sum  S̄ = Σ_k x_{s,k} · S_k
     shape_sum = 0.0
     for i in range(G):
@@ -1129,7 +1311,7 @@ def signature(vector, group_names: list[str], groups: dict,
             continue
         shape_sum += xs[i] * groups[group_names[i]]["shapeFactor"]
 
-    return {"F_mono": F_mono, "F_chain": F_chain, "A_bar": A_sum,
+    return {"F_mono": F_mono, "F_chain": F_chain, "F_assoc": F_assoc,
             "m_total": m_i, "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
 
 
@@ -1145,21 +1327,24 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
 
         d_mono  = ln( |F^mono_c| / |F^mono_t| )      monomer free energy
         d_chain = ln( |F^chain_c| / |F^chain_t| )     chain free energy
-        d_A     = ln( (Ā_c + S₀) / (Ā_t + S₀) )      association
+        d_assoc = ln( (|F^assoc_c|+s0) / (|F^assoc_t|+s0) )  association FE
         d_m     = ln( m_c / m_t )                      chain length
         d_σ     = ln( σ̄³_c / σ̄³_t )                   packing proxy
         d_sh    = ln( S̄_c / S̄_t )                     shape average
 
-        D = √( w_mono·d_mono² + w_chain·d_chain² + w_A·d_A²
+        D = √( w_mono·d_mono² + w_chain·d_chain² + w_assoc·d_assoc²
               + w_m·d_m² + w_σ·d_σ² + w_sh·d_sh² )
+
+    The floor s0 prevents singularities when association is zero for
+    one or both molecules.
 
     Parameters
     ----------
-    weights : dict  {"w_MONO", "w_CHAIN", "w_A", "w_M", "w_P", "w_SH"}
+    weights : dict  {"w_MONO", "w_CHAIN", "w_ASSOC", "w_M", "w_P", "w_SH"}
         If None, defaults to module-level constants.
     """
     if weights is None:
-        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_ASSOC": W_ASSOC,
                    "w_M": W_M, "w_P": W_P, "w_SH": W_SH}
 
     # Monomer free energy (dimensionless, typically negative)
@@ -1172,9 +1357,10 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
     Fc_t = max(abs(sig_targ["F_chain"]), 1e-300)
     dFc  = math.log(Fc_c / Fc_t)
 
-    A_c = sig_cand["A_bar"]
-    A_t = sig_targ["A_bar"]
-    dA  = math.log((A_c + s0) / (A_t + s0))
+    # Association free energy (dimensionless, ≤ 0; use floor s0)
+    Fa_c = abs(sig_cand["F_assoc"]) + s0
+    Fa_t = abs(sig_targ["F_assoc"]) + s0
+    dFa  = math.log(Fa_c / Fa_t)
 
     m_c = max(sig_cand["m_total"], 1e-300)
     m_t = max(sig_targ["m_total"], 1e-300)
@@ -1190,7 +1376,7 @@ def log_euclidean_distance(sig_cand: dict, sig_targ: dict,
 
     return math.sqrt(weights["w_MONO"]  * dFm**2
                    + weights["w_CHAIN"] * dFc**2
-                   + weights["w_A"]     * dA**2
+                   + weights["w_ASSOC"] * dFa**2
                    + weights["w_M"]     * dm**2
                    + weights["w_P"]     * ds3**2
                    + weights["w_SH"]    * dsh**2)
@@ -1208,10 +1394,10 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
     Falls back to 1.0 if variance is zero (all candidates identical
     in that component).
     """
-    keys = ["F_mono", "F_chain", "A_bar", "m_total", "sigma3_avg", "shape_avg"]
-    weight_names = ["w_MONO", "w_CHAIN", "w_A", "w_M", "w_P", "w_SH"]
+    keys = ["F_mono", "F_chain", "F_assoc", "m_total", "sigma3_avg", "shape_avg"]
+    weight_names = ["w_MONO", "w_CHAIN", "w_ASSOC", "w_M", "w_P", "w_SH"]
     floors = [1e-300, 1e-300, S0, 1e-300, 1e-300, 1e-300]
-    use_abs = [True, True, False, False, False, False]
+    use_abs = [True, True, True, False, False, False]
 
     weights = {}
     for key, wname, floor, do_abs in zip(keys, weight_names, floors, use_abs):
@@ -1220,7 +1406,7 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
             v = sig[key]
             if do_abs:
                 v = abs(v)
-            vals.append(math.log(max(v, floor) + (floor if key == "A_bar" else 0.0)))
+            vals.append(math.log(max(v, floor) + (floor if key == "F_assoc" else 0.0)))
         if len(vals) < 2:
             weights[wname] = 1.0
             continue
@@ -1234,7 +1420,7 @@ def _inverse_variance_weights(signatures: list[dict]) -> dict:
 def rank_candidates(target_vector, candidate_vectors,
                     group_names: list[str], groups: dict,
                     a1_table: dict, delta_table: dict,
-                    param_table: dict,
+                    param_table: dict, cross: dict,
                     T: float = T_REF, eta: float = ETA_REF,
                     auto_weights: bool = False):
     """
@@ -1242,9 +1428,10 @@ def rank_candidates(target_vector, candidate_vectors,
 
     Parameters
     ----------
-    a1_table      : pair-level first-order perturbation a_{1,kl} [K·m³]
+    a1_table      : pair-level first-order perturbation a_{1,kl} [K]
     delta_table   : pair-level association strength Δ_{kl} [m³]
     param_table   : resolved pair parameters (for sigma3_avg, d_kl)
+    cross         : cross-interaction dict (for association site lookups)
     auto_weights  : if True, use inverse-variance weights computed across
                     the candidate set; otherwise use module-level W_* constants.
 
@@ -1255,19 +1442,19 @@ def rank_candidates(target_vector, candidate_vectors,
     weights   : dict        the weights used for the distance
     """
     sig_targ = signature(target_vector, group_names, groups,
-                         a1_table, delta_table, param_table, T, eta)
+                         a1_table, delta_table, param_table, cross, T, eta)
 
     # Pre-compute all candidate signatures
     cand_sigs = []
     for cv in candidate_vectors:
         cand_sigs.append(signature(cv, group_names, groups,
-                                   a1_table, delta_table, param_table, T, eta))
+                                   a1_table, delta_table, param_table, cross, T, eta))
 
     # Determine weights
     if auto_weights:
         weights = _inverse_variance_weights(cand_sigs)
     else:
-        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+        weights = {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_ASSOC": W_ASSOC,
                    "w_M": W_M, "w_P": W_P, "w_SH": W_SH}
 
     results = []
@@ -1328,8 +1515,10 @@ GROUPS_OF_INTEREST = [
     "CH3", "CH2", "CH", "C",
     "CH2OH", "CH2OH_Short",
     "NH2", "NH", "N",
-    "CHOH",
-    "OH_Short",
+    "OH","OH_Short",
+    "cCH2", "cCH",
+    "cNH", "cN",
+    "cCHNH", "cCHN"
 ]
 
 
@@ -1350,7 +1539,7 @@ def _print_matrix(table: dict, group_names: list[str], title: str):
 def main():
     import os
 
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "CCS_Mie_Databank_221020.xml")
+    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "database.xml")
     xml_path = os.path.normpath(xml_path)
 
     print(f"Loading database from: {xml_path}")
@@ -1407,13 +1596,13 @@ def main():
 
     ranking, sig_target, used_weights = rank_candidates(
         target_vec, cand_vecs, group_names, groups,
-        a1_table, delta_table, param_table,
+        a1_table, delta_table, param_table, cross,
         T=T_REF, eta=ETA_REF, auto_weights=False)
 
     print(f"\nTarget signature:")
     print(f"  F_mono     = {sig_target['F_mono']:.6f}   (monomer A^mono/NkBT, dimensionless)")
     print(f"  F_chain    = {sig_target['F_chain']:.6f}   (chain   A^chain/NkBT, dimensionless)")
-    print(f"  A_bar      = {sig_target['A_bar']:.6e}   (association, m3)")
+    print(f"  F_assoc    = {sig_target['F_assoc']:.6f}   (assoc   A^assoc/NkBT, dimensionless)")
     print(f"  m          = {sig_target['m_total']:.4f}           (chain length)")
     print(f"  sigma3_avg = {sig_target['sigma3_avg']:.6e}   (packing, m3)")
     print(f"  shape_avg  = {sig_target['shape_avg']:.6f}         (shape factor)")
@@ -1421,7 +1610,7 @@ def main():
     for wk, wv in used_weights.items():
         print(f"  {wk:>6s} = {wv:.6f}")
 
-    print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'F_mono':>10s}  {'F_chain':>10s}  {'A_bar':>13s}  "
+    print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'F_mono':>10s}  {'F_chain':>10s}  {'F_assoc':>10s}  "
           f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'Distance':>10s}")
     print("\u2500" * 130)
     for rank, entry in enumerate(ranking, 1):
@@ -1429,7 +1618,7 @@ def main():
         sig   = entry["signature"]
         dist  = entry["distance"]
         print(f"{rank:4d}  {cname:<35s}  {sig['F_mono']:10.4f}  {sig['F_chain']:10.4f}  "
-              f"{sig['A_bar']:13.6e}  {sig['m_total']:7.4f}  "
+              f"{sig['F_assoc']:10.4f}  {sig['m_total']:7.4f}  "
               f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {dist:10.6f}")
 
     # ── Export pair tables ──
@@ -1462,7 +1651,7 @@ def main():
             "group_metadata": group_meta,
             "T_ref_K": T_REF,
             "eta_ref": ETA_REF,
-            "weights": {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_A": W_A,
+            "weights": {"w_MONO": W_MONO, "w_CHAIN": W_CHAIN, "w_ASSOC": W_ASSOC,
                         "w_M": W_M, "w_P": W_P, "w_SH": W_SH},
             "S0": S0,
         }, f, indent=2)
@@ -1489,6 +1678,376 @@ def main():
             "ranking": ranking_out,
         }, f, indent=2)
     print(f"Ranking saved to {rank_path}")
+
+    # ── Export CSV tables (appendix-ready) ──
+    csv_dir = os.path.join(os.path.dirname(__file__), "..", "tables")
+    csv_dir = os.path.normpath(csv_dir)
+    os.makedirs(csv_dir, exist_ok=True)
+    export_csv_tables(group_names, groups, cross, param_table,
+                      a1_table, delta_table, csv_dir, T=T_REF, eta=ETA_REF)
+    print(f"CSV tables saved to {csv_dir}/")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODULE 9 — CSV export (appendix-ready parameter tables)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
+                      param_table: dict, a1_table: dict, delta_table: dict,
+                      out_dir: str, T: float = T_REF, eta: float = ETA_REF):
+    """
+    Export all extracted / computed parameters as CSV files suitable for
+    inclusion in a paper appendix.
+
+    Files produced
+    --------------
+    table_self_parameters.csv
+        Self-interaction (like-pair) group parameters: ν_k, S_k,
+        ε_{kk}/k_B, σ_{kk}, λ^r_{kk}, λ^a_{kk}, plus association
+        site information.
+
+    table_cross_dispersion.csv
+        Unlike-pair dispersion parameters for every (k,l) pair:
+        ε_{kl}/k_B, σ_{kl}, d_{kl}, λ^r_{kl}, λ^a_{kl}, and the
+        source (database / combining rule) for each parameter.
+
+    table_association.csv
+        Association parameters for every site-site interaction that
+        has nonzero strength: groups, site labels, ε^HB_{kl,ab}/k_B,
+        K_{kl,ab}, and source (database / CR-1 fallback).
+
+    table_computed_a1_delta.csv
+        Computed pair-level quantities: a_{1,kl}, Δ_{kl}, with the
+        Mie prefactor C_{kl} and effective HS diameter d_{kl}.
+    """
+    import os
+
+    M_TO_ANGSTROM = 1e10     # m → Å
+    M3_TO_A3      = 1e30     # m³ → ų
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Table 1: Self-interaction parameters
+    # ──────────────────────────────────────────────────────────────────────
+    path = os.path.join(out_dir, "table_self_parameters.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Group", "nu_k", "S_k",
+                     "eps_kk/kB [K]", "sigma_kk [A]",
+                     "lambda_r_kk", "lambda_a_kk",
+                     "assoc_sites"])
+        for gname in group_names:
+            gd = groups[gname]
+            # Format association site summary
+            site_strs = []
+            for sname, mult in gd["sites"].items():
+                if mult > 0:
+                    site_strs.append(f"{sname}x{int(mult)}")
+            sites_summary = "; ".join(site_strs) if site_strs else "—"
+
+            w.writerow([
+                gname,
+                f"{gd['nu']:.4f}",
+                f"{gd['shapeFactor']:.4f}",
+                f"{gd['epsilon']:.4f}",
+                f"{gd['sigma'] * M_TO_ANGSTROM:.4f}",
+                f"{gd['lambdaRepulsive']:.4f}",
+                f"{gd['lambdaAttractive']:.4f}",
+                sites_summary,
+            ])
+    print(f"  → {path}")
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Table 2: Cross-interaction dispersion parameters
+    # ──────────────────────────────────────────────────────────────────────
+    path = os.path.join(out_dir, "table_cross_dispersion.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Group_k", "Group_l",
+                     "eps_kl/kB [K]", "sigma_kl [A]", "d_kl [A]",
+                     "lambda_r_kl", "lambda_a_kl",
+                     "C_kl (Mie prefactor)",
+                     "source_eps", "source_sigma", "source_lambdaR", "source_lambdaA"])
+
+        for k, l in combinations_with_replacement(group_names, 2):
+            p = param_table[(k, l)]
+            eps_kl = p["epsilon"]
+            sig_kl = p["sigma"]
+            d_kl   = p["d_kl"]
+            lr     = p["lambdaR"]
+            la     = p["lambdaA"]
+            C_kl   = mie_prefactor(lr, la) if lr > la else 0.0
+
+            # Determine source for each parameter
+            ci = cross.get((k, l))
+            if k == l:
+                src_e = src_s = src_lr = src_la = "self"
+            else:
+                src_e  = "database" if (ci and ci["epsilon"] != 0.0) else "CR"
+                src_s  = "database" if (ci and ci["sigma"] != 0.0) else "CR"
+                src_lr = "database" if (ci and ci["lambdaRepulsive"] != 0.0) else "CR"
+                src_la = "database" if (ci and ci["lambdaAttractive"] != 0.0) else "CR"
+
+            w.writerow([
+                k, l,
+                f"{eps_kl:.4f}",
+                f"{sig_kl * M_TO_ANGSTROM:.4f}",
+                f"{d_kl * M_TO_ANGSTROM:.4f}",
+                f"{lr:.4f}",
+                f"{la:.4f}",
+                f"{C_kl:.6f}",
+                src_e, src_s, src_lr, src_la,
+            ])
+    print(f"  → {path}")
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Table 3: Association parameters (site-site interactions)
+    # ──────────────────────────────────────────────────────────────────────
+    path = os.path.join(out_dir, "table_association.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Group_k", "Site_a", "Group_l", "Site_b",
+                     "eps_HB_kl_ab/kB [K]", "K_kl_ab [A^3]",
+                     "source"])
+
+        seen: set[tuple] = set()
+        for k, l in combinations_with_replacement(group_names, 2):
+            sites_k = groups[k]["sites"]
+            sites_l = groups[l]["sites"]
+            if not sites_k or not sites_l:
+                continue
+
+            # Get association interaction list for this pair
+            if k == l:
+                assoc_list = groups[k]["self_assoc"]
+                source = "self"
+            else:
+                ci = cross.get((k, l)) or cross.get((l, k))
+                if ci is not None and ci["association"]:
+                    assoc_list = ci["association"]
+                    source = "database"
+                else:
+                    assoc_list = _cr1_association_fallback(k, l, groups)
+                    source = "CR-1" if assoc_list else ""
+
+            for inter in assoc_list:
+                s1 = inter["site1"]
+                s2 = inter["site2"]
+                ea = inter["epsilonAssoc"]
+                bv = inter["bondingVolume"]
+                if ea == 0.0 and bv == 0.0:
+                    continue
+
+                # Avoid duplicate rows
+                row_key = (k, s1, l, s2)
+                if row_key in seen:
+                    continue
+                seen.add(row_key)
+
+                w.writerow([
+                    k, s1, l, s2,
+                    f"{ea:.4f}",
+                    f"{bv * M3_TO_A3:.6f}",
+                    source,
+                ])
+    print(f"  → {path}")
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Table 4: Computed pair quantities (a1_kl, Delta_kl)
+    # ──────────────────────────────────────────────────────────────────────
+    path = os.path.join(out_dir, "table_computed_a1_delta.csv")
+    with open(path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Group_k", "Group_l",
+                     "a1_kl [K.m^3]", "Delta_kl [m^3]",
+                     "eps_kl/kB [K]", "sigma_kl [A]", "d_kl [A]",
+                     "lambda_r_kl", "lambda_a_kl"])
+
+        for k, l in combinations_with_replacement(group_names, 2):
+            a1  = a1_table[(k, l)]
+            dlt = delta_table[(k, l)]
+            p   = param_table[(k, l)]
+
+            w.writerow([
+                k, l,
+                f"{a1:.6e}",
+                f"{dlt:.6e}",
+                f"{p['epsilon']:.4f}",
+                f"{p['sigma'] * M_TO_ANGSTROM:.4f}",
+                f"{p['d_kl'] * M_TO_ANGSTROM:.4f}",
+                f"{p['lambdaR']:.4f}",
+                f"{p['lambdaA']:.4f}",
+            ])
+    print(f"  → {path}")
+
+    # ── Export parameter tables as CSV (appendix-ready) ──
+    _export_parameter_csvs(group_names, groups, cross, param_table,
+                           a1_table, delta_table, T_REF, ETA_REF,
+                           os.path.dirname(__file__))
+
+
+def _export_parameter_csvs(group_names: list[str], groups: dict,
+                           cross: dict, param_table: dict,
+                           a1_table: dict, delta_table: dict,
+                           T: float, eta: float, base_dir: str):
+    """
+    Export all resolved SAFT-γ Mie parameters as publication-ready CSV files.
+
+    Produces three files (mirroring Perdomo et al. 2023 Tables 4–5):
+
+      1. ``group_self_parameters.csv``  — per-group self-interaction parameters
+      2. ``dispersion_parameters.csv``  — unlike-group dispersion interactions
+      3. ``association_parameters.csv`` — site-site association interactions
+    """
+    import os
+
+    out_dir = os.path.normpath(os.path.join(base_dir, ".."))
+
+    # ── CSV 1 — Group self-interaction parameters ──
+    self_path = os.path.join(out_dir, "group_self_parameters.csv")
+    with open(self_path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "group",
+            "nu (segments)", "S_k (shape factor)",
+            "epsilon_kk/kB [K]", "sigma_kk [Ang]", "sigma_kk [m]",
+            "lambda_r", "lambda_a",
+            "d_kk [Ang]", "d_kk [m]",
+            "C_kk (Mie prefactor)",
+            "association_sites",
+        ])
+        for g in group_names:
+            gd = groups[g]
+            sig_A = gd["sigma"] * 1e10
+            p = param_table.get((g, g), {})
+            d_m  = p.get("d_kl", gd["sigma"])
+            d_A  = d_m * 1e10
+            lr = gd["lambdaRepulsive"]
+            la = gd["lambdaAttractive"]
+            C = mie_prefactor(lr, la)
+            site_str = "; ".join(
+                f"{sn}={int(sv)}" for sn, sv in gd["sites"].items() if sv > 0
+            )
+            if not site_str:
+                site_str = "none"
+            w.writerow([
+                g,
+                f"{gd['nu']:.4f}", f"{gd['shapeFactor']:.6f}",
+                f"{gd['epsilon']:.4f}", f"{sig_A:.6f}", f"{gd['sigma']:.6e}",
+                f"{lr:.4f}", f"{la:.4f}",
+                f"{d_A:.6f}", f"{d_m:.6e}",
+                f"{C:.6f}",
+                site_str,
+            ])
+    print(f"Self-interaction parameters  -> {self_path}")
+
+    # ── CSV 2 — Unlike-group dispersion parameters ──
+    disp_path = os.path.join(out_dir, "dispersion_parameters.csv")
+    with open(disp_path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "group_k", "group_l",
+            "epsilon_kl/kB [K]", "sigma_kl [Ang]", "sigma_kl [m]",
+            "lambda_r_kl", "lambda_a_kl",
+            "d_kl [Ang]", "d_kl [m]",
+            "C_kl (Mie prefactor)",
+            "a1_kl [K.m3]",
+            "source_eps", "source_sigma", "source_lambda_r", "source_lambda_a",
+        ])
+
+        for k, l in combinations_with_replacement(group_names, 2):
+            p = param_table[(k, l)]
+            eps = p["epsilon"]
+            sig = p["sigma"]
+            d   = p["d_kl"]
+            lr  = p["lambdaR"]
+            la  = p["lambdaA"]
+            C   = mie_prefactor(lr, la)
+            a1  = a1_table[(k, l)]
+
+            if k == l:
+                src_e = src_s = src_lr = src_la = "self"
+            else:
+                ci = cross.get((k, l)) or cross.get((l, k))
+                src_e  = "database" if (ci and ci["epsilon"] != 0.0) else "CR"
+                src_s  = "database" if (ci and ci["sigma"] != 0.0) else "CR"
+                src_lr = "database" if (ci and ci["lambdaRepulsive"] != 0.0) else "CR"
+                src_la = "database" if (ci and ci["lambdaAttractive"] != 0.0) else "CR"
+
+            w.writerow([
+                k, l,
+                f"{eps:.4f}", f"{sig*1e10:.6f}", f"{sig:.6e}",
+                f"{lr:.4f}", f"{la:.4f}",
+                f"{d*1e10:.6f}", f"{d:.6e}",
+                f"{C:.6f}",
+                f"{a1:.6e}",
+                src_e, src_s, src_lr, src_la,
+            ])
+    print(f"Dispersion parameters       -> {disp_path}")
+
+    # ── CSV 3 — Association parameters (site-site) ──
+    assoc_path = os.path.join(out_dir, "association_parameters.csv")
+    with open(assoc_path, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow([
+            "group_k", "group_l",
+            "site_a (on k)", "site_b (on l)",
+            "epsilon_HB_kl_ab/kB [K]", "K_kl_ab [Ang3]", "K_kl_ab [m3]",
+            "F_kl_ab (Mayer-f at T_ref)",
+            "g_HS (Boublik at eta_ref)",
+            "Delta_kl_ab [m3]",
+            "Delta_kl_total [m3]",
+            "source",
+        ])
+
+        for k, l in combinations_with_replacement(group_names, 2):
+            sites_k = groups[k]["sites"]
+            sites_l = groups[l]["sites"]
+            if not sites_k or not sites_l:
+                continue
+
+            if k == l:
+                assoc_list = groups[k]["self_assoc"]
+                source = "self"
+            else:
+                ci = cross.get((k, l)) or cross.get((l, k))
+                if ci is not None and ci["association"]:
+                    assoc_list = ci["association"]
+                    source = "database"
+                else:
+                    assoc_list = _cr1_association_fallback(k, l, groups)
+                    source = "CR-1" if assoc_list else "none"
+
+            if not assoc_list:
+                continue
+
+            sig_kl = param_table[(k, l)]["sigma"]
+            d_kl   = param_table[(k, l)]["d_kl"]
+            delta_total = delta_table.get((k, l), 0.0)
+
+            for inter in assoc_list:
+                s1 = inter["site1"]
+                s2 = inter["site2"]
+                ea = inter["epsilonAssoc"]
+                bv = inter["bondingVolume"]
+
+                if ea == 0.0 or bv == 0.0:
+                    continue
+
+                F = mayer_f(ea, T)
+                I = _I_assoc(sig_kl, d_kl, eta)
+                delta_ab = delta_site_pair(ea, bv, sig_kl, d_kl, T, eta)
+
+                w.writerow([
+                    k, l,
+                    s1, s2,
+                    f"{ea:.4f}", f"{bv*1e30:.6f}", f"{bv:.6e}",
+                    f"{F:.6f}",
+                    f"{I:.6f}",
+                    f"{delta_ab:.6e}",
+                    f"{delta_total:.6e}",
+                    source,
+                ])
+    print(f"Association parameters       -> {assoc_path}")
 
 
 if __name__ == "__main__":
