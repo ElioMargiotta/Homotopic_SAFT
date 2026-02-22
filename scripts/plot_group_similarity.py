@@ -53,7 +53,7 @@ from saft_similarity import (
     combining_sigma,
     combining_lambda,
     combining_epsilon,
-    T_REF, ETA_REF, S0,
+    T_REF, ETA_REF,
 )
 
 # =============================================================================
@@ -101,6 +101,12 @@ def _family(g: str) -> str:
 # Group-group distance matrix  (cross-interaction based)
 # =============================================================================
 
+# Floor for association log-ratio at group level.  Δ_{kl} values are
+# in m³ (~10⁻²⁶ for associating groups, 0 for non-associating).
+# The floor prevents ln(0) without distorting genuine association values.
+_DELTA_FLOOR = 1e-30   # m³  (negligible vs any real Δ > 10⁻²⁸)
+
+
 def _group_distance(k: str, l: str,
                     disp_table: dict, delta_table: dict,
                     param_table: dict) -> float:
@@ -115,8 +121,9 @@ def _group_distance(k: str, l: str,
               -> 0 when the cross dispersion equals the geo-mean
                  of the self dispersions (Berthelot-like).
 
-        d_Delta = ln [ (Delta_{kl} + S0) / sqrt((Delta_{kk}+S0)(Delta_{ll}+S0)) ]
+        d_Delta = ln [ (Delta_{kl} + s0) / sqrt((Delta_{kk}+s0)(Delta_{ll}+s0)) ]
               -> 0 when cross association = geo-mean of self associations.
+              s0 = _DELTA_FLOOR prevents ln(0) for non-associating groups.
 
         d_sigma = ln ( sigma_{kl}^3 / sqrt(sigma_{kk}^3 * sigma_{ll}^3) )
               -> 0 when the arithmetic sigma combining rule gives the same
@@ -139,9 +146,9 @@ def _group_distance(k: str, l: str,
     dD = math.log(max(Dkl, 1e-300) / max(geo_D, 1e-300))
 
     # -- Association component ------------------------------------------------
-    Akk = delta_table[(k, k)] + S0
-    All_ = delta_table[(l, l)] + S0
-    Akl = delta_table[(k, l)] + S0
+    Akk = delta_table[(k, k)] + _DELTA_FLOOR
+    All_ = delta_table[(l, l)] + _DELTA_FLOOR
+    Akl = delta_table[(k, l)] + _DELTA_FLOOR
     geo_A = math.sqrt(Akk * All_)
     dA = math.log(Akl / geo_A)
 

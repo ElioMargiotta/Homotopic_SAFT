@@ -488,7 +488,10 @@ These sum to unity: $\sum_k x_{s,k} = 1$.
 
 #### Step 8 — Molecule signature (Module 5)
 
-Each molecule is characterised by a **5-scalar thermodynamic signature**:
+Each molecule is characterised by a **6-scalar signature** organised into two groups:
+
+- **Thermodynamic** (3 components): dimensionless free-energy contributions ($A/Nk_BT$) from the monomer, chain, and association terms — these drive the primary ranking.
+- **Structural** (3 components): molecular-architecture descriptors (chain length, segment size, topology) — reported as an independent structural distance.
 
 ##### 1. Monomer free energy  $\bar{F}^{\mathrm{mono}}$
 
@@ -580,59 +583,76 @@ m_i = \sum_k n_k\,\nu_k\,S_k
 ##### Key properties
 
 - Because the double sums use *segment fractions* (which normalise to 1), molecules composed of a single group type always yield $a_1 = a_{1,kk}$ and $\bar{\sigma}^3 = \sigma_{kk}^3$ regardless of how many copies of that group are present.
-- The monomer free energy $\bar{F}^{\mathrm{mono}}$ and chain free energy $\bar{F}^{\mathrm{chain}}$ are both **dimensionless** ($A/Nk_BT$).  Together they capture the cohesive and connectivity contributions to the total Helmholtz free energy.
-- The chain length $m_i$, packing proxy $\bar{\sigma}^3_i$, and shape average $\bar{S}_i$ provide additional resolution for distinguishing molecules with identical group *types* but different *sizes* or *architectures*.
+- The three **thermodynamic** components ($\bar{F}^{\mathrm{mono}}$, $\bar{F}^{\mathrm{chain}}$, $\bar{F}^{\mathrm{assoc}}$) are all **dimensionless** ($A/Nk_BT$) and capture the energetic contributions to the Helmholtz free energy.
+- The three **structural** components ($m$, $\bar{\sigma}^3$, $\bar{S}$) capture complementary aspects of molecular architecture: backbone **length**, segment **size**, and chain **topology**. They provide additional resolution for distinguishing molecules with identical group *types* but different *sizes* or *architectures*.
+- The two groups are evaluated as **independent** distance metrics (Step 9), allowing thermodynamic and structural similarity to be assessed separately.
 
 ---
 
-#### Step 9 — Log-Euclidean distance (Module 6)
+#### Step 9 — Distance metrics (Module 6)
 
-Compare a candidate signature against the target using a **log-Euclidean metric** in 6-D signature space:
+Two **independent** distances are computed for each candidate–target pair: a plain Euclidean distance for the thermodynamic signature and a log-Euclidean distance for the structural signature.
+
+##### 9a. Thermodynamic distance $\mathcal{D}_{\mathrm{thermo}}$ — Euclidean
+
+Measures how differently two molecules interact energetically, using the three SAFT Helmholtz contributions.  Since all three components are **dimensionless** ($A/Nk_BT$) and on comparable scales ($\sim 0\text{–}10$), a plain weighted Euclidean distance is appropriate:
 
 ```math
-d_F = \ln\frac{|\bar{F}^{\mathrm{mono}}_c|}{|\bar{F}^{\mathrm{mono}}_t|}, \qquad d_C = \ln\frac{|\bar{F}^{\mathrm{chain}}_c|}{|\bar{F}^{\mathrm{chain}}_t|}, \qquad d_A = \ln\frac{|\bar{F}^{\mathrm{assoc}}_c| + s_0}{|\bar{F}^{\mathrm{assoc}}_t| + s_0}
+\Delta_F = \bar{F}^{\mathrm{mono}}_c - \bar{F}^{\mathrm{mono}}_t, \qquad \Delta_C = \bar{F}^{\mathrm{chain}}_c - \bar{F}^{\mathrm{chain}}_t, \qquad \Delta_A = \bar{F}^{\mathrm{assoc}}_c - \bar{F}^{\mathrm{assoc}}_t
 ```
+
+```math
+\mathcal{D}_{\mathrm{thermo}} = \sqrt{w_{\mathrm{mono}}\,\Delta_F^2 \;+\; w_{\mathrm{chain}}\,\Delta_C^2 \;+\; w_{\mathrm{assoc}}\,\Delta_A^2}
+```
+
+This is the **primary ranking criterion**: candidates are sorted by ascending $\mathcal{D}_{\mathrm{thermo}}$.
+
+No association floor is needed: when $\bar{F}^{\mathrm{assoc}} = 0$ for non-associating molecules, the difference $\Delta_A$ is simply $-\bar{F}^{\mathrm{assoc}}_t$ (or zero if both are non-associating), which is well-defined without regularisation.
+
+##### 9b. Structural distance $\mathcal{D}_{\mathrm{struct}}$ — log-Euclidean
+
+Measures how differently two molecules are built, independent of their energetics.  Because the structural components span very different scales ($m \sim 1$, $\sigma^3 \sim 10^{-29}\;\mathrm{m^3}$, $S \sim 0.5$), a **logarithmic** metric is used to ensure scale invariance:
 
 ```math
 d_m = \ln\frac{m_c}{m_t}, \qquad d_{\sigma} = \ln\frac{\bar{\sigma}^3_c}{\bar{\sigma}^3_t}, \qquad d_S = \ln\frac{\bar{S}_c}{\bar{S}_t}
 ```
 
 ```math
-\mathcal{D} = \sqrt{w_{\mathrm{mono}}\,d_F^2 \;+\; w_{\mathrm{chain}}\,d_C^2 \;+\; w_{\mathrm{assoc}}\,d_A^2 \;+\; w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
+\mathcal{D}_{\mathrm{struct}} = \sqrt{w_m\,d_m^2 \;+\; w_{\sigma}\,d_{\sigma}^2 \;+\; w_S\,d_S^2}
 ```
 
-##### Why logarithmic?
+The logarithm converts multiplicative ratios into additive differences, so that doubling $m$ contributes the same $|\ln 2|$ regardless of absolute magnitude — essential when components differ by 30 orders of magnitude.
 
-The six signature components span different scales ($F^{\mathrm{mono}} \sim 1\text{–}10$, $F^{\mathrm{chain}} \sim 0.1\text{–}5$, $F^{\mathrm{assoc}} \sim 0\text{–}10$, $m \sim 1$, $\sigma^3 \sim 10^{-29}$, $S \sim 0.5$). A direct Euclidean distance would be dominated by whichever component has the largest absolute value. The logarithm converts multiplicative ratios into additive differences, making the metric **scale-invariant**: doubling $\bar{F}^{\mathrm{mono}}$ contributes the same $|\ln 2|$ regardless of the absolute magnitude.
+The three structural components capture complementary aspects of molecular architecture:
 
-##### Association floor $S_0$
+| Component | What it captures | Example |
+|-----------|-----------------|---------|
+| $d_m$ (chain length) | Backbone **size** — total effective segments | MEA ($m \approx 2$) vs DETA ($m \approx 5$) |
+| $d_{\sigma}$ (packing) | Segment **size** — excluded volume | Cyclic vs linear groups |
+| $d_S$ (shape) | Chain **topology** — how fused the segments are | Compact ($S \ll 1$) vs linear ($S \approx 1$) |
 
-```math
-s_0 = 5 \times 10^{-29}
-```
-
-This prevents $\ln(0)$ singularities when one or both molecules have zero association ($\bar{F}^{\mathrm{assoc}} = 0$).  Since $s_0$ is added to the absolute value of the association free energy before taking the logarithm, it acts as a negligible floor that does not distort the ranking among associating molecules (where $|\bar{F}^{\mathrm{assoc}}| \gg s_0$).  Note: this floor was originally set for the raw $\Delta_{kl}$ in m³; with the new dimensionless $F^{\mathrm{assoc}}$, a value of $\sim 10^{-2}$ would be more appropriate but the tiny value still works correctly because it is only relevant when $F^{\mathrm{assoc}} = 0$ exactly.
+$\mathcal{D}_{\mathrm{struct}}$ is reported alongside $\mathcal{D}_{\mathrm{thermo}}$ but does **not** influence the ranking order. It allows the user to identify cases where a candidate is thermodynamically similar but structurally different (or vice versa).
 
 ##### Weights
 
 Default values:
 
-| Weight | Symbol | Default | Role |
-|--------|--------|---------|------|
-| Monomer | $w_{\mathrm{mono}}$ | 1.0 | Monomer free energy (HS + first-order perturbation) |
-| Chain | $w_{\mathrm{chain}}$ | 1.0 | Chain free energy (Wertheim TPT1 bonding) |
-| Association | $w_{\mathrm{assoc}}$ | 3.0 | Association free energy — upweighted as it is the primary differentiator for amine/alkanolamine screening |
-| Chain length | $w_m$ | 0.7 | Molecular size — downweighted to avoid over-penalising small size differences |
-| Packing | $w_{\sigma}$ | 1.0 | Segment excluded volume |
-| Shape | $w_S$ | 0.5 | Shape factor contribution — downweighted as it varies less across the candidate set |
+| | Weight | Symbol | Default | Role |
+|---|--------|--------|---------|------|
+| **Thermo** | Monomer | $w_{\mathrm{mono}}$ | 1.0 | Monomer free energy (HS + first-order perturbation) |
+| | Chain | $w_{\mathrm{chain}}$ | 1.0 | Chain free energy (Wertheim TPT1 bonding) |
+| | Association | $w_{\mathrm{assoc}}$ | 3.0 | Association free energy — upweighted as it is the primary differentiator for amine/alkanolamine screening |
+| **Struct** | Chain length | $w_m$ | 1.0 | Backbone size |
+| | Packing | $w_{\sigma}$ | 1.0 | Segment excluded volume |
+| | Shape | $w_S$ | 1.0 | Shape factor (fused topology) |
 
-These can be adjusted to emphasise specific physical aspects. An alternative **inverse-variance** weighting mode is also implemented, which automatically normalises each component by its variance across the candidate set so that all features contribute equally on average.
+Thermodynamic and structural weights are independent — adjusting one set does not affect the other. An alternative **inverse-variance** weighting mode is also implemented for each distance, which automatically normalises each component by its variance across the candidate set so that all features contribute equally on average.
 
 ---
 
 #### Step 10 — Rank candidates (Module 6)
 
-Sort all candidates by ascending $\mathcal{D}$. The output includes each candidate's group-count vector, full 5-scalar signature, and distance. The ranking is exported as `ranking_vs_MEA.json`.
+Sort all candidates by ascending $\mathcal{D}_{\mathrm{thermo}}$ (the thermodynamic distance). The output includes each candidate's group-count vector, full 6-scalar signature, and both distances ($\mathcal{D}_{\mathrm{thermo}}$, $\mathcal{D}_{\mathrm{struct}}$). The ranking is exported as `ranking_vs_MEA.json`.
 
 ---
 
@@ -646,9 +666,8 @@ Sort all candidates by ascending $\mathcal{D}$. The output includes each candida
 | 4 | **Fixed reference state** $(\eta_{\mathrm{ref}} = 0.40,\;T_{\mathrm{ref}} = 298.15\;\mathrm{K})$ | The proxy is evaluated at a single liquid-like state point; any monotonic rescaling by $\eta$ cancels in the log-ratio distance |
 | 5 | **Segment fractions** $x_{s,k}$ used instead of intramolecular pair counts | Consistent with SAFT-γ Mie monomer contribution formalism ([1] Eqs. 7–8, 19) |
 | 6 | **Chain free energy uses HS RDF only** — $g^{\mathrm{Mie}} \approx g^{HS}_d$ (Boublík recipe, zeroth order) | Consistent with first-order monomer truncation; the first-order Mie correction $g_1/g^{HS}$ can be added later using the $a_1$ already computed |
-| 7 | **Chain length** $m_i$ retained as a separate signature component alongside $\bar{F}^{\mathrm{chain}}$ | Provides additional resolution: two molecules can have similar $\bar{F}^{\mathrm{chain}}$ but different $m$ if their $g^{HS}$ values compensate |
-| 7 | **Packing proxy** $\bar{\sigma}^3_i$ included as a distance component | Captures segment-size differences; $\sigma^3$ appears in the HS reference and the $\varepsilon$ combining rule |
-| 8 | **Shape average** $\bar{S}_i$ included as a distance component | The shape factor $S_k$ modulates how each group contributes to the chain; averaging over segment fractions gives a molecular-level architecture indicator |
+| 7 | **Structural descriptors** ($m_i$, $\bar{\sigma}^3_i$, $\bar{S}_i$) evaluated as an **independent** structural distance $\mathcal{D}_{\mathrm{struct}}$, separate from the thermodynamic ranking distance $\mathcal{D}_{\mathrm{thermo}}$ | Decouples energetic similarity (which drives solvent performance) from architectural similarity (which affects transport, viscosity, steric fit). A candidate can be thermodynamically close but structurally different, or vice versa — reporting both distances makes this transparent |
+| 8 | **Equal structural weights** ($w_m = w_{\sigma} = w_S = 1.0$) | No a priori reason to favour one structural aspect over another for a general screening; the user can adjust weights for application-specific needs |
 | 9 | **Dispersion cross parameters**: database values have priority; combining rules used as fallback | Standard practice in SAFT-γ Mie; the nonlinear $\lambda$ and $\sigma^3$-corrected $\varepsilon$ rules are physically motivated |
 | 10 | **Association cross parameters**: database values have priority; CR-1 combining rules (geometric mean $\varepsilon^{\mathrm{assoc}}$, cubic-mean-of-cube-roots $K$) used as fallback when both groups carry compatible sites | Prevents zero-association artefacts for variant pairs (e.g. `CH2OH` ↔ `CH2OH_Short`); systematically underestimates for genuinely different groups, which is conservative |
 | 11 | **Site-type canonical aliasing** (`e1` ↔ `e`, `a1` ↔ `a`, etc.) | Required because different groups may label the same physical site type differently; without aliasing, compatible sites would not be matched by the combining rules |

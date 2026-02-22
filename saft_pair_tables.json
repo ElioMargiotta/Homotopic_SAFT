@@ -1334,10 +1334,11 @@
   "weights": {
     "w_MONO": 1.0,
     "w_CHAIN": 1.0,
-    "w_ASSOC": 1.0,
-    "w_M": 0.7,
-    "w_P": 1.0,
-    "w_SH": 0.5
+    "w_ASSOC": 1.0
   },
-  "S0": 1
+  "weights_structure": {
+    "w_M": 1.0,
+    "w_P": 1.0,
+    "w_SH": 1.0
+  }
 }

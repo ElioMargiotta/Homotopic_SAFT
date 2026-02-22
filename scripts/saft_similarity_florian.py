@@ -1563,10 +1563,7 @@ GROUPS_OF_INTEREST = [
     "CH3", "CH2", "CH", "C",
     "CH2OH", "CH2OH_Short",
     "NH2", "NH", "N",
-    "OH","OH_Short",
-    "cCH2", "cCH",
-    "cNH", "cN",
-    "cCHNH", "cCHN"
+    "CHOH","OH_Short",
 ]
 
 
@@ -1587,7 +1584,7 @@ def _print_matrix(table: dict, group_names: list[str], title: str):
 def main():
     import os
 
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "database.xml")
+    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "CCS_Mie_Databank_221020.xml")
     xml_path = os.path.normpath(xml_path)
 
     print(f"Loading database from: {xml_path}")
@@ -1629,7 +1626,7 @@ def main():
         return
 
     # ── Target and ranking ──
-    target_name = "MEA"
+    target_name = "NCCO"
     if target_name not in compounds:
         target_name = next(iter(compounds))
     target_vec = compounds[target_name]
@@ -1692,7 +1689,7 @@ def main():
             "sigma":       gd["sigma"],
         }
 
-    out_path = os.path.join(os.path.dirname(__file__), "..", "saft_pair_tables.json")
+    out_path = os.path.join(os.path.dirname(__file__), "..", "saft_pair_tables_florian.json")
     out_path = os.path.normpath(out_path)
     with open(out_path, "w") as f:
         json.dump({
@@ -1781,7 +1778,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 1: Self-interaction parameters
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_self_parameters.csv")
+    path = os.path.join(out_dir, "table_self_parameters_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group", "nu_k", "S_k",
@@ -1812,7 +1809,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 2: Cross-interaction dispersion parameters
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_cross_dispersion.csv")
+    path = os.path.join(out_dir, "table_cross_dispersion_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Group_l",
@@ -1855,7 +1852,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 3: Association parameters (site-site interactions)
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_association.csv")
+    path = os.path.join(out_dir, "table_association_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Site_a", "Group_l", "Site_b",
@@ -1907,7 +1904,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 4: Computed pair quantities (a1_kl, Delta_kl)
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_computed_a1_delta.csv")
+    path = os.path.join(out_dir, "table_computed_a1_delta_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Group_l",
@@ -1956,7 +1953,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     out_dir = os.path.normpath(os.path.join(base_dir, ".."))
 
     # ── CSV 1 — Group self-interaction parameters ──
-    self_path = os.path.join(out_dir, "group_self_parameters.csv")
+    self_path = os.path.join(out_dir, "group_self_parameters_florian.csv")
     with open(self_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
@@ -1994,7 +1991,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     print(f"Self-interaction parameters  -> {self_path}")
 
     # ── CSV 2 — Unlike-group dispersion parameters ──
-    disp_path = os.path.join(out_dir, "dispersion_parameters.csv")
+    disp_path = os.path.join(out_dir, "dispersion_parameters_florian.csv")
     with open(disp_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
@@ -2038,7 +2035,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     print(f"Dispersion parameters       -> {disp_path}")
 
     # ── CSV 3 — Association parameters (site-site) ──
-    assoc_path = os.path.join(out_dir, "association_parameters.csv")
+    assoc_path = os.path.join(out_dir, "association_parameters_florian.csv")
     with open(assoc_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
