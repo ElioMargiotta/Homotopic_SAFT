@@ -1422,6 +1422,38 @@ def euclidean_distance_vector(vec_cand, vec_targ) -> float:
     return math.sqrt(sum((c - t) ** 2 for c, t in zip(vec_cand, vec_targ)))
 
 
+def cosine_distance_vector(vec_cand, vec_targ) -> float:
+    """
+    Cosine distance between two group-count vectors.
+
+    Measures the angular difference between compositions, ignoring
+    magnitude (molecule size).  Two molecules with the same group
+    *ratios* but different sizes have cosine distance = 0.
+
+        D_cos = 1 − (a · b) / (|a| |b|)
+
+    Returns 0 when vectors are parallel, 1 when orthogonal.
+
+    Parameters
+    ----------
+    vec_cand, vec_targ : list[int]
+        Group-count vectors of equal length.
+
+    Returns
+    -------
+    float  —  Cosine distance in [0, 1].
+    """
+    dot = sum(c * t for c, t in zip(vec_cand, vec_targ))
+    norm_c = math.sqrt(sum(c * c for c in vec_cand))
+    norm_t = math.sqrt(sum(t * t for t in vec_targ))
+    if norm_c < 1e-300 or norm_t < 1e-300:
+        return 1.0
+    cos_sim = dot / (norm_c * norm_t)
+    # Clamp for numerical safety
+    cos_sim = max(-1.0, min(1.0, cos_sim))
+    return 1.0 - cos_sim
+
+
 def _inverse_variance_weights(signatures: list[dict]) -> dict:
     """
     Compute inverse-variance weights for thermodynamic components.
@@ -1529,6 +1561,7 @@ def rank_candidates(target_vector, candidate_vectors,
         d_th = euclidean_distance_thermo(sig_c, sig_targ, weights_th)
         d_st = distance_structure(sig_c, sig_targ, weights_st)
         d_vec = euclidean_distance_vector(candidate_vectors[idx], target_vector)
+        d_cos = cosine_distance_vector(candidate_vectors[idx], target_vector)
         results.append({
             "candidate_index":  idx,
             "candidate_vector": list(candidate_vectors[idx]),
@@ -1536,6 +1569,7 @@ def rank_candidates(target_vector, candidate_vectors,
             "distance":         d_th,
             "distance_struct":  d_st,
             "distance_vector":  d_vec,
+            "distance_cosine":  d_cos,
         })
 
     results.sort(key=lambda r: r["distance"])
@@ -1543,36 +1577,26 @@ def rank_candidates(target_vector, candidate_vectors,
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODULE 7 — Utility: load compounds from <compounds> section
+# MODULE 7 — Utility: load compounds from CSV
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def load_compounds(xml_path: str, group_names: list[str]) -> dict[str, list[int]]:
+def load_compounds(csv_path: str, group_names: list[str]) -> dict[str, list[int]]:
     """
-    Read ``<compounds>`` and return {name: group-count vector} aligned
+    Read solvent_space.csv and return {smiles: group-count vector} aligned
     with *group_names*.
     """
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-    group_idx = {g: i for i, g in enumerate(group_names)}
-    G = len(group_names)
+    import csv
+    import ast
 
     compounds: dict[str, list[int]] = {}
-    comp_el = root.find("compounds")
-    if comp_el is None:
-        return compounds
-
-    for c in comp_el.findall("compound"):
-        name = c.attrib["name"]
-        vec = [0] * G
-        gm_el = c.find("groupMultiplicities")
-        if gm_el is None:
-            continue
-        for gm in gm_el.findall("groupMultiplicity"):
-            ref = gm.attrib.get("ref", "")
-            count = int(float(gm.text.strip()))
-            if ref in group_idx:
-                vec[group_idx[ref]] += count
-        compounds[name] = vec
+    with open(csv_path, 'r') as f:
+        reader = csv.reader(f)
+        next(reader)  # Skip header
+        for row in reader:
+            smiles = row[0]
+            vector_str = row[1]
+            vec = [int(float(x)) for x in ast.literal_eval(vector_str)]
+            compounds[smiles] = vec
 
     return compounds
 
@@ -1642,8 +1666,9 @@ def main():
     _print_matrix(delta_table, group_names, "Δ_{kl}  (association strength, m³)")
 
     # ── Load compounds ──
-    compounds = load_compounds(xml_path, group_names)
-    print(f"\nLoaded {len(compounds)} compounds from database.")
+    csv_path = os.path.join(os.path.dirname(__file__), "..", "database/solvent_space.csv")
+    compounds = load_compounds(csv_path, group_names)
+    print(f"\nLoaded {len(compounds)} compounds from CSV.")
     if not compounds:
         print("No compounds found – exiting.")
         return

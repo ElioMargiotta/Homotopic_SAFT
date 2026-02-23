@@ -1,246 +1,214 @@
 """
-Compute the SAFT-γ Mie log-Euclidean distance between two molecules.
+Compute four distance metrics between two molecules from their
+group-count vectors.
 
-Fully self-contained: only needs ``saft_pair_tables.json`` (generated once
-by ``saft_similarity.py``).  No XML database or other imports required.
+Distances
+---------
+1. **D_thermo** — SAFT-γ Mie thermodynamic distance (Euclidean in
+   F_mono, F_chain, F_assoc).  Measures how differently two molecules
+   interact energetically.
+
+2. **D_struct** — SAFT-γ Mie structural distance (log-Euclidean in
+   m, σ³, S̄).  Measures how differently two molecules are built.
+
+3. **D_vec** — simple Euclidean distance between group-count vectors.
+   Measures raw compositional difference.
+
+4. **D_cos** — cosine distance between group-count vectors.  Measures
+   angular difference in composition (size-invariant).
+
+The SAFT distances (1–2) require the XML database to build pair tables
+and compute full Helmholtz signatures.  The naive distances (3–4) need
+only the group-count vectors.
 
 Usage
 -----
-    python scripts/compute_distance.py <vec_A> <vec_B>
+    python compute_distance.py <vec_A> <vec_B> [--xml path/to/database.xml]
 
 where each vector is a comma-separated list of group counts aligned with
-the group order stored in ``saft_pair_tables.json``.
+the group order in ``saft_similarity_florian.GROUPS_OF_INTEREST``.
 
 Examples
 --------
-    # MEA  = [0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0]
-    # DMEA = [0,0,0,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]
-    python scripts/compute_distance.py 0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0  0,0,0,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0
+    # NCCO (MEA) vs CC(N)CO (2-amino-1-propanol)
+    python compute_distance.py 0,0,0,0,1,0,0,1,0,1,0,0,0,0 \\
+                                0,0,0,1,0,1,0,1,0,1,0,0,0,0
 
-You can also import the module and call ``compute_distance`` directly:
+You can also import and call functions directly:
 
-    from compute_distance import load_tables, compute_distance
-    tables = load_tables()
-    d, sig_a, sig_b, components = compute_distance([0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
-                                                    [0,0,0,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-                                                    tables)
+    from compute_distance import compute_all_distances, load_saft_tables
+    tables = load_saft_tables("path/to/database.xml")
+    result = compute_all_distances(vec_a, vec_b, tables)
 """
 
 from __future__ import annotations
 
-import json
 import math
 import os
 import sys
-import numpy as np
+
+# Import SAFT-γ Mie machinery from saft_similarity_florian
+import saft_similarity_florian as ss
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Load pre-computed pair tables (everything from the JSON, no XML needed)
+# Load SAFT tables from XML (once)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def load_tables(json_path: str | None = None) -> dict:
+def load_saft_tables(xml_path: str | None = None) -> dict:
     """
-    Load everything needed for distance computation from the JSON file.
+    Load the XML database and build all pair tables needed for SAFT
+    distance computation.
 
-    The JSON contains:
-        D_kl_dispersion, Delta_kl_association, sigma3_kl  – pair tables
-        group_metadata   – per-group nu, shapeFactor, sigma
-        groups           – ordered list of group names
-        weights          – {w_J, w_S, w_M, w_P, w_SH}
-        S0               – association floor
-        T_ref_K, eta_ref – reference conditions
+    Parameters
+    ----------
+    xml_path : str, optional
+        Path to ``CCS_Mie_Databank_221020.xml``.  If None, uses default
+        relative path ``../database/CCS_Mie_Databank_221020.xml``.
 
-    Returns a dict with keys:
-        group_names, disp_table, delta_table, sigma3_table,
-        group_meta, weights, S0, settings
+    Returns
+    -------
+    dict with keys:
+        group_names, groups, cross, a1_table, delta_table, param_table,
+        T, eta, weights_thermo, weights_struct
     """
-    if json_path is None:
-        base = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-        json_path = os.path.join(base, "saft_pair_tables.json")
+    if xml_path is None:
+        xml_path = os.path.normpath(
+            os.path.join(os.path.dirname(__file__), "..",
+                         "database", "CCS_Mie_Databank_221020.xml"))
 
-    with open(json_path, "r") as f:
-        data = json.load(f)
+    groups, cross = ss.load_database(xml_path)
 
-    group_names: list[str] = data["groups"]
+    available = [g for g in ss.GROUPS_OF_INTEREST if g in groups]
+    group_names = available
 
-    # Re-key from "k|l" strings to (k, l) tuples
-    disp_table:   dict[tuple[str, str], float] = {}
-    delta_table:  dict[tuple[str, str], float] = {}
-    sigma3_table: dict[tuple[str, str], float] = {}
-
-    for key, val in data["D_kl_dispersion"].items():
-        k, l = key.split("|")
-        disp_table[(k, l)] = val
-
-    for key, val in data["Delta_kl_association"].items():
-        k, l = key.split("|")
-        delta_table[(k, l)] = val
-
-    for key, val in data["sigma3_kl"].items():
-        k, l = key.split("|")
-        sigma3_table[(k, l)] = val
+    a1_table, delta_table, param_table = ss.build_pair_tables(
+        group_names, groups, cross, T=ss.T_REF, eta=ss.ETA_REF)
 
     return {
-        "group_names":   group_names,
-        "disp_table":    disp_table,
-        "delta_table":   delta_table,
-        "sigma3_table":  sigma3_table,
-        "group_meta":    data["group_metadata"],
-        "weights":       data["weights"],
-        "S0":            data["S0"],
-        "settings":      {"T_ref_K": data["T_ref_K"],
-                          "eta_ref": data["eta_ref"]},
+        "group_names":     group_names,
+        "groups":          groups,
+        "cross":           cross,
+        "a1_table":        a1_table,
+        "delta_table":     delta_table,
+        "param_table":     param_table,
+        "T":               ss.T_REF,
+        "eta":             ss.ETA_REF,
+        "weights_thermo":  {"w_MONO": ss.W_MONO, "w_CHAIN": ss.W_CHAIN,
+                            "w_ASSOC": ss.W_ASSOC},
+        "weights_struct":  {"w_M": ss.W_M, "w_P": ss.W_P, "w_SH": ss.W_SH},
     }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Signature & distance (self-contained, using pre-loaded tables)
+# Distance functions
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def _signature(vector, tables: dict) -> dict:
+def distance_thermo(vec_a, vec_b, tables: dict) -> tuple[float, dict, dict]:
     """
-    Compute the 5-component SAFT-γ Mie signature for a molecule vector.
+    SAFT thermodynamic distance: Euclidean in (F_mono, F_chain, F_assoc).
 
-    Returns {"D_bar", "A_bar", "m_total", "sigma3_avg", "shape_avg"}.
+    Returns (distance, signature_a, signature_b).
     """
-    group_names  = tables["group_names"]
-    group_meta   = tables["group_meta"]
-    disp_table   = tables["disp_table"]
-    delta_table  = tables["delta_table"]
-    sigma3_table = tables["sigma3_table"]
+    sig_a = ss.signature(vec_a, tables["group_names"], tables["groups"],
+                         tables["a1_table"], tables["delta_table"],
+                         tables["param_table"], tables["cross"],
+                         tables["T"], tables["eta"])
+    sig_b = ss.signature(vec_b, tables["group_names"], tables["groups"],
+                         tables["a1_table"], tables["delta_table"],
+                         tables["param_table"], tables["cross"],
+                         tables["T"], tables["eta"])
 
-    n = np.asarray(vector, dtype=float)
-    G = len(group_names)
-
-    # Segment fractions  x_{s,k} = n_k · ν_k · S_k / m
-    weighted = np.zeros(G)
-    for i in range(G):
-        if n[i] == 0:
-            continue
-        gm = group_meta[group_names[i]]
-        weighted[i] = n[i] * gm["nu"] * gm["shapeFactor"]
-
-    m_i = weighted.sum()
-    if m_i == 0.0:
-        return {"D_bar": 0.0, "A_bar": 0.0, "m_total": 0.0,
-                "sigma3_avg": 0.0, "shape_avg": 0.0}
-
-    xs = weighted / m_i
-
-    D_sum = 0.0
-    A_sum = 0.0
-    sig3_sum = 0.0
-
-    for i in range(G):
-        if xs[i] == 0.0:
-            continue
-        gi = group_names[i]
-        for j in range(G):
-            if xs[j] == 0.0:
-                continue
-            gj = group_names[j]
-            w = xs[i] * xs[j]
-            D_sum    += w * disp_table[(gi, gj)]
-            A_sum    += w * delta_table[(gi, gj)]
-            sig3_sum += w * sigma3_table[(gi, gj)]
-
-    shape_sum = 0.0
-    for i in range(G):
-        if xs[i] == 0.0:
-            continue
-        shape_sum += xs[i] * group_meta[group_names[i]]["shapeFactor"]
-
-    return {"D_bar": D_sum, "A_bar": A_sum, "m_total": m_i,
-            "sigma3_avg": sig3_sum, "shape_avg": shape_sum}
+    d = ss.euclidean_distance_thermo(sig_a, sig_b, tables["weights_thermo"])
+    return d, sig_a, sig_b
 
 
-def compute_distance(vec_a, vec_b, tables: dict | None = None,
-                     weights: dict | None = None,
-                     s0: float | None = None) -> tuple[float, dict, dict, dict]:
+def distance_struct(vec_a, vec_b, tables: dict) -> float:
     """
-    Compute the log-Euclidean distance between two molecule vectors.
+    SAFT structural distance: log-Euclidean in (m, σ³, S̄).
+
+    Returns distance (signatures computed internally).
+    """
+    sig_a = ss.signature(vec_a, tables["group_names"], tables["groups"],
+                         tables["a1_table"], tables["delta_table"],
+                         tables["param_table"], tables["cross"],
+                         tables["T"], tables["eta"])
+    sig_b = ss.signature(vec_b, tables["group_names"], tables["groups"],
+                         tables["a1_table"], tables["delta_table"],
+                         tables["param_table"], tables["cross"],
+                         tables["T"], tables["eta"])
+
+    return ss.distance_structure(sig_a, sig_b, tables["weights_struct"])
+
+
+def distance_euclidean(vec_a, vec_b) -> float:
+    """
+    Simple Euclidean distance between group-count vectors.
+
+        D_vec = sqrt( sum_k (n_{k,a} - n_{k,b})^2 )
+    """
+    return ss.euclidean_distance_vector(vec_a, vec_b)
+
+
+def distance_cosine(vec_a, vec_b) -> float:
+    """
+    Cosine distance between group-count vectors.
+
+        D_cos = 1 - (a . b) / (|a| |b|)
+
+    Size-invariant: identical group ratios → D_cos = 0.
+    """
+    return ss.cosine_distance_vector(vec_a, vec_b)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Unified interface
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def compute_all_distances(vec_a, vec_b, tables: dict) -> dict:
+    """
+    Compute all four distance metrics between two molecules.
 
     Parameters
     ----------
     vec_a, vec_b : list[int]
         Group-count vectors aligned with ``tables["group_names"]``.
-    tables : dict, optional
-        Output of ``load_tables()``. If None, loads from default JSON path.
-    weights : dict, optional
-        {"w_J", "w_S", "w_M", "w_P", "w_SH"}.  Defaults to values
-        stored in the JSON.
-    s0 : float, optional
-        Association floor.  Defaults to S0 from the JSON.
+    tables : dict
+        Output of ``load_saft_tables()``.
 
     Returns
     -------
-    distance   : float
-    sig_a      : dict   – 5-component signature of molecule A
-    sig_b      : dict   – 5-component signature of molecule B
-    components : dict   – per-component log-ratio contributions
-                          {"d_D", "d_A", "d_m", "d_sigma", "d_shape"}
+    dict with keys:
+        d_thermo, d_struct, d_euclidean, d_cosine,
+        sig_a, sig_b,
+        components_thermo  (ΔF_mono, ΔF_chain, ΔF_assoc)
     """
-    if tables is None:
-        tables = load_tables()
+    d_th, sig_a, sig_b = distance_thermo(vec_a, vec_b, tables)
+    d_st = ss.distance_structure(sig_a, sig_b, tables["weights_struct"])
+    d_eu = distance_euclidean(vec_a, vec_b)
+    d_co = distance_cosine(vec_a, vec_b)
 
-    if weights is None:
-        weights = tables["weights"]
-    if s0 is None:
-        s0 = tables["S0"]
+    components = {
+        "dF_mono":  sig_a["F_mono"]  - sig_b["F_mono"],
+        "dF_chain": sig_a["F_chain"] - sig_b["F_chain"],
+        "dF_assoc": sig_a["F_assoc"] - sig_b["F_assoc"],
+        "d_m":      math.log(max(sig_a["m_total"], 1e-300) /
+                             max(sig_b["m_total"], 1e-300)),
+        "d_sigma3": math.log(max(sig_a["sigma3_avg"], 1e-300) /
+                             max(sig_b["sigma3_avg"], 1e-300)),
+        "d_shape":  math.log(max(sig_a["shape_avg"], 1e-300) /
+                             max(sig_b["shape_avg"], 1e-300)),
+    }
 
-    sig_a = _signature(vec_a, tables)
-    sig_b = _signature(vec_b, tables)
-
-    D_a = max(abs(sig_a["D_bar"]), 1e-300)
-    D_b = max(abs(sig_b["D_bar"]), 1e-300)
-    dD  = math.log(D_a / D_b)
-
-    dA = math.log((sig_a["A_bar"] + s0) / (sig_b["A_bar"] + s0))
-
-    m_a = max(sig_a["m_total"], 1e-300)
-    m_b = max(sig_b["m_total"], 1e-300)
-    dm  = math.log(m_a / m_b)
-
-    s3_a = max(sig_a["sigma3_avg"], 1e-300)
-    s3_b = max(sig_b["sigma3_avg"], 1e-300)
-    ds3  = math.log(s3_a / s3_b)
-
-    sh_a = max(sig_a["shape_avg"], 1e-300)
-    sh_b = max(sig_b["shape_avg"], 1e-300)
-    dsh  = math.log(sh_a / sh_b)
-
-    dist = math.sqrt(weights["w_J"]  * dD**2
-                   + weights["w_S"]  * dA**2
-                   + weights["w_M"]  * dm**2
-                   + weights["w_P"]  * ds3**2
-                   + weights["w_SH"] * dsh**2)
-
-    components = {"d_D": dD, "d_A": dA, "d_m": dm,
-                  "d_sigma": ds3, "d_shape": dsh}
-
-    return dist, sig_a, sig_b, components
-
-
-def distance(base_vector, target_vector) -> float:
-    """
-    Compute the SAFT-γ Mie distance between two molecule vectors.
-
-    This is a simplified interface that loads tables automatically and
-    returns only the distance value.
-
-    Parameters
-    ----------
-    base_vector, target_vector : list[int]
-        Group-count vectors aligned with the standard group order.
-
-    Returns
-    -------
-    distance : float
-        The log-Euclidean distance between the two molecules.
-    """
-    dist, _, _, _ = compute_distance(base_vector, target_vector)
-    return dist
+    return {
+        "d_thermo":    d_th,
+        "d_struct":    d_st,
+        "d_euclidean": d_eu,
+        "d_cosine":    d_co,
+        "sig_a":       sig_a,
+        "sig_b":       sig_b,
+        "components_thermo": components,
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -258,24 +226,23 @@ def _vec_label(vec, group_names):
 
 def _print_signature(label: str, sig: dict):
     print(f"\n  {label}:")
-    print(f"    D_bar      = {sig['D_bar']:.6e}   (dispersion, J·m³)")
-    print(f"    A_bar      = {sig['A_bar']:.6e}   (association, m³)")
-    print(f"    m_total    = {sig['m_total']:.4f}           (chain length)")
-    print(f"    sigma3_avg = {sig['sigma3_avg']:.6e}   (packing, m³)")
-    print(f"    shape_avg  = {sig['shape_avg']:.6f}         (shape factor)")
+    print(f"    F_mono     = {sig['F_mono']:12.6f}   (monomer A^mono/NkBT)")
+    print(f"    F_chain    = {sig['F_chain']:12.6f}   (chain   A^chain/NkBT)")
+    print(f"    F_assoc    = {sig['F_assoc']:12.6f}   (assoc   A^assoc/NkBT)")
+    print(f"    m_total    = {sig['m_total']:12.4f}   (chain length)")
+    print(f"    sigma3_avg = {sig['sigma3_avg']:12.6e}   (packing, m³)")
+    print(f"    shape_avg  = {sig['shape_avg']:12.6f}   (shape factor)")
 
 
-def _print_components(comp: dict, weights: dict):
-    print("\n  Log-ratio components (and weighted²):")
-    names = [("d_D",     "w_J",  "Dispersion"),
-             ("d_A",     "w_S",  "Association"),
-             ("d_m",     "w_M",  "Chain length"),
-             ("d_sigma", "w_P",  "Packing σ³"),
-             ("d_shape", "w_SH", "Shape")]
-    for key, wkey, label in names:
-        val = comp[key]
-        w   = weights[wkey]
-        print(f"    {label:<16s}  d = {val:+.6f}   w·d² = {w * val**2:.6f}")
+def _print_components(comp: dict):
+    print("\n  Thermodynamic components (A − B):")
+    print(f"    ΔF_mono  = {comp['dF_mono']:+12.6f}")
+    print(f"    ΔF_chain = {comp['dF_chain']:+12.6f}")
+    print(f"    ΔF_assoc = {comp['dF_assoc']:+12.6f}")
+    print(f"\n  Structural components (log-ratio A/B):")
+    print(f"    d_m      = {comp['d_m']:+12.6f}")
+    print(f"    d_σ³     = {comp['d_sigma3']:+12.6f}")
+    print(f"    d_shape  = {comp['d_shape']:+12.6f}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -283,55 +250,76 @@ def _print_components(comp: dict, weights: dict):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python compute_distance.py <vec_A> <vec_B>")
+    # Parse arguments
+    xml_path = None
+    args = sys.argv[1:]
+    vecs = []
+    i = 0
+    while i < len(args):
+        if args[i] == "--xml":
+            xml_path = args[i + 1]
+            i += 2
+        else:
+            vecs.append(args[i])
+            i += 1
+
+    if len(vecs) < 2:
+        print("Usage: python compute_distance.py <vec_A> <vec_B> [--xml path/to/database.xml]")
         print()
         print("Each vector is a comma-separated list of group counts.")
-        print("Group order (from saft_pair_tables.json):")
-        tables = load_tables()
-        for i, g in enumerate(tables["group_names"]):
-            print(f"  [{i:2d}] {g}")
+        print(f"Group order ({len(ss.GROUPS_OF_INTEREST)} groups):")
+        for idx, g in enumerate(ss.GROUPS_OF_INTEREST):
+            print(f"  [{idx:2d}] {g}")
         print()
-        print("Example (MEA vs DMEA):")
-        print("  python scripts/compute_distance.py "
-              "0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0  "
-              "0,0,0,2,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0")
+        print("Example (NCCO vs CC(N)CO):")
+        print("  python compute_distance.py "
+              "0,0,0,0,1,0,0,1,0,1,0,0,0,0  "
+              "0,0,0,1,0,1,0,1,0,1,0,0,0,0")
         return
 
-    vec_a = [int(x) for x in sys.argv[1].split(",")]
-    vec_b = [int(x) for x in sys.argv[2].split(",")]
+    vec_a = [int(x) for x in vecs[0].split(",")]
+    vec_b = [int(x) for x in vecs[1].split(",")]
 
-    tables = load_tables()
+    # Load tables
+    print("Loading SAFT pair tables...")
+    tables = load_saft_tables(xml_path)
     group_names = tables["group_names"]
     G = len(group_names)
 
     if len(vec_a) != G or len(vec_b) != G:
-        print(f"Error: vectors must have {G} elements (got {len(vec_a)} and {len(vec_b)}).")
+        print(f"Error: vectors must have {G} elements "
+              f"(got {len(vec_a)} and {len(vec_b)}).")
         print(f"Group order: {group_names}")
         sys.exit(1)
 
-    weights = tables["weights"]
-    s0      = tables["S0"]
+    # Compute all distances
+    result = compute_all_distances(vec_a, vec_b, tables)
 
-    dist, sig_a, sig_b, comp = compute_distance(vec_a, vec_b, tables)
-
-    print("=" * 60)
-    print("  SAFT-γ Mie distance between two molecules")
-    print("=" * 60)
+    # Display
+    print("\n" + "=" * 64)
+    print("  Distance between two molecules — 4 metrics")
+    print("=" * 64)
     print(f"\n  Molecule A:  {_vec_label(vec_a, group_names)}")
     print(f"  Molecule B:  {_vec_label(vec_b, group_names)}")
 
-    _print_signature("Signature A", sig_a)
-    _print_signature("Signature B", sig_b)
-    _print_components(comp, weights)
+    _print_signature("Signature A", result["sig_a"])
+    _print_signature("Signature B", result["sig_b"])
+    _print_components(result["components_thermo"])
 
-    print(f"\n  ╔══════════════════════════════════════╗")
-    print(f"  ║  Distance  D = {dist:.6f}            ║")
-    print(f"  ╚══════════════════════════════════════╝")
+    print("\n  ╔══════════════════════════════════════════════╗")
+    print(f"  ║  D_thermo    = {result['d_thermo']:10.6f}                ║")
+    print(f"  ║  D_struct    = {result['d_struct']:10.6f}                ║")
+    print(f"  ║  D_euclidean = {result['d_euclidean']:10.6f}                ║")
+    print(f"  ║  D_cosine    = {result['d_cosine']:10.6f}                ║")
+    print("  ╚══════════════════════════════════════════════╝")
 
-    print(f"\n  Weights:  w_D={weights['w_J']}  w_A={weights['w_S']}  "
-          f"w_m={weights['w_M']}  w_σ={weights['w_P']}  w_S={weights['w_SH']}  "
-          f"S0={s0:.0e}")
+    print(f"\n  Settings:  T = {tables['T']} K,  η = {tables['eta']}")
+    wt = tables["weights_thermo"]
+    ws = tables["weights_struct"]
+    print(f"  Weights thermo:  w_mono={wt['w_MONO']}  "
+          f"w_chain={wt['w_CHAIN']}  w_assoc={wt['w_ASSOC']}")
+    print(f"  Weights struct:  w_m={ws['w_M']}  "
+          f"w_σ³={ws['w_P']}  w_shape={ws['w_SH']}")
 
 
 if __name__ == "__main__":
