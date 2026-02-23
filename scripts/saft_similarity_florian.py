@@ -1401,6 +1401,27 @@ def distance_structure(sig_cand: dict, sig_targ: dict,
                    + weights["w_SH"] * dsh**2)
 
 
+def euclidean_distance_vector(vec_cand, vec_targ) -> float:
+    """
+    Simple Euclidean distance between two group-count vectors.
+
+    This is a purely compositional metric — it measures how different
+    the group multiplicities are, with no thermodynamic weighting:
+
+        D_vec = sqrt( sum_k (n_{k,c} - n_{k,t})^2 )
+
+    Parameters
+    ----------
+    vec_cand, vec_targ : list[int]
+        Group-count vectors of equal length.
+
+    Returns
+    -------
+    float  —  Euclidean distance in group-count space.
+    """
+    return math.sqrt(sum((c - t) ** 2 for c, t in zip(vec_cand, vec_targ)))
+
+
 def _inverse_variance_weights(signatures: list[dict]) -> dict:
     """
     Compute inverse-variance weights for thermodynamic components.
@@ -1507,12 +1528,14 @@ def rank_candidates(target_vector, candidate_vectors,
     for idx, sig_c in enumerate(cand_sigs):
         d_th = euclidean_distance_thermo(sig_c, sig_targ, weights_th)
         d_st = distance_structure(sig_c, sig_targ, weights_st)
+        d_vec = euclidean_distance_vector(candidate_vectors[idx], target_vector)
         results.append({
             "candidate_index":  idx,
             "candidate_vector": list(candidate_vectors[idx]),
             "signature":        sig_c,
             "distance":         d_th,
             "distance_struct":  d_st,
+            "distance_vector":  d_vec,
         })
 
     results.sort(key=lambda r: r["distance"])
@@ -1659,16 +1682,17 @@ def main():
         print(f"  {wk:>8s} = {wv:.6f}")
 
     print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'F_mono':>10s}  {'F_chain':>10s}  {'F_assoc':>10s}  "
-          f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'D_thermo':>10s}  {'D_struct':>10s}")
-    print("\u2500" * 145)
+          f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'D_thermo':>10s}  {'D_struct':>10s}  {'D_vector':>10s}")
+    print("\u2500" * 160)
     for rank, entry in enumerate(ranking, 1):
         cname = cand_names[entry["candidate_index"]]
         sig   = entry["signature"]
         d_th  = entry["distance"]
         d_st  = entry["distance_struct"]
+        d_vec = entry["distance_vector"]
         print(f"{rank:4d}  {cname:<35s}  {sig['F_mono']:10.4f}  {sig['F_chain']:10.4f}  "
               f"{sig['F_assoc']:10.4f}  {sig['m_total']:7.4f}  "
-              f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {d_th:10.6f}  {d_st:10.6f}")
+              f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {d_th:10.6f}  {d_st:10.6f}  {d_vec:10.6f}")
 
     # ── Export pair tables ──
     a1_json = {f"{k[0]}|{k[1]}": v for k, v in a1_table.items()}
@@ -1712,6 +1736,7 @@ def main():
         "signature": e["signature"],
         "distance_thermo": e["distance"],
         "distance_struct": e["distance_struct"],
+        "distance_vector": e["distance_vector"],
     } for e in ranking]
 
     rank_path = os.path.join(os.path.dirname(__file__), "..",

@@ -9,21 +9,20 @@ Two complementary approaches are implemented, both reading from the same XML par
 
 1. [Repository layout](#repository-layout)
 2. [Groups of interest](#groups-of-interest)
-3. [Approach 1 – Feature-based cosine similarity](#approach-1--feature-based-soft-cosine-similarity-compute_similaritypy)
-4. [Approach 2 – SAFT-γ Mie physics-based ranking](#approach-2--saft-γ-mie-physics-based-molecule-ranking-saft_similaritypy)
+3. [Approach 1 – SAFT-γ Mie physics-based ranking](#approach-2--saft-γ-mie-physics-based-molecule-ranking-saft_similaritypy)
    - [Theoretical background](#theoretical-background)
    - [Step-by-step workflow](#step-by-step)
    - [Summary of assumptions](#summary-of-assumptions-and-approximations)
-5. [Visualisation](#visualisation--group-level-similarity-plot_group_similaritypy)
+4. [Visualisation](#visualisation--group-level-similarity-plot_group_similaritypy)
    - [Group-group distance metric](#group-group-distance-metric)
    - [Figure 1 – Heatmap](#figure-1--distance-heatmap)
    - [Figure 2 – MDS embedding](#figure-2--2-d-mds-embedding)
    - [Figure 3 – Similarity network](#figure-3--similarity-network)
    - [Figure 4 – Amine & hydroxyl bars](#figure-4--amine--hydroxyl-distance-ranking)
    - [Figure 5 – Radar chart](#figure-5--radar-chart-of-group-descriptors)
-6. [Running the scripts](#running-the-scripts)
-7. [Database format](#database-format)
-8. [References](#references)
+5. [Running the scripts](#running-the-scripts)
+6. [Database format](#database-format)
+7. [References](#references)
 
 ---
 
@@ -71,77 +70,7 @@ The `_2nd` and `_Short` variants are re-parameterisations of the same chemical m
 
 ---
 
-## Approach 1 – Feature-based soft-cosine similarity (`compute_similarity.py`)
-
-### What it does
-
-Builds a **20×20 similarity matrix** $\mathbf{S}$ that quantifies how similar each pair of SAFT-γ Mie groups is, based on standardised self- and cross-interaction feature vectors.
-
-### Step-by-step
-
-#### Step 1 — Parse the XML database
-
-Extract per-group properties from `database.xml`:
-
-- Number of segments $\nu_k$, shape factor $S_k$
-- Self-dispersion: $\varepsilon_{kk}$, $\sigma_{kk}$, $\lambda^{\mathrm{rep}}_{kk}$, $\lambda^{\mathrm{att}}_{kk}$
-- Association site counts: $n_H$, $n_e$, $n_a$
-- Self-association totals: $\sum \varepsilon^{\mathrm{assoc}}_{kk}$, $\sum K_{kk}$
-- Thermodynamic properties at $T_{\mathrm{ref}} = 298.15\;\mathrm{K}$: heat capacity $C_p^*$, enthalpy of formation $\hat{H}_f$, entropy of formation $\hat{S}_f$
-
-Also parse all explicit cross-interaction entries $(\varepsilon_{kl},\;\lambda^{\mathrm{rep}}_{kl},\;\varepsilon^{\mathrm{assoc}}_{kl},\;K_{kl})$.
-
-#### Step 2 — Build self-feature vector $\boldsymbol{\varphi}^{\mathrm{self}}_k$
-
-For each group $k$, assemble an 11-dimensional vector:
-
-```math
-\boldsymbol{\varphi}^{\mathrm{self}}_k = \bigl[\,\nu_k,\; S_k,\; \ln\varepsilon_{kk},\; \ln\sigma_{kk},\; \lambda^{\mathrm{rep}}_{kk},\; \lambda^{\mathrm{att}}_{kk},\; n_H,\; n_e,\; n_a,\; \ln(1+\varepsilon^{\mathrm{assoc}}_{kk}),\; \ln(1+K_{kk})\,\bigr]
-```
-
-#### Step 3 — Build cross-feature vector $\boldsymbol{\varphi}^{\mathrm{cross}}_k$
-
-For each group $k$ and every reference group $r$ in the list, extract a 4-dimensional cross fingerprint:
-
-```math
-\boldsymbol{f}_{k,r} = \bigl[\,\varepsilon_{kr},\; \lambda^{\mathrm{rep}}_{kr},\; \ln(1+\varepsilon^{\mathrm{assoc}}_{kr}),\; \ln(1+K_{kr})\,\bigr]
-```
-
-Concatenate over all 20 reference groups to get $\boldsymbol{\varphi}^{\mathrm{cross}}_k \in \mathbb{R}^{80}$.
-
-#### Step 4 — Standardise and combine
-
-Column-wise z-standardise both matrices, then form the combined feature:
-
-```math
-\boldsymbol{\phi}_k = \alpha\,\mathbf{z}^{\mathrm{self}}_k \;\|\; \beta\,\mathbf{z}^{\mathrm{cross}}_k
-```
-
-with default weights $\alpha = 0.7$, $\beta = 0.3$.
-
-#### Step 5 — Compute similarity matrix
-
-Normalise each $\boldsymbol{\phi}_k$ to unit length and compute:
-
-```math
-S_{ij} = \frac{\hat{\boldsymbol{\phi}}_i \cdot \hat{\boldsymbol{\phi}}_j + 1}{2} \;\in [0,\,1]
-```
-
-The diagonal is set to 1, and $\mathbf{S}$ is symmetrised.
-
-#### Step 6 — Expand to 40×40
-
-For two-component mixture use, the matrix is block-duplicated:
-
-```math
-\mathbf{S}_{40\times40} = \begin{pmatrix} \mathbf{S} & \mathbf{S} \\ \mathbf{S} & \mathbf{S} \end{pmatrix}
-```
-
-and saved as `similarity_matrix.npy`.
-
----
-
-## Approach 2 – SAFT-γ Mie physics-based molecule ranking (`saft_similarity.py`)
+## Approach 1 – SAFT-γ Mie physics-based molecule ranking (`saft_similarity.py`)
 
 ### What it does
 
@@ -234,7 +163,7 @@ The $\sigma^3$ correction ensures thermodynamic consistency: it accounts for the
 
 If the database provides a non-zero explicit value for any individual parameter ($\varepsilon_{kl}$, $\sigma_{kl}$, $\lambda^r_{kl}$, $\lambda^a_{kl}$), **the database value is used** and the combining rule is only applied to the remaining parameters.
 
-##### 2b. Association combining rules (CR-1 fallback)
+##### 2b. Association combining rules
 
 Many cross-interaction pairs do not have explicit association entries in the database. When **both groups carry association sites** but no cross entry exists, the code applies SAFT-γ Mie combining rules to estimate the cross-association parameters from the self-association data.
 
@@ -266,7 +195,7 @@ The combining rule is applied to every pair of self-association interactions who
 
 ###### Important caveat
 
-The CR-1 combining rules systematically underestimate cross-association for groups with genuinely different chemistries (e.g. OH ↔ NH₂: CR-1 gives ~60–100% below the database fitted value). However, they are **exact** for variant pairs of the same moiety (e.g. `CH2OH` ↔ `CH2OH_Short`), which is the primary use case — preventing zero-association artefacts between groups that clearly should interact.
+The Association combining rules systematically underestimate cross-association for groups with genuinely different chemistries (e.g. OH ↔ NH₂: CR-1 gives ~60–100% below the database fitted value). However, they are **exact** for variant pairs of the same moiety (e.g. `CH2OH` ↔ `CH2OH_Short`), which is the primary use case — preventing zero-association artefacts between groups that clearly should interact.
 
 ---
 
