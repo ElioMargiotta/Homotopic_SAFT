@@ -79,14 +79,14 @@ All scripts operate on the same 14 functional groups drawn from `CCS_Mie_Databan
 | 4 | `NH_2nd` | Secondary amine | Re-parameterised variant |
 | 5 | `N` | Tertiary amine | |
 | 6 | `N_2nd` | Tertiary amine | Re-parameterised variant |
-| 7 | `OH` | Hydroxyl | Standard; longer-chain context |
+| 7 | `CHOH` | Hydroxyl | Standard; longer-chain context |
 | 8 | `OH_Short` | Hydroxyl | Re-parameterised for short-chain context |
 | 9 | `CH3` | Alkyl | Terminal methyl |
 | 10 | `CH2` | Alkyl | Methylene |
 | 11 | `CH2OH` | Hydroxymethyl | Combined CH₂+OH group |
 | 12 | `CH2OH_Short` | Hydroxymethyl | Short-chain variant |
-| 13 | `cNH` | Cyclic amine | N–H in a ring |
-| 14 | `cCHNH` | Cyclic amine | CH–NH in a ring (e.g., piperazine) |
+| 13 | `CH` | Alkyl | Methine (tertiary carbon) |
+| 14 | `C` | Alkyl | Quaternary carbon |
 
 `_2nd` and `_Short` variants represent the same chemical moiety re-fitted for a different molecular context (chain length or substitution pattern) to improve transferability.
 
