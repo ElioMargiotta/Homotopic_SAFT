@@ -454,11 +454,17 @@ Seven figures are produced:
 
 #### `fig_euclidean_scatter.png` and `fig_cosine_scatter.png`
 
+![Euclidean scatter](figures/fig_euclidean_scatter.png)
+![Cosine scatter](figures/fig_cosine_scatter.png)
+
 Two-panel scatter plots comparing $D_{\mathrm{struct}}$ (left) and $D_{\mathrm{SAFT}}$ (right) against the naive distance, normalised to $[0,1]$. The diagonal line marks perfect agreement. Spearman $\rho$ is annotated. The 5 molecules closest to the diagonal in each panel are highlighted by name.
 
 **What this reveals:** Points below the diagonal are molecules that appear more similar according to SAFT physics than the naive metric suggests; points above are penalised more by the naive metric. Large scatter indicates the naive metric misranks molecules relative to their thermodynamic similarity.
 
 #### `fig_euclidean_residuals.png` and `fig_cosine_residuals.png`
+
+![Euclidean residuals](figures/fig_euclidean_residuals.png)
+![Cosine residuals](figures/fig_cosine_residuals.png)
 
 Two-panel residual histograms of $D_{\mathrm{struct}}^{\mathrm{norm}} - D_{\mathrm{naive}}^{\mathrm{norm}}$ (left) and $D_{\mathrm{SAFT}}^{\mathrm{norm}} - D_{\mathrm{naive}}^{\mathrm{norm}}$ (right). Mean absolute error (MAE), standard deviation $\sigma$, and median are reported.
 
@@ -466,11 +472,16 @@ Two-panel residual histograms of $D_{\mathrm{struct}}^{\mathrm{norm}} - D_{\math
 
 #### `fig_euclidean_rank_rank.png` and `fig_cosine_rank_rank.png`
 
+![Euclidean rank-rank](figures/fig_euclidean_rank_rank.png)
+![Cosine rank-rank](figures/fig_cosine_rank_rank.png)
+
 Rank-rank scatter plots comparing the ordering by $D_{\mathrm{struct}}$ (left) and $D_{\mathrm{SAFT}}$ (right) to the ordering by the naive metric. Perfect agreement would align all points on the diagonal. Spearman $\rho$ quantifies rank concordance.
 
 **What this reveals:** Even if the absolute distances differ, the ranking question ("which molecule is most similar to the target?") may still agree. Deviations from the diagonal at the top of the x-axis (i.e., small naive distance but large SAFT rank) identify molecules that appear structurally close but are thermodynamically far — the most dangerous false positives for a naive screening.
 
 #### `fig_euclidean_vs_cosine.png`
+
+![Euclidean vs Cosine](figures/fig_euclidean_vs_cosine.png)
 
 Four-panel figure comparing the two naive metrics directly:
 
@@ -514,11 +525,15 @@ Four figures are produced:
 
 #### `combining_rules_dispersive_parity.png`
 
+![Dispersive parity](scripts/figures/combining_rules_dispersive_parity.png)
+
 A 2×2 grid of parity plots (database vs. combining rule) for $\varepsilon_{kl}/k_B$, $\sigma_{kl}$, $\lambda^r_{kl}$, $\lambda^a_{kl}$. Points on the diagonal indicate the combining rule reproduces the fitted database value exactly. Pearson $r$ and MAE are annotated. Pairs with relative error > 10% are labelled.
 
 **Reading the figure:** The closer all points are to the diagonal, the less error the combining rule introduces. Systematic displacement (all points above or below) indicates bias; scatter indicates noise.
 
 #### `combining_rules_dispersive_errors.png`
+
+![Dispersive errors](scripts/figures/combining_rules_dispersive_errors.png)
 
 Relative-error histograms for each dispersive parameter. Bars show the distribution of (CR − DB)/|DB| × 100%. The median error and sample size $n$ are annotated; outliers beyond ±500% are excluded from the histogram (counted separately).
 
@@ -526,11 +541,15 @@ Relative-error histograms for each dispersive parameter. Bars show the distribut
 
 #### `combining_rules_association_parity.png`
 
+![Association parity](scripts/figures/combining_rules_association_parity.png)
+
 Parity plots for $\varepsilon^{\mathrm{assoc}}_{kl}/k_B$ [K] and $K_{kl}$ [m³]. Same layout as the dispersive parity figure.
 
 **Reading the figure:** Association parameters are typically harder to predict by combining rules because they are more sensitive to electronic structure. Wider scatter here than for dispersive parameters is expected.
 
 #### `combining_rules_association_errors.png`
+
+![Association errors](scripts/figures/combining_rules_association_errors.png)
 
 Relative-error histograms for $\varepsilon^{\mathrm{assoc}}_{kl}$ and $K_{kl}$.
 
