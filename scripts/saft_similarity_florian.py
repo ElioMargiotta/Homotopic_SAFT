@@ -168,9 +168,15 @@ def load_database(xml_path: str):
             ab = ci.find("association")
             if ab is not None:
                 for inter in ab.findall("interaction"):
+                    s1 = inter.attrib.get("site1", "")
+                    s2 = inter.attrib.get("site2", "")
+                    # Cross interactions require complementary site types;
+                    # skip pairs where both sites have the same canonical type.
+                    if not _is_valid_cross_site_pair(s1, s2):
+                        continue
                     assoc_list.append({
-                        "site1":        inter.attrib.get("site1", ""),
-                        "site2":        inter.attrib.get("site2", ""),
+                        "site1":        s1,
+                        "site2":        s2,
                         "epsilonAssoc": _pf(inter.findtext("epsilonAssoc"), 0.0),
                         "bondingVolume": _pf(inter.findtext("bondingVolume"), 0.0),
                     })
@@ -261,6 +267,17 @@ _SITE_CANONICAL = {
 def _canonical_site(name: str) -> str:
     """Return canonical site type for *name*, or *name* itself if unknown."""
     return _SITE_CANONICAL.get(name, name)
+
+
+def _is_valid_cross_site_pair(site1: str, site2: str) -> bool:
+    """Return True if *site1* and *site2* have **different** canonical types.
+
+    Cross association interactions only exist between complementary sites
+    (e.g. an electron-donor 'e' with a hydrogen-donor 'H').  Two sites
+    of the same canonical type (e.g. 'e' with 'e1', or 'H' with 'H')
+    cannot form a cross-association bond.
+    """
+    return _canonical_site(site1) != _canonical_site(site2)
 
 
 def combining_eps_assoc(ea_kk: float, ea_ll: float) -> float:
@@ -856,6 +873,10 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
         ea = inter["epsilonAssoc"]
         bv = inter["bondingVolume"]
 
+        # Cross interactions require complementary (different) site types
+        if k != l and not _is_valid_cross_site_pair(s1, s2):
+            continue
+
         m1 = sites_k.get(s1, 0.0)
         m2 = sites_l.get(s2, 0.0)
 
@@ -911,6 +932,9 @@ def _cr1_association_fallback(k: str, l: str,
                 actual_l_s2 = il["site2"]   # site on l matching try_key[1]
                 combo = (actual_k_s1, actual_l_s2)
                 if combo in used:
+                    continue
+                # Cross interactions require different canonical site types
+                if not _is_valid_cross_site_pair(actual_k_s1, actual_l_s2):
                     continue
                 used.add(combo)
 
@@ -974,6 +998,10 @@ def _get_site_site_delta(k: str, site_a: str,
             assoc_list = ci["association"]
         else:
             assoc_list = _cr1_association_fallback(k, l, groups)
+
+    # Cross interactions require complementary (different) site types
+    if k != l and not _is_valid_cross_site_pair(site_a, site_b):
+        return 0.0
 
     # Find the specific site-site interaction
     ca = _canonical_site(site_a)
@@ -2131,6 +2159,10 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
                 bv = inter["bondingVolume"]
 
                 if ea == 0.0 or bv == 0.0:
+                    continue
+
+                # Cross interactions require different canonical site types
+                if k != l and not _is_valid_cross_site_pair(s1, s2):
                     continue
 
                 F = mayer_f(ea, T)

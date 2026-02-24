@@ -100,34 +100,34 @@
       "distance_vector": 1.4142135623730951
     },
     {
-      "compound": "CCCNCCNCC(C)O",
+      "compound": "CC(O)CNCC(C)O",
       "candidate_vector": [
         0,
         0,
         0,
         2,
-        5,
-        0,
-        0,
-        0,
-        0,
-        0,
         2,
         0,
+        0,
+        0,
+        0,
+        0,
         1,
+        0,
+        2,
         0
       ],
       "signature": {
-        "F_mono": -6.558177208613158,
-        "F_chain": -3.086654273855395,
-        "F_assoc": -14.154167208323182,
-        "m_total": 3.4027431233805827,
-        "sigma3_avg": 7.758032518491295e-29,
-        "shape_avg": 0.3697717793662065
+        "F_mono": -6.7149431992753055,
+        "F_chain": -2.227019723864681,
+        "F_assoc": -16.51570945775484,
+        "m_total": 2.728152661690291,
+        "sigma3_avg": 7.717260227268905e-29,
+        "shape_avg": 0.3806674071322907
       },
-      "distance_thermo": 2.214332342507952,
-      "distance_struct": 0.8848394586667844,
-      "distance_vector": 5.196152422706632
+      "distance_thermo": 1.5191245241842122,
+      "distance_struct": 0.7764457645631255,
+      "distance_vector": 3.4641016151377544
     },
     {
       "compound": "CNCC(C)NCCO",
@@ -158,36 +158,6 @@
       "distance_thermo": 2.406445634313612,
       "distance_struct": 0.6137237534467757,
       "distance_vector": 3.605551275463989
-    },
-    {
-      "compound": "CC(O)CNCCNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        3,
-        1,
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -5.383597637574869,
-        "F_chain": -3.2579882001669733,
-        "F_assoc": -13.700808011349306,
-        "m_total": 3.5887539233805827,
-        "sigma3_avg": 7.2719922232815e-29,
-        "shape_avg": 0.41409252056603735
-      },
-      "distance_thermo": 2.5372552473892305,
-      "distance_struct": 0.8110503582494851,
-      "distance_vector": 4.58257569495584
     },
     {
       "compound": "CC(N)CC(C)O",
@@ -310,36 +280,6 @@
       "distance_vector": 4.58257569495584
     },
     {
-      "compound": "CCC(O)CNCCNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -6.346333107600554,
-        "F_chain": -3.5649484969471357,
-        "F_assoc": -13.518419829945795,
-        "m_total": 3.818074123380583,
-        "sigma3_avg": 7.513155366162874e-29,
-        "shape_avg": 0.4029947722936306
-      },
-      "distance_thermo": 2.911195625230197,
-      "distance_struct": 0.8826479656030232,
-      "distance_vector": 5.0990195135927845
-    },
-    {
       "compound": "CN(C)CCC(O)CO",
       "candidate_vector": [
         0,
@@ -370,36 +310,6 @@
       "distance_vector": 3.1622776601683795
     },
     {
-      "compound": "CCCNCCNCCC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        6,
-        0,
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -7.506270315710099,
-        "F_chain": -3.392817076801574,
-        "F_assoc": -13.961628379229936,
-        "m_total": 3.632063323380583,
-        "sigma3_avg": 7.98560624533338e-29,
-        "shape_avg": 0.3609039867637922
-      },
-      "distance_thermo": 2.9848845282055048,
-      "distance_struct": 0.9506218736673064,
-      "distance_vector": 6.0
-    },
-    {
       "compound": "CNC(CO)CNC(C)C",
       "candidate_vector": [
         0,
@@ -427,6 +337,36 @@
       },
       "distance_thermo": 3.018591957091874,
       "distance_struct": 0.6887404217179615,
+      "distance_vector": 4.47213595499958
+    },
+    {
+      "compound": "CC(O)CCNCCC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.457568207356484,
+        "F_chain": -2.8379783460823775,
+        "F_assoc": -16.091398287400462,
+        "m_total": 3.1867930616902913,
+        "sigma3_avg": 8.245091937340032e-29,
+        "shape_avg": 0.3588856527873069
+      },
+      "distance_thermo": 3.03379633425014,
+      "distance_struct": 0.9133977451972743,
       "distance_vector": 4.47213595499958
     },
     {
@@ -640,36 +580,6 @@
       "distance_vector": 5.385164807134504
     },
     {
-      "compound": "CCCC(O)CNCCNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        5,
-        1,
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -7.297866942311728,
-        "F_chain": -3.8719022324052856,
-        "F_assoc": -13.34686797666166,
-        "m_total": 4.047394323380583,
-        "sigma3_avg": 7.72913981798203e-29,
-        "shape_avg": 0.39315459254558355
-      },
-      "distance_thermo": 3.5410459399202767,
-      "distance_struct": 0.9487387950430827,
-      "distance_vector": 5.744562646538029
-    },
-    {
       "compound": "CCNCC(N)CO",
       "candidate_vector": [
         1,
@@ -790,36 +700,6 @@
       "distance_vector": 5.291502622129181
     },
     {
-      "compound": "CC(O)CNCC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        2,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        2,
-        0
-      ],
-      "signature": {
-        "F_mono": -6.7149431992753055,
-        "F_chain": -2.227019723864681,
-        "F_assoc": -19.032015294407532,
-        "m_total": 2.728152661690291,
-        "sigma3_avg": 7.717260227268905e-29,
-        "shape_avg": 0.3806674071322907
-      },
-      "distance_thermo": 3.680735541656444,
-      "distance_struct": 0.7764457645631255,
-      "distance_vector": 3.4641016151377544
-    },
-    {
       "compound": "CNC(CN)CO",
       "candidate_vector": [
         1,
@@ -850,34 +730,64 @@
       "distance_vector": 1.7320508075688772
     },
     {
-      "compound": "CCCNCCCNCC(O)CC",
+      "compound": "CN(C)CC(CO)CO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        2,
+        1,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.540883188343013,
+        "F_chain": -3.767848402400858,
+        "F_assoc": -14.500884343676601,
+        "m_total": 3.93873780747167,
+        "sigma3_avg": 5.235374328402095e-29,
+        "shape_avg": 0.5348931671789131
+      },
+      "distance_thermo": 3.700185700816729,
+      "distance_struct": 0.6273933396447032,
+      "distance_vector": 2.8284271247461903
+    },
+    {
+      "compound": "CCC(O)CNCCO",
       "candidate_vector": [
         0,
         0,
         0,
-        2,
-        7,
+        1,
+        3,
         0,
         0,
+        1,
         0,
         0,
-        0,
-        2,
+        1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -8.444361345634423,
-        "F_chain": -3.699104775626082,
-        "F_assoc": -13.781068049215119,
-        "m_total": 3.8613835233805824,
-        "sigma3_avg": 8.187980621556892e-29,
-        "shape_avg": 0.35308947672750024
+        "F_mono": -7.37710373017917,
+        "F_chain": -2.8440311411762997,
+        "F_assoc": -18.690425774274395,
+        "m_total": 3.1764216616902914,
+        "sigma3_avg": 6.466435195658813e-29,
+        "shape_avg": 0.433416038272671
       },
-      "distance_thermo": 3.8574251992581994,
-      "distance_struct": 1.011794387792061,
-      "distance_vector": 6.855654600401044
+      "distance_thermo": 3.7666988625055597,
+      "distance_struct": 0.6437246553840664,
+      "distance_vector": 3.1622776601683795
     },
     {
       "compound": "CCCNCCNC(CC)CO",
@@ -970,6 +880,66 @@
       "distance_vector": 3.605551275463989
     },
     {
+      "compound": "CC(O)CNCCNCC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        2,
+        0
+      ],
+      "signature": {
+        "F_mono": -7.676332598770985,
+        "F_chain": -3.2851485899467883,
+        "F_assoc": -18.60811525689244,
+        "m_total": 3.5526829233805826,
+        "sigma3_avg": 7.690028067288101e-29,
+        "shape_avg": 0.35960701438417136
+      },
+      "distance_thermo": 4.008016332612758,
+      "distance_struct": 0.9180080387237226,
+      "distance_vector": 4.795831523312719
+    },
+    {
+      "compound": "CCN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        1,
+        3,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.1736858909952,
+        "F_chain": -3.6121826623256545,
+        "F_assoc": -14.92428134333612,
+        "m_total": 3.75272700747167,
+        "sigma3_avg": 5.535867757224911e-29,
+        "shape_avg": 0.5006935379044286
+      },
+      "distance_thermo": 4.0296717679959535,
+      "distance_struct": 0.6215836660488969,
+      "distance_vector": 2.8284271247461903
+    },
+    {
       "compound": "CC(O)CN(C)CCCN",
       "candidate_vector": [
         0,
@@ -1030,34 +1000,34 @@
       "distance_vector": 5.916079783099616
     },
     {
-      "compound": "CC(O)CCNCCC(C)O",
+      "compound": "CC(O)CCCNCCO",
       "candidate_vector": [
         0,
         0,
         0,
-        2,
+        1,
         4,
-        0,
-        0,
-        0,
         0,
         0,
         1,
         0,
-        2,
+        0,
+        1,
+        0,
+        1,
         0
       ],
       "signature": {
-        "F_mono": -8.457568207356484,
-        "F_chain": -2.8379783460823775,
-        "F_assoc": -18.568156847558715,
-        "m_total": 3.1867930616902913,
-        "sigma3_avg": 8.245091937340032e-29,
-        "shape_avg": 0.3588856527873069
+        "F_mono": -8.265987134518546,
+        "F_chain": -3.15116621480003,
+        "F_assoc": -18.484216320726823,
+        "m_total": 3.405741861690291,
+        "sigma3_avg": 6.78033008761291e-29,
+        "shape_avg": 0.4196735703016465
       },
-      "distance_thermo": 4.250595223978532,
-      "distance_struct": 0.9133977451972743,
-      "distance_vector": 4.47213595499958
+      "distance_thermo": 4.180256219500891,
+      "distance_struct": 0.7304484835906077,
+      "distance_vector": 3.872983346207417
     },
     {
       "compound": "CCC(CO)N(C)CC(C)O",
@@ -1268,6 +1238,36 @@
       "distance_thermo": 4.616828017976882,
       "distance_struct": 0.8219303256773742,
       "distance_vector": 4.242640687119285
+    },
+    {
+      "compound": "CCC(C)CC(O)CNCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        4,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.114300261964669,
+        "F_chain": -3.9365294366988253,
+        "F_assoc": -17.650988833709533,
+        "m_total": 4.050393061690291,
+        "sigma3_avg": 6.904697669059667e-29,
+        "shape_avg": 0.4350968181116083
+      },
+      "distance_thermo": 4.620931074796779,
+      "distance_struct": 0.8390836198864723,
+      "distance_vector": 4.358898943540674
     },
     {
       "compound": "CCCNCCCO",
@@ -1570,6 +1570,66 @@
       "distance_vector": 6.082762530298219
     },
     {
+      "compound": "CC(C)CC(CC(C)O)NCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        2,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.103465712136481,
+        "F_chain": -4.408461455951925,
+        "F_assoc": -17.36386024475626,
+        "m_total": 4.465724061690292,
+        "sigma3_avg": 6.780129961335878e-29,
+        "shape_avg": 0.4574260830981566
+      },
+      "distance_thermo": 4.756434248654773,
+      "distance_struct": 0.8851032611302522,
+      "distance_vector": 4.69041575982343
+    },
+    {
+      "compound": "CCCCC(O)CNCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        5,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.151716288932391,
+        "F_chain": -3.458275021262715,
+        "F_assoc": -18.291626282661404,
+        "m_total": 3.635062061690291,
+        "sigma3_avg": 7.058550674587847e-29,
+        "shape_avg": 0.4076650069793603
+      },
+      "distance_thermo": 4.761121778135281,
+      "distance_struct": 0.8092641668893905,
+      "distance_vector": 4.69041575982343
+    },
+    {
       "compound": "CN(C)CCCC(N)CCO",
       "candidate_vector": [
         1,
@@ -1600,6 +1660,66 @@
       "distance_vector": 3.872983346207417
     },
     {
+      "compound": "CCCNCCC(O)CC(O)CC",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        2,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.196454653720085,
+        "F_chain": -3.4498830602835535,
+        "F_assoc": -15.726539244942693,
+        "m_total": 3.6454334616902915,
+        "sigma3_avg": 8.647616946628879e-29,
+        "shape_avg": 0.34258472404535195
+      },
+      "distance_thermo": 4.823820523653848,
+      "distance_struct": 1.0333507627142688,
+      "distance_vector": 6.0
+    },
+    {
+      "compound": "CCCNCCNCC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -6.558177208613158,
+        "F_chain": -3.086654273855395,
+        "F_assoc": -11.01528968613723,
+        "m_total": 3.4027431233805827,
+        "sigma3_avg": 7.758032518491295e-29,
+        "shape_avg": 0.3697717793662065
+      },
+      "distance_thermo": 4.843381262536823,
+      "distance_struct": 0.8848394586667844,
+      "distance_vector": 5.196152422706632
+    },
+    {
       "compound": "CCC(CN)N(CC(C)O)C(C)C",
       "candidate_vector": [
         0,
@@ -1628,36 +1748,6 @@
       "distance_thermo": 4.897869304431345,
       "distance_struct": 0.8788620768489749,
       "distance_vector": 5.385164807134504
-    },
-    {
-      "compound": "CCNCCC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        3,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -5.344209291489291,
-        "F_chain": -2.029159380908306,
-        "F_assoc": -10.618807398239111,
-        "m_total": 2.5782128616902913,
-        "sigma3_avg": 7.808849863734188e-29,
-        "shape_avg": 0.395307732522347
-      },
-      "distance_thermo": 4.9625064982610825,
-      "distance_struct": 0.7475790378239862,
-      "distance_vector": 3.4641016151377544
     },
     {
       "compound": "CCC(CO)NCCO",
@@ -1750,36 +1840,6 @@
       "distance_vector": 4.242640687119285
     },
     {
-      "compound": "CNCC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -3.53193670449288,
-        "F_chain": -1.4213837283167967,
-        "F_assoc": -11.006736166975102,
-        "m_total": 2.1195724616902916,
-        "sigma3_avg": 7.053464455314528e-29,
-        "shape_avg": 0.4312246873266909
-      },
-      "distance_thermo": 5.0556140696855625,
-      "distance_struct": 0.5975412386691598,
-      "distance_vector": 2.8284271247461903
-    },
-    {
       "compound": "CCCCCNCCO",
       "candidate_vector": [
         0,
@@ -1810,36 +1870,6 @@
       "distance_vector": 4.58257569495584
     },
     {
-      "compound": "CCNCCCC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        4,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -6.239991958264405,
-        "F_chain": -2.3340140367258044,
-        "F_assoc": -10.450301099032584,
-        "m_total": 2.8075330616902914,
-        "sigma3_avg": 8.10044119767574e-29,
-        "shape_avg": 0.3817498176842527
-      },
-      "distance_thermo": 5.1715571366954,
-      "distance_struct": 0.818319437669714,
-      "distance_vector": 4.123105625617661
-    },
-    {
       "compound": "CC(CCN(C)C)CC(N)CO",
       "candidate_vector": [
         1,
@@ -1868,6 +1898,36 @@
       "distance_thermo": 5.186202470161563,
       "distance_struct": 0.8349273665680476,
       "distance_vector": 4.242640687119285
+    },
+    {
+      "compound": "CC(O)CNCCNC(C)C",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -5.383597637574869,
+        "F_chain": -3.2579882001669733,
+        "F_assoc": -10.621642763072899,
+        "m_total": 3.5887539233805827,
+        "sigma3_avg": 7.2719922232815e-29,
+        "shape_avg": 0.41409252056603735
+      },
+      "distance_thermo": 5.219945290553164,
+      "distance_struct": 0.8110503582494851,
+      "distance_vector": 4.58257569495584
     },
     {
       "compound": "CCCC(C)NCCO",
@@ -1960,34 +2020,34 @@
       "distance_vector": 2.8284271247461903
     },
     {
-      "compound": "CNCCN(C)CC(C)O",
+      "compound": "CCCNCCNCCC(C)O",
       "candidate_vector": [
         0,
         0,
         0,
-        3,
-        3,
+        2,
+        6,
         0,
         0,
         0,
         0,
         0,
-        1,
-        1,
+        2,
+        0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -6.432772341266432,
-        "F_chain": -2.922752622483358,
-        "F_assoc": -10.432694843759368,
-        "m_total": 3.3014592691619615,
-        "sigma3_avg": 7.371886456398915e-29,
-        "shape_avg": 0.4148806000077645
+        "F_mono": -7.506270315710099,
+        "F_chain": -3.392817076801574,
+        "F_assoc": -10.847673360128926,
+        "m_total": 3.632063323380583,
+        "sigma3_avg": 7.98560624533338e-29,
+        "shape_avg": 0.3609039867637922
       },
-      "distance_thermo": 5.330223930779447,
-      "distance_struct": 0.7714045536628343,
-      "distance_vector": 4.242640687119285
+      "distance_thermo": 5.332803271350921,
+      "distance_struct": 0.9506218736673064,
+      "distance_vector": 6.0
     },
     {
       "compound": "CC(CO)N(C)C(CN)CN(C)C",
@@ -2048,6 +2108,36 @@
       "distance_thermo": 5.370884915383242,
       "distance_struct": 0.6177956582135359,
       "distance_vector": 4.123105625617661
+    },
+    {
+      "compound": "CC(C)NCCCC(O)CCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        5,
+        1,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.997648078249936,
+        "F_chain": -4.244349223621952,
+        "F_assoc": -17.488938915950147,
+        "m_total": 4.279713261690291,
+        "sigma3_avg": 7.135563287738958e-29,
+        "shape_avg": 0.4240706739904387
+      },
+      "distance_thermo": 5.380944872909553,
+      "distance_struct": 0.9078147383039111,
+      "distance_vector": 5.0990195135927845
     },
     {
       "compound": "CC(C)CC(CO)NCCO",
@@ -2170,6 +2260,36 @@
       "distance_vector": 3.605551275463989
     },
     {
+      "compound": "CCCC(O)CCCNCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        6,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.0348527319861,
+        "F_chain": -3.765367181451577,
+        "F_assoc": -18.110986741918772,
+        "m_total": 3.864382261690291,
+        "sigma3_avg": 7.306789751505535e-29,
+        "shape_avg": 0.3970816681593598
+      },
+      "distance_thermo": 5.452792060360876,
+      "distance_struct": 0.8814559420657955,
+      "distance_vector": 5.5677643628300215
+    },
+    {
       "compound": "CCN(CCO)CCC(C)CN",
       "candidate_vector": [
         0,
@@ -2198,66 +2318,6 @@
       "distance_thermo": 5.455611491333867,
       "distance_struct": 0.8313141700412847,
       "distance_vector": 4.898979485566356
-    },
-    {
-      "compound": "CC(O)CNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -4.392803794599432,
-        "F_chain": -2.2076811796960203,
-        "F_assoc": -10.28255435297194,
-        "m_total": 2.7642236616902913,
-        "sigma3_avg": 7.174310489759169e-29,
-        "shape_avg": 0.4511303755780597
-      },
-      "distance_thermo": 5.473360129283597,
-      "distance_struct": 0.6271172202262306,
-      "distance_vector": 3.7416573867739413
-    },
-    {
-      "compound": "CCCNCCC(O)CC(O)CC",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        6,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        2,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.196454653720085,
-        "F_chain": -3.4498830602835535,
-        "F_assoc": -18.16708525974925,
-        "m_total": 3.6454334616902915,
-        "sigma3_avg": 8.647616946628879e-29,
-        "shape_avg": 0.34258472404535195
-      },
-      "distance_thermo": 5.489444442754246,
-      "distance_struct": 1.0333507627142688,
-      "distance_vector": 6.0
     },
     {
       "compound": "CN(C)CCCC(CO)CO",
@@ -2290,47 +2350,47 @@
       "distance_vector": 4.0
     },
     {
-      "compound": "CCC(O)CNC(C)C",
+      "compound": "CCC(O)CNCCNC(C)C",
       "candidate_vector": [
         0,
         0,
         0,
         3,
+        4,
+        1,
+        0,
+        0,
+        0,
+        0,
         2,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -5.293416058402508,
-        "F_chain": -2.5128154250978714,
-        "F_assoc": -10.125266312746469,
-        "m_total": 2.9935438616902914,
-        "sigma3_avg": 7.488975057153021e-29,
-        "shape_avg": 0.4341386239366207
+        "F_mono": -6.346333107600554,
+        "F_chain": -3.5649484969471357,
+        "F_assoc": -10.46429939813398,
+        "m_total": 3.818074123380583,
+        "sigma3_avg": 7.513155366162874e-29,
+        "shape_avg": 0.4029947722936306
       },
-      "distance_thermo": 5.519800655016421,
-      "distance_struct": 0.7114359254646918,
-      "distance_vector": 3.872983346207417
+      "distance_thermo": 5.491224209470742,
+      "distance_struct": 0.8826479656030232,
+      "distance_vector": 5.0990195135927845
     },
     {
-      "compound": "CCCNCCC(O)CC",
+      "compound": "CC(O)CCNC(CO)CN(C)C",
       "candidate_vector": [
         0,
         0,
+        1,
+        3,
+        3,
+        1,
         0,
-        2,
-        5,
         0,
-        0,
-        0,
-        0,
+        1,
         0,
         1,
         0,
@@ -2338,16 +2398,16 @@
         0
       ],
       "signature": {
-        "F_mono": -7.130957080871315,
-        "F_chain": -2.6392750121117303,
-        "F_assoc": -10.295179834832505,
-        "m_total": 3.0368532616902915,
-        "sigma3_avg": 8.35076903389151e-29,
-        "shape_avg": 0.37023948531020157
+        "F_mono": -9.14268359898952,
+        "F_chain": -4.514583320516261,
+        "F_assoc": -18.772205584892223,
+        "m_total": 4.544319269161962,
+        "sigma3_avg": 6.525389438160887e-29,
+        "shape_avg": 0.4533680798512755
       },
-      "distance_thermo": 5.527943274174682,
-      "distance_struct": 0.8849997960721874,
-      "distance_vector": 4.898979485566356
+      "distance_thermo": 5.533888985626812,
+      "distance_struct": 0.8847719004777805,
+      "distance_vector": 4.242640687119285
     },
     {
       "compound": "CCC(CO)CNC(C)C",
@@ -2470,64 +2530,34 @@
       "distance_vector": 4.242640687119285
     },
     {
-      "compound": "CNCCCC(O)CN(C)C",
+      "compound": "CCCN(CCO)CCCO",
       "candidate_vector": [
         0,
         0,
-        0,
-        3,
-        4,
-        0,
-        0,
-        0,
+        1,
+        1,
+        5,
         0,
         0,
         1,
         1,
-        1,
+        0,
+        0,
+        0,
+        0,
         0
       ],
       "signature": {
-        "F_mono": -7.289387028697382,
-        "F_chain": -3.229040353638432,
-        "F_assoc": -10.300025442617102,
-        "m_total": 3.530779469161961,
-        "sigma3_avg": 7.627515727524527e-29,
-        "shape_avg": 0.4028286583859445
+        "F_mono": -10.770519152139542,
+        "F_chain": -4.228412843786385,
+        "F_assoc": -14.693869439206566,
+        "m_total": 4.21136740747167,
+        "sigma3_avg": 6.123223427819321e-29,
+        "shape_avg": 0.47113953223277805
       },
-      "distance_thermo": 5.709167837185648,
-      "distance_struct": 0.8457659037073205,
-      "distance_vector": 4.795831523312719
-    },
-    {
-      "compound": "CC(O)CCCNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        3,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -6.188801535499437,
-        "F_chain": -2.818285651060735,
-        "F_assoc": -9.979745802365972,
-        "m_total": 3.2228640616902915,
-        "sigma3_avg": 7.762303695720749e-29,
-        "shape_avg": 0.4195649400822055
-      },
-      "distance_thermo": 5.718567259612765,
-      "distance_struct": 0.7889088843608718,
-      "distance_vector": 4.242640687119285
+      "distance_thermo": 5.7383302896735,
+      "distance_struct": 0.780589916656544,
+      "distance_vector": 4.47213595499958
     },
     {
       "compound": "CC(CC(CO)CO)CN(C)C",
@@ -2558,6 +2588,66 @@
       "distance_thermo": 5.846018585475336,
       "distance_struct": 0.8509650065269522,
       "distance_vector": 4.58257569495584
+    },
+    {
+      "compound": "CCCC(O)CNCCNC(C)C",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        5,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -7.297866942311728,
+        "F_chain": -3.8719022324052856,
+        "F_assoc": -10.316852414240797,
+        "m_total": 4.047394323380583,
+        "sigma3_avg": 7.72913981798203e-29,
+        "shape_avg": 0.39315459254558355
+      },
+      "distance_thermo": 5.917175180861026,
+      "distance_struct": 0.9487387950430827,
+      "distance_vector": 5.744562646538029
+    },
+    {
+      "compound": "CCCNCCCNCC(O)CC",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        7,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.444361345634423,
+        "F_chain": -3.699104775626082,
+        "F_assoc": -10.691069728568797,
+        "m_total": 3.8613835233805824,
+        "sigma3_avg": 8.187980621556892e-29,
+        "shape_avg": 0.35308947672750024
+      },
+      "distance_thermo": 5.9414287195713085,
+      "distance_struct": 1.011794387792061,
+      "distance_vector": 6.855654600401044
     },
     {
       "compound": "CN(C)CC(CC(O)CO)N(C)C",
@@ -2680,36 +2770,6 @@
       "distance_vector": 4.795831523312719
     },
     {
-      "compound": "CCCNCCC(O)CCC",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        6,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.018119388201573,
-        "F_chain": -2.9448396590907726,
-        "F_assoc": -10.15149245144378,
-        "m_total": 3.2661734616902915,
-        "sigma3_avg": 8.567981505793409e-29,
-        "shape_avg": 0.3603454490410842
-      },
-      "distance_thermo": 6.00447958572141,
-      "distance_struct": 0.9476690252442416,
-      "distance_vector": 5.744562646538029
-    },
-    {
       "compound": "CNC(CC(C)CO)CN(C)C",
       "candidate_vector": [
         0,
@@ -2770,7 +2830,7 @@
       "distance_vector": 4.795831523312719
     },
     {
-      "compound": "CC(C)CC(CC(C)O)NCCO",
+      "compound": "CC(O)CC(C)NC(C)CCN",
       "candidate_vector": [
         0,
         0,
@@ -2779,24 +2839,24 @@
         3,
         2,
         0,
+        0,
+        0,
         1,
-        0,
-        0,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -9.103465712136481,
-        "F_chain": -4.408461455951925,
-        "F_assoc": -19.828249864748223,
-        "m_total": 4.465724061690292,
-        "sigma3_avg": 6.780129961335878e-29,
-        "shape_avg": 0.4574260830981566
+        "F_mono": -8.125203459195186,
+        "F_chain": -3.8637836529426637,
+        "F_assoc": -20.69417265889842,
+        "m_total": 4.09171034292086,
+        "sigma3_avg": 6.935570649084435e-29,
+        "shape_avg": 0.48688779181001096
       },
-      "distance_thermo": 6.138749340802829,
-      "distance_struct": 0.8851032611302522,
+      "distance_thermo": 6.121391794692486,
+      "distance_struct": 0.8073472202412775,
       "distance_vector": 4.69041575982343
     },
     {
@@ -2830,94 +2890,94 @@
       "distance_vector": 5.0
     },
     {
-      "compound": "CCCN(CCNC)CC(C)O",
+      "compound": "CC(CCO)NC(CO)CN(C)C",
       "candidate_vector": [
         0,
         0,
-        0,
+        1,
         3,
-        5,
-        0,
-        0,
-        0,
-        0,
+        2,
+        2,
         0,
         1,
         1,
+        0,
         1,
+        0,
+        0,
         0
       ],
       "signature": {
-        "F_mono": -8.146888352996077,
-        "F_chain": -3.53543263059486,
-        "F_assoc": -10.175808382672729,
-        "m_total": 3.7600996691619613,
-        "sigma3_avg": 7.854302301629249e-29,
-        "shape_avg": 0.39224675953228344
+        "F_mono": -9.488766077962605,
+        "F_chain": -5.284323629152464,
+        "F_assoc": -18.826381999148204,
+        "m_total": 5.178599069161962,
+        "sigma3_avg": 5.623297984167549e-29,
+        "shape_avg": 0.5071410891417153
       },
-      "distance_thermo": 6.195336181622737,
-      "distance_struct": 0.9142736960520838,
-      "distance_vector": 5.477225575051661
+      "distance_thermo": 6.21182190791231,
+      "distance_struct": 0.9147499531957337,
+      "distance_vector": 4.242640687119285
     },
     {
-      "compound": "CCC(C)CC(O)CNCCO",
+      "compound": "CC(C)NCC(O)CN",
       "candidate_vector": [
         0,
         0,
         0,
         2,
-        4,
+        2,
         1,
         0,
+        0,
+        0,
         1,
-        0,
-        0,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -9.114300261964669,
-        "F_chain": -3.9365294366988253,
-        "F_assoc": -20.1950274519302,
-        "m_total": 4.050393061690291,
-        "sigma3_avg": 6.904697669059667e-29,
-        "shape_avg": 0.4350968181116083
+        "F_mono": -6.623435616990527,
+        "F_chain": -2.7779009042883125,
+        "F_assoc": -21.59243088157602,
+        "m_total": 3.2177389429208594,
+        "sigma3_avg": 6.510323924605907e-29,
+        "shape_avg": 0.4992955616788066
       },
-      "distance_thermo": 6.209983949690632,
-      "distance_struct": 0.8390836198864723,
-      "distance_vector": 4.358898943540674
+      "distance_thermo": 6.234128972151924,
+      "distance_struct": 0.5880107755889848,
+      "distance_vector": 3.3166247903554
     },
     {
-      "compound": "CCC(CNC)N(C)CC(C)O",
+      "compound": "CC(C)NCCC(O)CN",
       "candidate_vector": [
         0,
         0,
         0,
-        4,
+        2,
         3,
         1,
         0,
         0,
         0,
+        1,
+        1,
         0,
-        1,
-        1,
         1,
         0
       ],
       "signature": {
-        "F_mono": -7.369837574533317,
-        "F_chain": -3.7045519088397025,
-        "F_assoc": -9.839394708301855,
-        "m_total": 3.9461104691619613,
-        "sigma3_avg": 7.405192182641816e-29,
-        "shape_avg": 0.43149443038125584
+        "F_mono": -7.482266932578014,
+        "F_chain": -3.0853985765953675,
+        "F_assoc": -21.334413831269813,
+        "m_total": 3.4470591429208595,
+        "sigma3_avg": 6.818201940736896e-29,
+        "shape_avg": 0.48133509121156764
       },
-      "distance_thermo": 6.301313896958834,
-      "distance_struct": 0.8638311831216089,
-      "distance_vector": 5.0990195135927845
+      "distance_thermo": 6.234384862883719,
+      "distance_struct": 0.6772907830333194,
+      "distance_vector": 3.7416573867739413
     },
     {
       "compound": "CN(C)CCCC(CO)CCO",
@@ -2950,94 +3010,34 @@
       "distance_vector": 4.58257569495584
     },
     {
-      "compound": "CCC(O)CNCCO",
+      "compound": "CC(O)CC(C)NCCCN",
       "candidate_vector": [
         0,
         0,
         0,
-        1,
-        3,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -7.37710373017917,
-        "F_chain": -2.8440311411762997,
-        "F_assoc": -21.52994771567283,
-        "m_total": 3.1764216616902914,
-        "sigma3_avg": 6.466435195658813e-29,
-        "shape_avg": 0.433416038272671
-      },
-      "distance_thermo": 6.335610172262949,
-      "distance_struct": 0.6437246553840664,
-      "distance_vector": 3.1622776601683795
-    },
-    {
-      "compound": "CC(O)CC(C)NC(C)CCN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        3,
         2,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.125203459195186,
-        "F_chain": -3.8637836529426637,
-        "F_assoc": -21.00696937401372,
-        "m_total": 4.09171034292086,
-        "sigma3_avg": 6.935570649084435e-29,
-        "shape_avg": 0.48688779181001096
-      },
-      "distance_thermo": 6.386973963027152,
-      "distance_struct": 0.8073472202412775,
-      "distance_vector": 4.69041575982343
-    },
-    {
-      "compound": "CC(O)CCCNCCO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
         4,
-        0,
-        0,
         1,
         0,
         0,
+        0,
+        1,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -8.265987134518546,
-        "F_chain": -3.15116621480003,
-        "F_assoc": -21.26426187329521,
-        "m_total": 3.405741861690291,
-        "sigma3_avg": 6.78033008761291e-29,
-        "shape_avg": 0.4196735703016465
+        "F_mono": -8.34172854432172,
+        "F_chain": -3.392779782269769,
+        "F_assoc": -21.093493812945194,
+        "m_total": 3.676379342920859,
+        "sigma3_avg": 7.091435710612557e-29,
+        "shape_avg": 0.46561524843557717
       },
-      "distance_thermo": 6.447557715828104,
-      "distance_struct": 0.7304484835906077,
-      "distance_vector": 3.872983346207417
+      "distance_thermo": 6.392229014991975,
+      "distance_struct": 0.7582362633616067,
+      "distance_vector": 4.358898943540674
     },
     {
       "compound": "CCCC(CCO)CNC(C)C",
@@ -3070,12 +3070,42 @@
       "distance_vector": 5.0990195135927845
     },
     {
-      "compound": "CC(C)NCCC(O)CN",
+      "compound": "CC(O)CCC(CN)CNC(C)C",
       "candidate_vector": [
         0,
         0,
         0,
+        3,
+        4,
         2,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.997124821263858,
+        "F_chain": -4.172344064901597,
+        "F_assoc": -20.491253635926228,
+        "m_total": 4.32103054292086,
+        "sigma3_avg": 7.162931140525177e-29,
+        "shape_avg": 0.4732184943864699
+      },
+      "distance_thermo": 6.466686658625488,
+      "distance_struct": 0.8761979125320619,
+      "distance_vector": 5.196152422706632
+    },
+    {
+      "compound": "CNCC(CN)N(C)CC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
         3,
         1,
         0,
@@ -3083,81 +3113,21 @@
         0,
         1,
         1,
-        0,
+        1,
         1,
         0
       ],
       "signature": {
-        "F_mono": -7.482266932578014,
-        "F_chain": -3.0853985765953675,
-        "F_assoc": -21.65280802597369,
-        "m_total": 3.4470591429208595,
-        "sigma3_avg": 6.818201940736896e-29,
-        "shape_avg": 0.48133509121156764
+        "F_mono": -8.244363736761635,
+        "F_chain": -3.9674216301188263,
+        "F_assoc": -21.020469904722876,
+        "m_total": 4.17030555039253,
+        "sigma3_avg": 6.653237157433717e-29,
+        "shape_avg": 0.48191059980165857
       },
-      "distance_thermo": 6.531346021449612,
-      "distance_struct": 0.6772907830333194,
-      "distance_vector": 3.7416573867739413
-    },
-    {
-      "compound": "CC(C)NCC(O)CN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        2,
-        1,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -6.623435616990527,
-        "F_chain": -2.7779009042883125,
-        "F_assoc": -21.91298565056717,
-        "m_total": 3.2177389429208594,
-        "sigma3_avg": 6.510323924605907e-29,
-        "shape_avg": 0.4992955616788066
-      },
-      "distance_thermo": 6.545771512544948,
-      "distance_struct": 0.5880107755889848,
-      "distance_vector": 3.3166247903554
-    },
-    {
-      "compound": "CCCCC(O)CCNCCC",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        7,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.902227325920572,
-        "F_chain": -3.2506373926058063,
-        "F_assoc": -10.01768551760525,
-        "m_total": 3.495493661690291,
-        "sigma3_avg": 8.758221742375393e-29,
-        "shape_avg": 0.351749599864055
-      },
-      "distance_thermo": 6.574490581078272,
-      "distance_struct": 1.0065836611832528,
-      "distance_vector": 6.6332495807108
+      "distance_thermo": 6.481327524319132,
+      "distance_struct": 0.8033512141558561,
+      "distance_vector": 4.47213595499958
     },
     {
       "compound": "CC(CCO)CNC(C)CN(C)C",
@@ -3190,34 +3160,34 @@
       "distance_vector": 5.385164807134504
     },
     {
-      "compound": "CC(O)CC(C)NCCCN",
+      "compound": "CCCCN(CCO)CCCO",
       "candidate_vector": [
         0,
         0,
-        0,
-        2,
-        4,
         1,
-        0,
+        1,
+        6,
         0,
         0,
         1,
         1,
         0,
-        1,
+        0,
+        0,
+        0,
         0
       ],
       "signature": {
-        "F_mono": -8.34172854432172,
-        "F_chain": -3.392779782269769,
-        "F_assoc": -21.409821168437503,
-        "m_total": 3.676379342920859,
-        "sigma3_avg": 7.091435710612557e-29,
-        "shape_avg": 0.46561524843557717
+        "F_mono": -11.579078071155767,
+        "F_chain": -4.536260941605237,
+        "F_assoc": -14.587924417252488,
+        "m_total": 4.44068760747167,
+        "sigma3_avg": 6.376947238848971e-29,
+        "shape_avg": 0.4586518135429556
       },
-      "distance_thermo": 6.668870701426484,
-      "distance_struct": 0.7582362633616067,
-      "distance_vector": 4.358898943540674
+      "distance_thermo": 6.60371568730084,
+      "distance_struct": 0.8515457486431037,
+      "distance_vector": 5.385164807134504
     },
     {
       "compound": "CC(CCCO)CC(C)NCCO",
@@ -3250,7 +3220,7 @@
       "distance_vector": 4.898979485566356
     },
     {
-      "compound": "CC(C)NCCCC(O)CCCO",
+      "compound": "CC(O)CCNCCC(C)CN",
       "candidate_vector": [
         0,
         0,
@@ -3259,85 +3229,25 @@
         5,
         1,
         0,
+        0,
+        0,
         1,
-        0,
-        0,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -9.997648078249936,
-        "F_chain": -4.244349223621952,
-        "F_assoc": -19.987916071399376,
-        "m_total": 4.279713261690291,
-        "sigma3_avg": 7.135563287738958e-29,
-        "shape_avg": 0.4240706739904387
+        "F_mono": -9.20170943013276,
+        "F_chain": -3.7000811500566955,
+        "F_assoc": -20.86758625458058,
+        "m_total": 3.905699542920859,
+        "sigma3_avg": 7.335503402087907e-29,
+        "shape_avg": 0.45174136306094015
       },
-      "distance_thermo": 6.703587809172458,
-      "distance_struct": 0.9078147383039111,
+      "distance_thermo": 6.693203797651041,
+      "distance_struct": 0.8323046882631163,
       "distance_vector": 5.0990195135927845
-    },
-    {
-      "compound": "CC(O)CCC(CN)CNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        4,
-        2,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.997124821263858,
-        "F_chain": -4.172344064901597,
-        "F_assoc": -20.802206110843187,
-        "m_total": 4.32103054292086,
-        "sigma3_avg": 7.162931140525177e-29,
-        "shape_avg": 0.4732184943864699
-      },
-      "distance_thermo": 6.707732777757256,
-      "distance_struct": 0.8761979125320619,
-      "distance_vector": 5.196152422706632
-    },
-    {
-      "compound": "CCCCC(O)CNCCO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        5,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -9.151716288932391,
-        "F_chain": -3.458275021262715,
-        "F_assoc": -21.01649764544679,
-        "m_total": 3.635062061690291,
-        "sigma3_avg": 7.058550674587847e-29,
-        "shape_avg": 0.4076650069793603
-      },
-      "distance_thermo": 6.714655597805377,
-      "distance_struct": 0.8092641668893905,
-      "distance_vector": 4.69041575982343
     },
     {
       "compound": "CC(N)CC(CN)CO",
@@ -3370,66 +3280,6 @@
       "distance_vector": 2.6457513110645907
     },
     {
-      "compound": "CNCC(CN)N(C)CC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        3,
-        1,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.244363736761635,
-        "F_chain": -3.9674216301188263,
-        "F_assoc": -21.336161382131905,
-        "m_total": 4.17030555039253,
-        "sigma3_avg": 6.653237157433717e-29,
-        "shape_avg": 0.48191059980165857
-      },
-      "distance_thermo": 6.750354141026286,
-      "distance_struct": 0.8033512141558561,
-      "distance_vector": 4.47213595499958
-    },
-    {
-      "compound": "CCNCC(C)N(CC)CC(C)O",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        4,
-        4,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.22363209324833,
-        "F_chain": -4.01191481844537,
-        "F_assoc": -9.72825990680224,
-        "m_total": 4.175430669161961,
-        "sigma3_avg": 7.619691386924545e-29,
-        "shape_avg": 0.42039075303168527
-      },
-      "distance_thermo": 6.772904524646508,
-      "distance_struct": 0.9304962798600335,
-      "distance_vector": 5.5677643628300215
-    },
-    {
       "compound": "CCCN(C)CCC(C)NCCO",
       "candidate_vector": [
         0,
@@ -3460,34 +3310,64 @@
       "distance_vector": 5.5677643628300215
     },
     {
-      "compound": "CC(O)CCNCCC(C)CN",
+      "compound": "CNCC(C)O",
       "candidate_vector": [
         0,
         0,
         0,
         2,
-        5,
         1,
         0,
         0,
         0,
-        1,
+        0,
+        0,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -9.20170943013276,
-        "F_chain": -3.7000811500566955,
-        "F_assoc": -21.18193228671798,
-        "m_total": 3.905699542920859,
-        "sigma3_avg": 7.335503402087907e-29,
-        "shape_avg": 0.45174136306094015
+        "F_mono": -3.53193670449288,
+        "F_chain": -1.4213837283167967,
+        "F_assoc": -8.99042213719964,
+        "m_total": 2.1195724616902916,
+        "sigma3_avg": 7.053464455314528e-29,
+        "shape_avg": 0.4312246873266909
       },
-      "distance_thermo": 6.946001798255459,
-      "distance_struct": 0.8323046882631163,
-      "distance_vector": 5.0990195135927845
+      "distance_thermo": 6.921516826864217,
+      "distance_struct": 0.5975412386691598,
+      "distance_vector": 2.8284271247461903
+    },
+    {
+      "compound": "CCNCCC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -5.344209291489291,
+        "F_chain": -2.029159380908306,
+        "F_assoc": -8.646400224099253,
+        "m_total": 2.5782128616902913,
+        "sigma3_avg": 7.808849863734188e-29,
+        "shape_avg": 0.395307732522347
+      },
+      "distance_thermo": 6.9232714764642385,
+      "distance_struct": 0.7475790378239862,
+      "distance_vector": 3.4641016151377544
     },
     {
       "compound": "NCCC(N)CO",
@@ -3550,36 +3430,6 @@
       "distance_vector": 5.744562646538029
     },
     {
-      "compound": "CCCCC(O)CCCNC(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        3,
-        6,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.852791786399836,
-        "F_chain": -3.736015294973441,
-        "F_assoc": -9.599081702994262,
-        "m_total": 3.9108246616902917,
-        "sigma3_avg": 8.401996979187805e-29,
-        "shape_avg": 0.3860986262339057
-      },
-      "distance_thermo": 7.042651703517684,
-      "distance_struct": 0.9882639468393734,
-      "distance_vector": 6.244997998398398
-    },
-    {
       "compound": "CC(CN)CC(CN)CO",
       "candidate_vector": [
         1,
@@ -3608,6 +3458,36 @@
       "distance_thermo": 7.06310018187241,
       "distance_struct": 0.6802242901526298,
       "distance_vector": 3.1622776601683795
+    },
+    {
+      "compound": "CCNCCCC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -6.239991958264405,
+        "F_chain": -2.3340140367258044,
+        "F_assoc": -8.498047441679901,
+        "m_total": 2.8075330616902914,
+        "sigma3_avg": 8.10044119767574e-29,
+        "shape_avg": 0.3817498176842527
+      },
+      "distance_thermo": 7.10145642656894,
+      "distance_struct": 0.818319437669714,
+      "distance_vector": 4.123105625617661
     },
     {
       "compound": "NCCC(N)CCO",
@@ -3670,34 +3550,94 @@
       "distance_vector": 4.47213595499958
     },
     {
-      "compound": "CCCC(O)CCCNCCO",
+      "compound": "CC(O)CCNCCNCCO",
       "candidate_vector": [
         0,
         0,
         0,
         1,
-        6,
+        5,
         0,
         0,
         1,
         0,
         0,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.816385592083806,
+        "F_chain": -3.9044758068689203,
+        "F_assoc": -21.514411106444165,
+        "m_total": 4.000951923380582,
+        "sigma3_avg": 6.695746468333136e-29,
+        "shape_avg": 0.4038446406203979
+      },
+      "distance_thermo": 7.1083486595566665,
+      "distance_struct": 0.8498520234852329,
+      "distance_vector": 5.0
+    },
+    {
+      "compound": "CNCCCC(CCN)CC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        6,
+        1,
+        0,
+        0,
+        0,
+        1,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -10.0348527319861,
-        "F_chain": -3.765367181451577,
-        "F_assoc": -20.78444310908217,
-        "m_total": 3.864382261690291,
-        "sigma3_avg": 7.306789751505535e-29,
-        "shape_avg": 0.3970816681593598
+        "F_mono": -10.062123196203821,
+        "F_chain": -4.007326277846343,
+        "F_assoc": -20.6549642459174,
+        "m_total": 4.13501974292086,
+        "sigma3_avg": 7.554798729726397e-29,
+        "shape_avg": 0.43940631540253683
       },
-      "distance_thermo": 7.115120135665626,
-      "distance_struct": 0.8814559420657955,
-      "distance_vector": 5.5677643628300215
+      "distance_thermo": 7.116642452975518,
+      "distance_struct": 0.9005974652570082,
+      "distance_vector": 5.916079783099616
+    },
+    {
+      "compound": "CNCCN(C)CC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -6.432772341266432,
+        "F_chain": -2.922752622483358,
+        "F_assoc": -8.4825856825512,
+        "m_total": 3.3014592691619615,
+        "sigma3_avg": 7.371886456398915e-29,
+        "shape_avg": 0.4148806000077645
+      },
+      "distance_thermo": 7.220487205997602,
+      "distance_struct": 0.7714045536628343,
+      "distance_vector": 4.242640687119285
     },
     {
       "compound": "CC(CN)NC(CO)CN(C)C",
@@ -3730,34 +3670,34 @@
       "distance_vector": 4.242640687119285
     },
     {
-      "compound": "CNCCCC(CCN)CC(C)O",
+      "compound": "CC(O)CNC(C)C",
       "candidate_vector": [
         0,
         0,
         0,
-        2,
-        6,
+        3,
+        1,
         1,
         0,
         0,
         0,
-        1,
+        0,
         1,
         0,
         1,
         0
       ],
       "signature": {
-        "F_mono": -10.062123196203821,
-        "F_chain": -4.007326277846343,
-        "F_assoc": -20.967407246030852,
-        "m_total": 4.13501974292086,
-        "sigma3_avg": 7.554798729726397e-29,
-        "shape_avg": 0.43940631540253683
+        "F_mono": -4.392803794599432,
+        "F_chain": -2.2076811796960203,
+        "F_assoc": -8.351035058560814,
+        "m_total": 2.7642236616902913,
+        "sigma3_avg": 7.174310489759169e-29,
+        "shape_avg": 0.4511303755780597
       },
-      "distance_thermo": 7.344401325888666,
-      "distance_struct": 0.9005974652570082,
-      "distance_vector": 5.916079783099616
+      "distance_thermo": 7.348452580948533,
+      "distance_struct": 0.6271172202262306,
+      "distance_vector": 3.7416573867739413
     },
     {
       "compound": "CCCC(CO)CCCNCCO",
@@ -3790,6 +3730,66 @@
       "distance_vector": 5.830951894845301
     },
     {
+      "compound": "CCCNCCC(O)CC",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -7.130957080871315,
+        "F_chain": -2.6392750121117303,
+        "F_assoc": -8.36207632406406,
+        "m_total": 3.0368532616902915,
+        "sigma3_avg": 8.35076903389151e-29,
+        "shape_avg": 0.37023948531020157
+      },
+      "distance_thermo": 7.387435950376222,
+      "distance_struct": 0.8849997960721874,
+      "distance_vector": 4.898979485566356
+    },
+    {
+      "compound": "CCC(O)CNC(C)C",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -5.293416058402508,
+        "F_chain": -2.5128154250978714,
+        "F_assoc": -8.21381006352495,
+        "m_total": 2.9935438616902914,
+        "sigma3_avg": 7.488975057153021e-29,
+        "shape_avg": 0.4341386239366207
+      },
+      "distance_thermo": 7.404289482710796,
+      "distance_struct": 0.7114359254646918,
+      "distance_vector": 3.872983346207417
+    },
+    {
       "compound": "CC(CCN)CC(N)CCO",
       "candidate_vector": [
         1,
@@ -3820,64 +3820,94 @@
       "distance_vector": 3.872983346207417
     },
     {
-      "compound": "CC(O)CCNC(CO)CN(C)C",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        3,
-        3,
-        1,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -9.14268359898952,
-        "F_chain": -4.514583320516261,
-        "F_assoc": -21.66167354938082,
-        "m_total": 4.544319269161962,
-        "sigma3_avg": 6.525389438160887e-29,
-        "shape_avg": 0.4533680798512755
-      },
-      "distance_thermo": 7.592711296909761,
-      "distance_struct": 0.8847719004777805,
-      "distance_vector": 4.242640687119285
-    },
-    {
-      "compound": "CC(O)CNCCNCC(C)O",
+      "compound": "CNCCCC(O)CN(C)C",
       "candidate_vector": [
         0,
         0,
         0,
-        2,
+        3,
         4,
         0,
         0,
         0,
         0,
         0,
-        2,
-        0,
-        2,
+        1,
+        1,
+        1,
         0
       ],
       "signature": {
-        "F_mono": -7.676332598770985,
-        "F_chain": -3.2851485899467883,
-        "F_assoc": -22.71434986474464,
-        "m_total": 3.5526829233805826,
-        "sigma3_avg": 7.690028067288101e-29,
-        "shape_avg": 0.35960701438417136
+        "F_mono": -7.289387028697382,
+        "F_chain": -3.229040353638432,
+        "F_assoc": -8.366314944433324,
+        "m_total": 3.530779469161961,
+        "sigma3_avg": 7.627515727524527e-29,
+        "shape_avg": 0.4028286583859445
       },
-      "distance_thermo": 7.62356569464014,
-      "distance_struct": 0.9180080387237226,
+      "distance_thermo": 7.523338697469637,
+      "distance_struct": 0.8457659037073205,
       "distance_vector": 4.795831523312719
+    },
+    {
+      "compound": "CCN(CCO)CCCNCCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        1,
+        6,
+        0,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -11.18016243024016,
+        "F_chain": -4.979576642646182,
+        "F_assoc": -19.535067166493523,
+        "m_total": 4.806577469161962,
+        "sigma3_avg": 6.135251692527049e-29,
+        "shape_avg": 0.4515905193161904
+      },
+      "distance_thermo": 7.55126247208112,
+      "distance_struct": 0.9087745894374504,
+      "distance_vector": 5.477225575051661
+    },
+    {
+      "compound": "CC(O)CCCNC(C)C",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -6.188801535499437,
+        "F_chain": -2.818285651060735,
+        "F_assoc": -8.08739728825217,
+        "m_total": 3.2228640616902915,
+        "sigma3_avg": 7.762303695720749e-29,
+        "shape_avg": 0.4195649400822055
+      },
+      "distance_thermo": 7.571554759924917,
+      "distance_struct": 0.7889088843608718,
+      "distance_vector": 4.242640687119285
     },
     {
       "compound": "CN(C)CCO",
@@ -3908,6 +3938,66 @@
       "distance_thermo": 7.656510052039114,
       "distance_struct": 0.3587366075960285,
       "distance_vector": 2.449489742783178
+    },
+    {
+      "compound": "CC(O)CN(C)CCNCCCN",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        6,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.03385953128606,
+        "F_chain": -4.1134455142441215,
+        "F_assoc": -21.457376101550317,
+        "m_total": 4.21361495039253,
+        "sigma3_avg": 7.25573596243122e-29,
+        "shape_avg": 0.435365937919324
+      },
+      "distance_thermo": 7.73230501882507,
+      "distance_struct": 0.8945330293841446,
+      "distance_vector": 5.916079783099616
+    },
+    {
+      "compound": "CCCNCCC(O)CCC",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.018119388201573,
+        "F_chain": -2.9448396590907726,
+        "F_assoc": -8.236648613943109,
+        "m_total": 3.2661734616902915,
+        "sigma3_avg": 8.567981505793409e-29,
+        "shape_avg": 0.3603454490410842
+      },
+      "distance_thermo": 7.769059863565647,
+      "distance_struct": 0.9476690252442416,
+      "distance_vector": 5.744562646538029
     },
     {
       "compound": "CCN(C)CCO",
@@ -3970,34 +4060,64 @@
       "distance_vector": 3.605551275463989
     },
     {
-      "compound": "CC(O)CN(C)CCNCCCN",
+      "compound": "CCCN(CCNC)CC(C)O",
       "candidate_vector": [
         0,
         0,
         0,
-        2,
-        6,
+        3,
+        5,
         0,
         0,
         0,
         0,
-        1,
+        0,
         1,
         1,
         1,
         0
       ],
       "signature": {
-        "F_mono": -10.03385953128606,
-        "F_chain": -4.1134455142441215,
-        "F_assoc": -21.776806792717473,
-        "m_total": 4.21361495039253,
-        "sigma3_avg": 7.25573596243122e-29,
-        "shape_avg": 0.435365937919324
+        "F_mono": -8.146888352996077,
+        "F_chain": -3.53543263059486,
+        "F_assoc": -8.257838877693242,
+        "m_total": 3.7600996691619613,
+        "sigma3_avg": 7.854302301629249e-29,
+        "shape_avg": 0.39224675953228344
       },
-      "distance_thermo": 7.979391894493202,
-      "distance_struct": 0.8945330293841446,
-      "distance_vector": 5.916079783099616
+      "distance_thermo": 7.914486723760557,
+      "distance_struct": 0.9142736960520838,
+      "distance_vector": 5.477225575051661
+    },
+    {
+      "compound": "CCC(CNC)N(C)CC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        4,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -7.369837574533317,
+        "F_chain": -3.7045519088397025,
+        "F_assoc": -7.965980399901353,
+        "m_total": 3.9461104691619613,
+        "sigma3_avg": 7.405192182641816e-29,
+        "shape_avg": 0.43149443038125584
+      },
+      "distance_thermo": 8.035980517498086,
+      "distance_struct": 0.8638311831216089,
+      "distance_vector": 5.0990195135927845
     },
     {
       "compound": "CC(CN)NC(C)CO",
@@ -4120,6 +4240,36 @@
       "distance_vector": 3.4641016151377544
     },
     {
+      "compound": "CCCCC(O)CCNCCC",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        7,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.902227325920572,
+        "F_chain": -3.2506373926058063,
+        "F_assoc": -8.120304225042162,
+        "m_total": 3.495493661690291,
+        "sigma3_avg": 8.758221742375393e-29,
+        "shape_avg": 0.351749599864055
+      },
+      "distance_thermo": 8.232947726567534,
+      "distance_struct": 1.0065836611832528,
+      "distance_vector": 6.6332495807108
+    },
+    {
       "compound": "CN(C)CCCCO",
       "candidate_vector": [
         0,
@@ -4210,6 +4360,36 @@
       "distance_vector": 4.0
     },
     {
+      "compound": "CCNCC(C)N(CC)CC(C)O",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        4,
+        4,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.22363209324833,
+        "F_chain": -4.01191481844537,
+        "F_assoc": -7.870195330810834,
+        "m_total": 4.175430669161961,
+        "sigma3_avg": 7.619691386924545e-29,
+        "shape_avg": 0.42039075303168527
+      },
+      "distance_thermo": 8.421600653080576,
+      "distance_struct": 0.9304962798600335,
+      "distance_vector": 5.5677643628300215
+    },
+    {
       "compound": "CC(CO)NCCC(C)NCCO",
       "candidate_vector": [
         0,
@@ -4268,6 +4448,36 @@
       "distance_thermo": 8.553303811478246,
       "distance_struct": 0.6737358488910874,
       "distance_vector": 4.0
+    },
+    {
+      "compound": "CCCCC(O)CCCNC(C)C",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        3,
+        6,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.852791786399836,
+        "F_chain": -3.736015294973441,
+        "F_assoc": -7.7592606270628295,
+        "m_total": 3.9108246616902917,
+        "sigma3_avg": 8.401996979187805e-29,
+        "shape_avg": 0.3860986262339057
+      },
+      "distance_thermo": 8.651350413135185,
+      "distance_struct": 0.9882639468393734,
+      "distance_vector": 6.244997998398398
     },
     {
       "compound": "CC(CCNCCO)NCCO",
@@ -4538,6 +4748,36 @@
       "distance_thermo": 9.303569967999248,
       "distance_struct": 0.6954866382573075,
       "distance_vector": 4.358898943540674
+    },
+    {
+      "compound": "CC(C)NCCNCCC(O)CN",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        2,
+        5,
+        1,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.92898093111274,
+        "F_chain": -4.138825405984978,
+        "F_assoc": -23.92985510605915,
+        "m_total": 4.27158940461115,
+        "sigma3_avg": 6.967391383886712e-29,
+        "shape_avg": 0.44438761461112397
+      },
+      "distance_thermo": 9.331646866459119,
+      "distance_struct": 0.8747805384961014,
+      "distance_vector": 5.385164807134504
     },
     {
       "compound": "CC(CC(CN)N(C)C)NCCO",
@@ -5170,36 +5410,6 @@
       "distance_vector": 5.916079783099616
     },
     {
-      "compound": "CN(C)CC(CO)CO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        2,
-        1,
-        1,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.540883188343013,
-        "F_chain": -3.767848402400858,
-        "F_assoc": -24.83862215711489,
-        "m_total": 3.93873780747167,
-        "sigma3_avg": 5.235374328402095e-29,
-        "shape_avg": 0.5348931671789131
-      },
-      "distance_thermo": 9.953261405953922,
-      "distance_struct": 0.6273933396447032,
-      "distance_vector": 2.8284271247461903
-    },
-    {
       "compound": "CC(O)CCC(N)CC(C)CCN",
       "candidate_vector": [
         0,
@@ -5288,36 +5498,6 @@
       "distance_thermo": 9.986375119873893,
       "distance_struct": 0.726925369762028,
       "distance_vector": 5.0
-    },
-    {
-      "compound": "CC(C)NCCNCCC(O)CN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        2,
-        5,
-        1,
-        0,
-        0,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.92898093111274,
-        "F_chain": -4.138825405984978,
-        "F_assoc": -24.6567151244377,
-        "m_total": 4.27158940461115,
-        "sigma3_avg": 6.967391383886712e-29,
-        "shape_avg": 0.44438761461112397
-      },
-      "distance_thermo": 9.990188002780249,
-      "distance_struct": 0.8747805384961014,
-      "distance_vector": 5.385164807134504
     },
     {
       "compound": "CCN(CCO)C(CN)CN",
@@ -5410,6 +5590,36 @@
       "distance_vector": 5.656854249492381
     },
     {
+      "compound": "CNCCCC(O)CNCCN",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        6,
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.377392797856762,
+        "F_chain": -3.6657252205063453,
+        "F_assoc": -24.92351447016869,
+        "m_total": 3.8562584046111503,
+        "sigma3_avg": 7.119412889257691e-29,
+        "shape_avg": 0.4195299494674384
+      },
+      "distance_thermo": 10.273983308786008,
+      "distance_struct": 0.8380451629028812,
+      "distance_vector": 5.830951894845301
+    },
+    {
       "compound": "CCN(CCO)CC(N)CCN",
       "candidate_vector": [
         0,
@@ -5498,36 +5708,6 @@
       "distance_thermo": 10.370511645002493,
       "distance_struct": 0.753308413819628,
       "distance_vector": 4.795831523312719
-    },
-    {
-      "compound": "CC(O)CCNCCNCCO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        5,
-        0,
-        0,
-        1,
-        0,
-        0,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.816385592083806,
-        "F_chain": -3.9044758068689203,
-        "F_assoc": -25.260364452987254,
-        "m_total": 4.000951923380582,
-        "sigma3_avg": 6.695746468333136e-29,
-        "shape_avg": 0.4038446406203979
-      },
-      "distance_thermo": 10.455496676129599,
-      "distance_struct": 0.8498520234852329,
-      "distance_vector": 5.0
     },
     {
       "compound": "CCC(CN)CN(CCN)CCO",
@@ -5620,66 +5800,6 @@
       "distance_vector": 3.605551275463989
     },
     {
-      "compound": "CCN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        3,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -9.1736858909952,
-        "F_chain": -3.6121826623256545,
-        "F_assoc": -25.661906677771988,
-        "m_total": 3.75272700747167,
-        "sigma3_avg": 5.535867757224911e-29,
-        "shape_avg": 0.5006935379044286
-      },
-      "distance_thermo": 10.876729009009647,
-      "distance_struct": 0.6215836660488969,
-      "distance_vector": 2.8284271247461903
-    },
-    {
-      "compound": "CNCCCC(O)CNCCN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        6,
-        0,
-        0,
-        0,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -9.377392797856762,
-        "F_chain": -3.6657252205063453,
-        "F_assoc": -25.66655331848942,
-        "m_total": 3.8562584046111503,
-        "sigma3_avg": 7.119412889257691e-29,
-        "shape_avg": 0.4195299494674384
-      },
-      "distance_thermo": 10.956772108686966,
-      "distance_struct": 0.8380451629028812,
-      "distance_vector": 5.830951894845301
-    },
-    {
       "compound": "CC(O)CN(CCN)CCCN",
       "candidate_vector": [
         0,
@@ -5738,36 +5858,6 @@
       "distance_thermo": 11.209867493252512,
       "distance_struct": 0.6675605887919757,
       "distance_vector": 4.69041575982343
-    },
-    {
-      "compound": "CCCN(CCO)CCCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        5,
-        0,
-        0,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.770519152139542,
-        "F_chain": -4.228412843786385,
-        "F_assoc": -25.213587210253426,
-        "m_total": 4.21136740747167,
-        "sigma3_avg": 6.123223427819321e-29,
-        "shape_avg": 0.47113953223277805
-      },
-      "distance_thermo": 11.215260223732146,
-      "distance_struct": 0.780589916656544,
-      "distance_vector": 4.47213595499958
     },
     {
       "compound": "CN(CCCN)CCCC(O)CN",
@@ -5830,6 +5920,36 @@
       "distance_vector": 1.7320508075688772
     },
     {
+      "compound": "CC(CCC(N)CO)NCCO",
+      "candidate_vector": [
+        1,
+        0,
+        0,
+        1,
+        3,
+        2,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.288347407979725,
+        "F_chain": -4.981864738561107,
+        "F_assoc": -25.417341823074022,
+        "m_total": 4.90886794292086,
+        "sigma3_avg": 5.32029007894143e-29,
+        "shape_avg": 0.5368516722778187
+      },
+      "distance_thermo": 11.391700731021816,
+      "distance_struct": 0.8389185023404068,
+      "distance_vector": 3.3166247903554
+    },
+    {
       "compound": "NCCN(CCN)CCCO",
       "candidate_vector": [
         0,
@@ -5890,43 +6010,73 @@
       "distance_vector": 5.0
     },
     {
-      "compound": "CCCCN(CCO)CCCO",
+      "compound": "NC(CO)CNCCO",
       "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        6,
-        0,
-        0,
-        1,
         1,
         0,
         0,
+        0,
+        2,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
         0,
         0,
         0
       ],
       "signature": {
-        "F_mono": -11.579078071155767,
-        "F_chain": -4.536260941605237,
-        "F_assoc": -25.007677199065597,
-        "m_total": 4.44068760747167,
-        "sigma3_avg": 6.376947238848971e-29,
-        "shape_avg": 0.4586518135429556
+        "F_mono": -8.82714275771139,
+        "F_chain": -3.900827760015727,
+        "F_assoc": -26.389679021536846,
+        "m_total": 4.034896542920859,
+        "sigma3_avg": 4.685390050807759e-29,
+        "shape_avg": 0.5575689238787718
       },
-      "distance_thermo": 11.503516080130476,
-      "distance_struct": 0.8515457486431037,
-      "distance_vector": 5.385164807134504
+      "distance_thermo": 11.51499619428384,
+      "distance_struct": 0.6212723663876979,
+      "distance_vector": 2.0
     },
     {
-      "compound": "CC(CCO)NC(CO)CN(C)C",
+      "compound": "NC(CO)CCNCCO",
       "candidate_vector": [
+        1,
+        0,
+        0,
+        0,
+        3,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -9.680288981360112,
+        "F_chain": -4.212464149171794,
+        "F_assoc": -26.121837717510658,
+        "m_total": 4.264216742920859,
+        "sigma3_avg": 5.003940960508482e-29,
+        "shape_avg": 0.5399164292829964
+      },
+      "distance_thermo": 11.591723357479472,
+      "distance_struct": 0.6903471862790194,
+      "distance_vector": 2.6457513110645907
+    },
+    {
+      "compound": "CC(CCC(N)CCO)NCCO",
+      "candidate_vector": [
+        1,
         0,
         0,
         1,
-        3,
-        2,
+        4,
         2,
         0,
         1,
@@ -5938,16 +6088,16 @@
         0
       ],
       "signature": {
-        "F_mono": -9.488766077962605,
-        "F_chain": -5.284323629152464,
-        "F_assoc": -25.925494803690324,
-        "m_total": 5.178599069161962,
-        "sigma3_avg": 5.623297984167549e-29,
-        "shape_avg": 0.5071410891417153
+        "F_mono": -11.155279241600578,
+        "F_chain": -5.294018992107484,
+        "F_assoc": -25.19731459459207,
+        "m_total": 5.1381881429208605,
+        "sigma3_avg": 5.565293052802588e-29,
+        "shape_avg": 0.5231263713025699
       },
-      "distance_thermo": 11.646417430924917,
-      "distance_struct": 0.9147499531957337,
-      "distance_vector": 4.242640687119285
+      "distance_thermo": 11.674978604140312,
+      "distance_struct": 0.8980641259825524,
+      "distance_vector": 4.0
     },
     {
       "compound": "NCCCN(CCN)CCCO",
@@ -6370,6 +6520,36 @@
       "distance_vector": 6.082762530298219
     },
     {
+      "compound": "OCCNCC(O)CO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        2,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.61707440689906,
+        "F_chain": -3.3669384777369857,
+        "F_assoc": -28.00270820208845,
+        "m_total": 3.5453102616902914,
+        "sigma3_avg": 5.26458711724405e-29,
+        "shape_avg": 0.47433054554217313
+      },
+      "distance_thermo": 12.912508988146293,
+      "distance_struct": 0.5792505785825013,
+      "distance_vector": 3.0
+    },
+    {
       "compound": "CC(O)CN(C)C(C)CC(O)CN",
       "candidate_vector": [
         0,
@@ -6398,36 +6578,6 @@
       "distance_thermo": 12.92685631129739,
       "distance_struct": 0.8597395364357933,
       "distance_vector": 4.69041575982343
-    },
-    {
-      "compound": "CCN(CCO)CCCNCCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        6,
-        0,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.18016243024016,
-        "F_chain": -4.979576642646182,
-        "F_assoc": -27.011981679886354,
-        "m_total": 4.806577469161962,
-        "sigma3_avg": 6.135251692527049e-29,
-        "shape_avg": 0.4515905193161904
-      },
-      "distance_thermo": 13.140059568097142,
-      "distance_struct": 0.9087745894374504,
-      "distance_vector": 5.477225575051661
     },
     {
       "compound": "NCCNCCNCCO",
@@ -6580,6 +6730,36 @@
       "distance_vector": 3.7416573867739413
     },
     {
+      "compound": "CC(CN)N(C(C)CO)C(C)CO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        3,
+        1,
+        3,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.939587257743579,
+        "F_chain": -5.568060243872313,
+        "F_assoc": -27.23605153101726,
+        "m_total": 5.452235288702239,
+        "sigma3_avg": 5.31799227530703e-29,
+        "shape_avg": 0.5648729577360371
+      },
+      "distance_thermo": 13.40463763014286,
+      "distance_struct": 0.9330611299296176,
+      "distance_vector": 4.69041575982343
+    },
+    {
       "compound": "OCCNC(CO)CO",
       "candidate_vector": [
         0,
@@ -6670,6 +6850,36 @@
       "distance_vector": 3.0
     },
     {
+      "compound": "CC(N)CN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        1,
+        3,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.897567112106909,
+        "F_chain": -4.657175900736848,
+        "F_assoc": -27.89539030999907,
+        "m_total": 4.621573288702238,
+        "sigma3_avg": 5.26887769379659e-29,
+        "shape_avg": 0.5450458212948883
+      },
+      "distance_thermo": 13.734025814531075,
+      "distance_struct": 0.7762545343850945,
+      "distance_vector": 3.1622776601683795
+    },
+    {
       "compound": "CCC(O)CN(CC)CC(O)CN",
       "candidate_vector": [
         0,
@@ -6700,6 +6910,36 @@
       "distance_vector": 5.291502622129181
     },
     {
+      "compound": "CC(N)CC(CO)CN(C)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        2,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -11.720533115009879,
+        "F_chain": -5.4271464976574295,
+        "F_assoc": -27.374491499762378,
+        "m_total": 5.266224488702239,
+        "sigma3_avg": 5.53543423372992e-29,
+        "shape_avg": 0.5415611319941064
+      },
+      "distance_thermo": 13.80295650609151,
+      "distance_struct": 0.9139989834958103,
+      "distance_vector": 4.0
+    },
+    {
       "compound": "CC(O)CN(CCCN)CCCO",
       "candidate_vector": [
         0,
@@ -6728,6 +6968,96 @@
       "distance_thermo": 13.810440661752942,
       "distance_struct": 0.8731888992073534,
       "distance_vector": 5.477225575051661
+    },
+    {
+      "compound": "CC(N)CCCN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        1,
+        5,
+        1,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -12.512527627074977,
+        "F_chain": -5.278508541959195,
+        "F_assoc": -27.51792482975837,
+        "m_total": 5.080213688702239,
+        "sigma3_avg": 5.77139413818817e-29,
+        "shape_avg": 0.5165421924882961
+      },
+      "distance_thermo": 14.243161616667145,
+      "distance_struct": 0.9000487062267868,
+      "distance_vector": 4.69041575982343
+    },
+    {
+      "compound": "CC(O)CC(C)NC(CN)CO",
+      "candidate_vector": [
+        1,
+        0,
+        0,
+        2,
+        2,
+        2,
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -8.794745046934281,
+        "F_chain": -4.3622692869244375,
+        "F_assoc": -29.641586590875235,
+        "m_total": 4.46059894292086,
+        "sigma3_avg": 5.912183270755477e-29,
+        "shape_avg": 0.5149848038427866
+      },
+      "distance_thermo": 14.694020376030336,
+      "distance_struct": 0.7896240755252835,
+      "distance_vector": 3.3166247903554
+    },
+    {
+      "compound": "NCCN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        0,
+        4,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.901581703706514,
+        "F_chain": -4.196394076142914,
+        "F_assoc": -29.108100572002762,
+        "m_total": 4.206242288702238,
+        "sigma3_avg": 5.237205884632323e-29,
+        "shape_avg": 0.5321956089725142
+      },
+      "distance_thermo": 14.74627949106415,
+      "distance_struct": 0.6902061910079621,
+      "distance_vector": 3.605551275463989
     },
     {
       "compound": "NCCC(O)CCO",
@@ -6790,6 +7120,96 @@
       "distance_vector": 2.449489742783178
     },
     {
+      "compound": "NCCN(CCO)CCCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        0,
+        5,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -11.700584616752986,
+        "F_chain": -4.505275667133616,
+        "F_assoc": -28.896171153514764,
+        "m_total": 4.435562488702238,
+        "sigma3_avg": 5.52412036627573e-29,
+        "shape_avg": 0.5165368397549532
+      },
+      "distance_thermo": 14.910456769786425,
+      "distance_struct": 0.7612878343110973,
+      "distance_vector": 4.47213595499958
+    },
+    {
+      "compound": "NCCCN(CCO)CCCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        0,
+        6,
+        0,
+        0,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -12.505966453392434,
+        "F_chain": -4.813845057046502,
+        "F_assoc": -28.694947578501043,
+        "m_total": 4.664882688702238,
+        "sigma3_avg": 5.786862932522162e-29,
+        "shape_avg": 0.5024176042527508
+      },
+      "distance_thermo": 15.136499082509781,
+      "distance_struct": 0.8289250939338122,
+      "distance_vector": 5.385164807134504
+    },
+    {
+      "compound": "CC(O)CCNCCC(CN)CN",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        6,
+        1,
+        0,
+        0,
+        0,
+        2,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -11.511599954547291,
+        "F_chain": -4.276067695327471,
+        "F_assoc": -29.34549137932466,
+        "m_total": 4.359214824151428,
+        "sigma3_avg": 6.82393841491587e-29,
+        "shape_avg": 0.4872307594522713
+      },
+      "distance_thermo": 15.199244324574053,
+      "distance_struct": 0.8484662090916961,
+      "distance_vector": 5.916079783099616
+    },
+    {
       "compound": "NCCC(CO)CO",
       "candidate_vector": [
         0,
@@ -6820,64 +7240,34 @@
       "distance_vector": 3.0
     },
     {
-      "compound": "CC(O)CC(C)NC(CN)CO",
-      "candidate_vector": [
-        1,
-        0,
-        0,
-        2,
-        2,
-        2,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.794745046934281,
-        "F_chain": -4.3622692869244375,
-        "F_assoc": -30.269155517985546,
-        "m_total": 4.46059894292086,
-        "sigma3_avg": 5.912183270755477e-29,
-        "shape_avg": 0.5149848038427866
-      },
-      "distance_thermo": 15.297287085915581,
-      "distance_struct": 0.7896240755252835,
-      "distance_vector": 3.3166247903554
-    },
-    {
-      "compound": "CC(O)CCNCCC(CN)CN",
+      "compound": "NCCCN(CCCO)CCCO",
       "candidate_vector": [
         0,
         0,
-        0,
-        1,
-        6,
         1,
         0,
+        7,
         0,
-        0,
-        2,
-        1,
         0,
         1,
+        1,
+        1,
+        0,
+        0,
+        0,
         0
       ],
       "signature": {
-        "F_mono": -11.511599954547291,
-        "F_chain": -4.276067695327471,
-        "F_assoc": -29.59864161247915,
-        "m_total": 4.359214824151428,
-        "sigma3_avg": 6.82393841491587e-29,
-        "shape_avg": 0.4872307594522713
+        "F_mono": -13.316830551144319,
+        "F_chain": -5.122176384773793,
+        "F_assoc": -28.503401884678134,
+        "m_total": 4.894202888702239,
+        "sigma3_avg": 6.028290485700781e-29,
+        "shape_avg": 0.4896214957164068
       },
-      "distance_thermo": 15.429537576833592,
-      "distance_struct": 0.8484662090916961,
-      "distance_vector": 5.916079783099616
+      "distance_thermo": 15.420961845898928,
+      "distance_struct": 0.8929114106922253,
+      "distance_vector": 6.324555320336759
     },
     {
       "compound": "CC(O)CC(N)CC(N)CN",
@@ -7000,6 +7390,36 @@
       "distance_vector": 5.744562646538029
     },
     {
+      "compound": "NCC(CO)NCCCNCCO",
+      "candidate_vector": [
+        1,
+        0,
+        0,
+        0,
+        5,
+        1,
+        0,
+        1,
+        1,
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.883474204191803,
+        "F_chain": -5.269550809586863,
+        "F_assoc": -30.09294613469883,
+        "m_total": 5.08874700461115,
+        "sigma3_avg": 5.401145682090336e-29,
+        "shape_avg": 0.4994100855019056
+      },
+      "distance_thermo": 15.867794584677595,
+      "distance_struct": 0.8921552404281148,
+      "distance_vector": 4.69041575982343
+    },
+    {
       "compound": "NCC(O)CC(CN)CN",
       "candidate_vector": [
         0,
@@ -7028,36 +7448,6 @@
       "distance_thermo": 15.919579386786678,
       "distance_struct": 0.6129442651617066,
       "distance_vector": 4.69041575982343
-    },
-    {
-      "compound": "OCCNCC(O)CO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        0,
-        2,
-        0,
-        0,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -8.61707440689906,
-        "F_chain": -3.3669384777369857,
-        "F_assoc": -31.11028233590402,
-        "m_total": 3.5453102616902914,
-        "sigma3_avg": 5.26458711724405e-29,
-        "shape_avg": 0.47433054554217313
-      },
-      "distance_thermo": 15.932511013286835,
-      "distance_struct": 0.5792505785825013,
-      "distance_vector": 3.0
     },
     {
       "compound": "NCCC(CO)CC(N)CCO",
@@ -7090,36 +7480,6 @@
       "distance_vector": 3.872983346207417
     },
     {
-      "compound": "CC(CCC(N)CO)NCCO",
-      "candidate_vector": [
-        1,
-        0,
-        0,
-        1,
-        3,
-        2,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.288347407979725,
-        "F_chain": -4.981864738561107,
-        "F_assoc": -30.595975198689672,
-        "m_total": 4.90886794292086,
-        "sigma3_avg": 5.32029007894143e-29,
-        "shape_avg": 0.5368516722778187
-      },
-      "distance_thermo": 16.08996761962712,
-      "distance_struct": 0.8389185023404068,
-      "distance_vector": 3.3166247903554
-    },
-    {
       "compound": "CN(CCO)CC(N)CC(N)CO",
       "candidate_vector": [
         2,
@@ -7150,36 +7510,6 @@
       "distance_vector": 3.4641016151377544
     },
     {
-      "compound": "CC(CCC(N)CCO)NCCO",
-      "candidate_vector": [
-        1,
-        0,
-        0,
-        1,
-        4,
-        2,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.155279241600578,
-        "F_chain": -5.294018992107484,
-        "F_assoc": -30.344936816710607,
-        "m_total": 5.1381881429208605,
-        "sigma3_avg": 5.565293052802588e-29,
-        "shape_avg": 0.5231263713025699
-      },
-      "distance_thermo": 16.193309879635766,
-      "distance_struct": 0.8980641259825524,
-      "distance_vector": 4.0
-    },
-    {
       "compound": "NCCCC(O)CCNCCN",
       "candidate_vector": [
         0,
@@ -7200,44 +7530,14 @@
       "signature": {
         "F_mono": -11.98491466338461,
         "F_chain": -3.8028237396403157,
-        "F_assoc": -30.642445421374518,
+        "F_assoc": -30.358023777311473,
         "m_total": 3.943883824151427,
         "sigma3_avg": 6.956306237935528e-29,
         "shape_avg": 0.46743720126952615
       },
-      "distance_thermo": 16.486912049599884,
+      "distance_thermo": 16.226782669226296,
       "distance_struct": 0.7950443145931709,
       "distance_vector": 6.6332495807108
-    },
-    {
-      "compound": "NC(CO)CCNCCO",
-      "candidate_vector": [
-        1,
-        0,
-        0,
-        0,
-        3,
-        1,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -9.680288981360112,
-        "F_chain": -4.212464149171794,
-        "F_assoc": -31.40126064618754,
-        "m_total": 4.264216742920859,
-        "sigma3_avg": 5.003940960508482e-29,
-        "shape_avg": 0.5399164292829964
-      },
-      "distance_thermo": 16.551977868770553,
-      "distance_struct": 0.6903471862790194,
-      "distance_vector": 2.6457513110645907
     },
     {
       "compound": "CC(N)CC(N)CC(C)NCCO",
@@ -7270,64 +7570,94 @@
       "distance_vector": 5.0
     },
     {
-      "compound": "NC(CO)CNCCO",
+      "compound": "CNCCCC(O)CC(O)CN",
       "candidate_vector": [
+        0,
+        0,
+        0,
         1,
+        5,
         0,
         0,
+        0,
+        0,
+        1,
+        1,
         0,
         2,
-        1,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0,
-        0,
         0
       ],
       "signature": {
-        "F_mono": -8.82714275771139,
-        "F_chain": -3.900827760015727,
-        "F_assoc": -31.708030781342142,
-        "m_total": 4.034896542920859,
-        "sigma3_avg": 4.685390050807759e-29,
-        "shape_avg": 0.5575689238787718
+        "F_mono": -10.829588917751025,
+        "F_chain": -3.4206108310990313,
+        "F_assoc": -31.48512865902682,
+        "m_total": 3.640308342920859,
+        "sigma3_avg": 7.493470776150505e-29,
+        "shape_avg": 0.4129517834189688
       },
-      "distance_thermo": 16.62168495392746,
-      "distance_struct": 0.6212723663876979,
-      "distance_vector": 2.0
+      "distance_thermo": 16.833604357525388,
+      "distance_struct": 0.839668920951473,
+      "distance_vector": 5.0
     },
     {
-      "compound": "CC(CN)N(C(C)CO)C(C)CO",
+      "compound": "CC(O)CCNCCC(O)CCN",
       "candidate_vector": [
         0,
         0,
-        1,
-        3,
-        1,
-        3,
         0,
         1,
-        1,
-        1,
+        6,
         0,
         0,
         0,
+        0,
+        1,
+        1,
+        0,
+        2,
         0
       ],
       "signature": {
-        "F_mono": -10.939587257743579,
-        "F_chain": -5.568060243872313,
-        "F_assoc": -30.8929085594747,
-        "m_total": 5.452235288702239,
-        "sigma3_avg": 5.31799227530703e-29,
-        "shape_avg": 0.5648729577360371
+        "F_mono": -11.657417249807125,
+        "F_chain": -3.7273358264123906,
+        "F_assoc": -31.185373655197882,
+        "m_total": 3.869628542920859,
+        "sigma3_avg": 7.720021995676712e-29,
+        "shape_avg": 0.4020694904627129
       },
-      "distance_thermo": 16.691179010522923,
-      "distance_struct": 0.9330611299296176,
-      "distance_vector": 4.69041575982343
+      "distance_thermo": 16.85856110257515,
+      "distance_struct": 0.9086466719382786,
+      "distance_vector": 5.830951894845301
+    },
+    {
+      "compound": "CC(O)CC(O)CNCCN",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        4,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        2,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.006608573387561,
+        "F_chain": -3.1139328091214287,
+        "F_assoc": -31.80470581622155,
+        "m_total": 3.4109881429208593,
+        "sigma3_avg": 7.239220367001053e-29,
+        "shape_avg": 0.42529730608616134
+      },
+      "distance_thermo": 16.88056562270375,
+      "distance_struct": 0.7647112486796762,
+      "distance_vector": 4.242640687119285
     },
     {
       "compound": "CC(N)CC(CN)NCCO",
@@ -7420,36 +7750,6 @@
       "distance_vector": 4.69041575982343
     },
     {
-      "compound": "CC(N)CC(CO)CN(C)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        2,
-        3,
-        2,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.720533115009879,
-        "F_chain": -5.4271464976574295,
-        "F_assoc": -31.060321375751162,
-        "m_total": 5.266224488702239,
-        "sigma3_avg": 5.53543423372992e-29,
-        "shape_avg": 0.5415611319941064
-      },
-      "distance_thermo": 17.06879426830371,
-      "distance_struct": 0.9139989834958103,
-      "distance_vector": 4.0
-    },
-    {
       "compound": "CC(CN)CC(N)CCNCCO",
       "candidate_vector": [
         0,
@@ -7478,36 +7778,6 @@
       "distance_thermo": 17.121962440297647,
       "distance_struct": 0.8796787375280899,
       "distance_vector": 5.385164807134504
-    },
-    {
-      "compound": "CC(N)CN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        3,
-        1,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.897567112106909,
-        "F_chain": -4.657175900736848,
-        "F_assoc": -31.690774762436753,
-        "m_total": 4.621573288702238,
-        "sigma3_avg": 5.26887769379659e-29,
-        "shape_avg": 0.5450458212948883
-      },
-      "distance_thermo": 17.228237659101183,
-      "distance_struct": 0.7762545343850945,
-      "distance_vector": 3.1622776601683795
     },
     {
       "compound": "NCC(N)CCNCCO",
@@ -7570,36 +7840,6 @@
       "distance_vector": 5.0
     },
     {
-      "compound": "CC(N)CCCN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        1,
-        5,
-        1,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -12.512527627074977,
-        "F_chain": -5.278508541959195,
-        "F_assoc": -31.233841215771623,
-        "m_total": 5.080213688702239,
-        "sigma3_avg": 5.77139413818817e-29,
-        "shape_avg": 0.5165421924882961
-      },
-      "distance_thermo": 17.484008112522964,
-      "distance_struct": 0.9000487062267868,
-      "distance_vector": 4.69041575982343
-    },
-    {
       "compound": "NCC(CN)NCCO",
       "candidate_vector": [
         0,
@@ -7628,6 +7868,36 @@
       "distance_thermo": 17.493056385967577,
       "distance_struct": 0.5891325096887078,
       "distance_vector": 3.605551275463989
+    },
+    {
+      "compound": "CC(O)CCCC(CN)NCCO",
+      "candidate_vector": [
+        0,
+        0,
+        0,
+        1,
+        5,
+        1,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "signature": {
+        "F_mono": -11.430426723830557,
+        "F_chain": -4.5163693815482775,
+        "F_assoc": -31.88367646360404,
+        "m_total": 4.503908342920859,
+        "sigma3_avg": 6.461836253787198e-29,
+        "shape_avg": 0.47112207572768655
+      },
+      "distance_thermo": 17.54934083684984,
+      "distance_struct": 0.8597779932055384,
+      "distance_vector": 4.898979485566356
     },
     {
       "compound": "NCCC(CCN)NCCCO",
@@ -7720,244 +7990,34 @@
       "distance_vector": 6.4031242374328485
     },
     {
-      "compound": "CC(O)CCNCCC(O)CCN",
+      "compound": "NCCNCCC(O)CCCO",
       "candidate_vector": [
         0,
         0,
         0,
-        1,
-        6,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        2,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.657417249807125,
-        "F_chain": -3.7273358264123906,
-        "F_assoc": -32.79283205862047,
-        "m_total": 3.869628542920859,
-        "sigma3_avg": 7.720021995676712e-29,
-        "shape_avg": 0.4020694904627129
-      },
-      "distance_thermo": 18.360072070411988,
-      "distance_struct": 0.9086466719382786,
-      "distance_vector": 5.830951894845301
-    },
-    {
-      "compound": "CNCCCC(O)CC(O)CN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        5,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        2,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.829588917751025,
-        "F_chain": -3.4206108310990313,
-        "F_assoc": -33.11990490325291,
-        "m_total": 3.640308342920859,
-        "sigma3_avg": 7.493470776150505e-29,
-        "shape_avg": 0.4129517834189688
-      },
-      "distance_thermo": 18.389529852924937,
-      "distance_struct": 0.839668920951473,
-      "distance_vector": 5.0
-    },
-    {
-      "compound": "CC(O)CC(O)CNCCN",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        4,
-        0,
-        0,
-        0,
-        0,
-        1,
-        1,
-        0,
-        2,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.006608573387561,
-        "F_chain": -3.1139328091214287,
-        "F_assoc": -33.46882559971468,
-        "m_total": 3.4109881429208593,
-        "sigma3_avg": 7.239220367001053e-29,
-        "shape_avg": 0.42529730608616134
-      },
-      "distance_thermo": 18.489300895182605,
-      "distance_struct": 0.7647112486796762,
-      "distance_vector": 4.242640687119285
-    },
-    {
-      "compound": "CC(O)CCCC(CN)NCCO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        1,
-        5,
-        1,
-        0,
-        1,
-        0,
-        1,
-        1,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.430426723830557,
-        "F_chain": -4.5163693815482775,
-        "F_assoc": -32.93254969438137,
-        "m_total": 4.503908342920859,
-        "sigma3_avg": 6.461836253787198e-29,
-        "shape_avg": 0.47112207572768655
-      },
-      "distance_thermo": 18.530070652344683,
-      "distance_struct": 0.8597779932055384,
-      "distance_vector": 4.898979485566356
-    },
-    {
-      "compound": "NCCN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        4,
-        0,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.901581703706514,
-        "F_chain": -4.196394076142914,
-        "F_assoc": -33.160378315917065,
-        "m_total": 4.206242288702238,
-        "sigma3_avg": 5.237205884632323e-29,
-        "shape_avg": 0.5321956089725142
-      },
-      "distance_thermo": 18.54275536890646,
-      "distance_struct": 0.6902061910079621,
-      "distance_vector": 3.605551275463989
-    },
-    {
-      "compound": "NCCN(CCO)CCCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        5,
-        0,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -11.700584616752986,
-        "F_chain": -4.505275667133616,
-        "F_assoc": -32.903505419241114,
-        "m_total": 4.435562488702238,
-        "sigma3_avg": 5.52412036627573e-29,
-        "shape_avg": 0.5165368397549532
-      },
-      "distance_thermo": 18.585543034869588,
-      "distance_struct": 0.7612878343110973,
-      "distance_vector": 4.47213595499958
-    },
-    {
-      "compound": "NCCCN(CCO)CCCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
         0,
         6,
         0,
         0,
         1,
+        0,
         1,
         1,
         0,
-        0,
-        0,
+        1,
         0
       ],
       "signature": {
-        "F_mono": -12.505966453392434,
-        "F_chain": -4.813845057046502,
-        "F_assoc": -32.65959760785689,
-        "m_total": 4.664882688702238,
-        "sigma3_avg": 5.786862932522162e-29,
-        "shape_avg": 0.5024176042527508
+        "F_mono": -11.683242283300157,
+        "F_chain": -4.043821427687122,
+        "F_assoc": -32.96027137528766,
+        "m_total": 4.08857734292086,
+        "sigma3_avg": 6.551028456638932e-29,
+        "shape_avg": 0.45039263305098354
       },
-      "distance_thermo": 18.685242642119874,
-      "distance_struct": 0.8289250939338122,
-      "distance_vector": 5.385164807134504
-    },
-    {
-      "compound": "NCCCN(CCCO)CCCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        7,
-        0,
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -13.316830551144319,
-        "F_chain": -5.122176384773793,
-        "F_assoc": -32.42743228146756,
-        "m_total": 4.894202888702239,
-        "sigma3_avg": 6.028290485700781e-29,
-        "shape_avg": 0.4896214957164068
-      },
-      "distance_thermo": 18.83980865717435,
-      "distance_struct": 0.8929114106922253,
-      "distance_vector": 6.324555320336759
+      "distance_thermo": 18.565542282073228,
+      "distance_struct": 0.804795397518589,
+      "distance_vector": 5.5677643628300215
     },
     {
       "compound": "CC(N)CC(CO)NCCO",
@@ -7990,36 +8050,6 @@
       "distance_vector": 3.7416573867739413
     },
     {
-      "compound": "NCC(CO)NCCCNCCO",
-      "candidate_vector": [
-        1,
-        0,
-        0,
-        0,
-        5,
-        1,
-        0,
-        1,
-        1,
-        0,
-        2,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.883474204191803,
-        "F_chain": -5.269550809586863,
-        "F_assoc": -33.619021751485874,
-        "m_total": 5.08874700461115,
-        "sigma3_avg": 5.401145682090336e-29,
-        "shape_avg": 0.4994100855019056
-      },
-      "distance_thermo": 19.153244286318486,
-      "distance_struct": 0.8921552404281148,
-      "distance_vector": 4.69041575982343
-    },
-    {
       "compound": "NCC(CCCO)CCNCCO",
       "candidate_vector": [
         0,
@@ -8050,34 +8080,64 @@
       "distance_vector": 5.830951894845301
     },
     {
-      "compound": "NCCNCCC(O)CCCO",
+      "compound": "CC(O)CNCCNCC(O)CN",
       "candidate_vector": [
         0,
         0,
         0,
+        1,
+        5,
+        0,
+        0,
+        0,
+        0,
+        1,
+        2,
+        0,
+        2,
+        0
+      ],
+      "signature": {
+        "F_mono": -10.522351991167238,
+        "F_chain": -3.86473386851232,
+        "F_assoc": -34.41050543561382,
+        "m_total": 4.006198204611151,
+        "sigma3_avg": 7.084145441447486e-29,
+        "shape_avg": 0.408653573706737
+      },
+      "distance_thermo": 19.597334544508435,
+      "distance_struct": 0.8738507859934737,
+      "distance_vector": 5.291502622129181
+    },
+    {
+      "compound": "NCCNCCN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
         0,
         6,
         0,
         0,
         1,
+        1,
+        1,
+        1,
         0,
-        1,
-        1,
         0,
-        1,
         0
       ],
       "signature": {
-        "F_mono": -11.683242283300157,
-        "F_chain": -4.043821427687122,
-        "F_assoc": -34.09051465961445,
-        "m_total": 4.08857734292086,
-        "sigma3_avg": 6.551028456638932e-29,
-        "shape_avg": 0.45039263305098354
+        "F_mono": -12.454565301476034,
+        "F_chain": -5.253669450558736,
+        "F_assoc": -33.79463520287994,
+        "m_total": 5.030772550392529,
+        "sigma3_avg": 5.605219212278882e-29,
+        "shape_avg": 0.4924878933897208
       },
-      "distance_thermo": 19.629930263100206,
-      "distance_struct": 0.804795397518589,
-      "distance_vector": 5.5677643628300215
+      "distance_thermo": 19.79040633801954,
+      "distance_struct": 0.8941470946649387,
+      "distance_vector": 5.477225575051661
     },
     {
       "compound": "CC(CN)CC(O)CC(N)CO",
@@ -8110,34 +8170,34 @@
       "distance_vector": 3.3166247903554
     },
     {
-      "compound": "CC(O)CNCCNCC(O)CN",
+      "compound": "NCCNCC(O)CNCCO",
       "candidate_vector": [
         0,
         0,
         0,
-        1,
+        0,
         5,
         0,
         0,
-        0,
+        1,
         0,
         1,
         2,
         0,
-        2,
+        1,
         0
       ],
       "signature": {
-        "F_mono": -10.522351991167238,
-        "F_chain": -3.86473386851232,
-        "F_assoc": -37.04332229367962,
-        "m_total": 4.006198204611151,
-        "sigma3_avg": 7.084145441447486e-29,
-        "shape_avg": 0.408653573706737
+        "F_mono": -10.859149069205836,
+        "F_chain": -4.178344774162094,
+        "F_assoc": -36.541900462974915,
+        "m_total": 4.22514700461115,
+        "sigma3_avg": 6.017492354329796e-29,
+        "shape_avg": 0.45507357485361044
       },
-      "distance_thermo": 22.143853138532343,
-      "distance_struct": 0.8738507859934737,
-      "distance_vector": 5.291502622129181
+      "distance_thermo": 21.76933306619559,
+      "distance_struct": 0.7895186686527802,
+      "distance_vector": 5.0
     },
     {
       "compound": "NC(CNCCO)CNCCO",
@@ -8168,66 +8228,6 @@
       "distance_thermo": 22.698599242181242,
       "distance_struct": 0.8325020025802301,
       "distance_vector": 4.58257569495584
-    },
-    {
-      "compound": "NCCNCCN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        6,
-        0,
-        0,
-        1,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -12.454565301476034,
-        "F_chain": -5.253669450558736,
-        "F_assoc": -37.131658738172575,
-        "m_total": 5.030772550392529,
-        "sigma3_avg": 5.605219212278882e-29,
-        "shape_avg": 0.4924878933897208
-      },
-      "distance_thermo": 22.90470335806,
-      "distance_struct": 0.8941470946649387,
-      "distance_vector": 5.477225575051661
-    },
-    {
-      "compound": "NCCNCC(O)CNCCO",
-      "candidate_vector": [
-        0,
-        0,
-        0,
-        0,
-        5,
-        0,
-        0,
-        1,
-        0,
-        1,
-        2,
-        0,
-        1,
-        0
-      ],
-      "signature": {
-        "F_mono": -10.859149069205836,
-        "F_chain": -4.178344774162094,
-        "F_assoc": -37.92277430988222,
-        "m_total": 4.22514700461115,
-        "sigma3_avg": 6.017492354329796e-29,
-        "shape_avg": 0.45507357485361044
-      },
-      "distance_thermo": 23.104360618276214,
-      "distance_struct": 0.7895186686527802,
-      "distance_vector": 5.0
     },
     {
       "compound": "NCC(O)CCC(O)CN",
@@ -8290,6 +8290,36 @@
       "distance_vector": 3.7416573867739413
     },
     {
+      "compound": "NCC(N)CN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        0,
+        4,
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -12.729109164900924,
+        "F_chain": -5.235460312123314,
+        "F_assoc": -38.709793994218145,
+        "m_total": 5.075088569932806,
+        "sigma3_avg": 5.048666851437931e-29,
+        "shape_avg": 0.5671914259842525
+      },
+      "distance_thermo": 24.471977718314324,
+      "distance_struct": 0.8532970105660885,
+      "distance_vector": 4.123105625617661
+    },
+    {
       "compound": "CC(CN)CC(CN)CC(O)CO",
       "candidate_vector": [
         0,
@@ -8320,6 +8350,36 @@
       "distance_vector": 4.69041575982343
     },
     {
+      "compound": "NCC(CN)CN(CCO)CCO",
+      "candidate_vector": [
+        0,
+        0,
+        1,
+        0,
+        5,
+        1,
+        0,
+        1,
+        1,
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "signature": {
+        "F_mono": -13.532215757848117,
+        "F_chain": -5.547301493264276,
+        "F_assoc": -38.447893420167006,
+        "m_total": 5.304408769932806,
+        "sigma3_avg": 5.293707607193457e-29,
+        "shape_avg": 0.55258457713879
+      },
+      "distance_thermo": 24.51600764982455,
+      "distance_struct": 0.9080971242544092,
+      "distance_vector": 4.898979485566356
+    },
+    {
       "compound": "NCCC(O)CC(CCN)CCO",
       "candidate_vector": [
         0,
@@ -8348,66 +8408,6 @@
       "distance_thermo": 24.818533763630665,
       "distance_struct": 0.8447261385212803,
       "distance_vector": 5.830951894845301
-    },
-    {
-      "compound": "NCC(N)CN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        4,
-        1,
-        0,
-        1,
-        1,
-        2,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -12.729109164900924,
-        "F_chain": -5.235460312123314,
-        "F_assoc": -39.435973936784116,
-        "m_total": 5.075088569932806,
-        "sigma3_avg": 5.048666851437931e-29,
-        "shape_avg": 0.5671914259842525
-      },
-      "distance_thermo": 25.160590370534045,
-      "distance_struct": 0.8532970105660885,
-      "distance_vector": 4.123105625617661
-    },
-    {
-      "compound": "NCC(CN)CN(CCO)CCO",
-      "candidate_vector": [
-        0,
-        0,
-        1,
-        0,
-        5,
-        1,
-        0,
-        1,
-        1,
-        2,
-        0,
-        0,
-        0,
-        0
-      ],
-      "signature": {
-        "F_mono": -13.532215757848117,
-        "F_chain": -5.547301493264276,
-        "F_assoc": -39.16611520199109,
-        "m_total": 5.304408769932806,
-        "sigma3_avg": 5.293707607193457e-29,
-        "shape_avg": 0.55258457713879
-      },
-      "distance_thermo": 25.188405546403285,
-      "distance_struct": 0.9080971242544092,
-      "distance_vector": 4.898979485566356
     },
     {
       "compound": "NCCCC(CN)CC(CO)CO",
@@ -8460,12 +8460,12 @@
       "signature": {
         "F_mono": -12.1282809007579,
         "F_chain": -4.166232801561142,
-        "F_assoc": -42.493392686626066,
+        "F_assoc": -42.238050663289854,
         "m_total": 4.279834424151428,
         "sigma3_avg": 6.570504810226364e-29,
         "shape_avg": 0.4884971958571375
       },
-      "distance_thermo": 27.81692563781656,
+      "distance_thermo": 27.569586424619153,
       "distance_struct": 0.8138424323052198,
       "distance_vector": 4.69041575982343
     },
@@ -8490,12 +8490,12 @@
       "signature": {
         "F_mono": -11.801722645769711,
         "F_chain": -3.3868795423229723,
-        "F_assoc": -44.280136522656875,
+        "F_assoc": -44.0229293240909,
         "m_total": 3.6351832241514273,
         "sigma3_avg": 6.398148013339248e-29,
         "shape_avg": 0.48351725894632963
       },
-      "distance_thermo": 29.424046665737794,
+      "distance_thermo": 29.172873548201014,
       "distance_struct": 0.6753048151436533,
       "distance_vector": 4.47213595499958
     },
@@ -8520,12 +8520,12 @@
       "signature": {
         "F_mono": -12.255575268897292,
         "F_chain": -4.47534883067492,
-        "F_assoc": -44.20472271507427,
+        "F_assoc": -44.070614379650955,
         "m_total": 4.498783224151428,
         "sigma3_avg": 5.61724804992266e-29,
         "shape_avg": 0.5282078586388438
       },
-      "distance_thermo": 29.53486640554544,
+      "distance_thermo": 29.40472875870793,
       "distance_struct": 0.7741866865127501,
       "distance_vector": 4.358898943540674
     },
