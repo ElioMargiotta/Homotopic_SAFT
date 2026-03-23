@@ -168,9 +168,15 @@ def load_database(xml_path: str):
             ab = ci.find("association")
             if ab is not None:
                 for inter in ab.findall("interaction"):
+                    s1 = inter.attrib.get("site1", "")
+                    s2 = inter.attrib.get("site2", "")
+                    # Cross interactions require complementary site types;
+                    # skip pairs where both sites have the same canonical type.
+                    if not _is_valid_cross_site_pair(s1, s2):
+                        continue
                     assoc_list.append({
-                        "site1":        inter.attrib.get("site1", ""),
-                        "site2":        inter.attrib.get("site2", ""),
+                        "site1":        s1,
+                        "site2":        s2,
                         "epsilonAssoc": _pf(inter.findtext("epsilonAssoc"), 0.0),
                         "bondingVolume": _pf(inter.findtext("bondingVolume"), 0.0),
                     })
@@ -261,6 +267,17 @@ _SITE_CANONICAL = {
 def _canonical_site(name: str) -> str:
     """Return canonical site type for *name*, or *name* itself if unknown."""
     return _SITE_CANONICAL.get(name, name)
+
+
+def _is_valid_cross_site_pair(site1: str, site2: str) -> bool:
+    """Return True if *site1* and *site2* have **different** canonical types.
+
+    Cross association interactions only exist between complementary sites
+    (e.g. an electron-donor 'e' with a hydrogen-donor 'H').  Two sites
+    of the same canonical type (e.g. 'e' with 'e1', or 'H' with 'H')
+    cannot form a cross-association bond.
+    """
+    return _canonical_site(site1) != _canonical_site(site2)
 
 
 def combining_eps_assoc(ea_kk: float, ea_ll: float) -> float:
@@ -856,6 +873,10 @@ def delta_pair(k: str, l: str, groups: dict, cross: dict,
         ea = inter["epsilonAssoc"]
         bv = inter["bondingVolume"]
 
+        # Cross interactions require complementary (different) site types
+        if k != l and not _is_valid_cross_site_pair(s1, s2):
+            continue
+
         m1 = sites_k.get(s1, 0.0)
         m2 = sites_l.get(s2, 0.0)
 
@@ -911,6 +932,9 @@ def _cr1_association_fallback(k: str, l: str,
                 actual_l_s2 = il["site2"]   # site on l matching try_key[1]
                 combo = (actual_k_s1, actual_l_s2)
                 if combo in used:
+                    continue
+                # Cross interactions require different canonical site types
+                if not _is_valid_cross_site_pair(actual_k_s1, actual_l_s2):
                     continue
                 used.add(combo)
 
@@ -974,6 +998,10 @@ def _get_site_site_delta(k: str, site_a: str,
             assoc_list = ci["association"]
         else:
             assoc_list = _cr1_association_fallback(k, l, groups)
+
+    # Cross interactions require complementary (different) site types
+    if k != l and not _is_valid_cross_site_pair(site_a, site_b):
+        return 0.0
 
     # Find the specific site-site interaction
     ca = _canonical_site(site_a)
@@ -1401,6 +1429,59 @@ def distance_structure(sig_cand: dict, sig_targ: dict,
                    + weights["w_SH"] * dsh**2)
 
 
+def euclidean_distance_vector(vec_cand, vec_targ) -> float:
+    """
+    Simple Euclidean distance between two group-count vectors.
+
+    This is a purely compositional metric — it measures how different
+    the group multiplicities are, with no thermodynamic weighting:
+
+        D_vec = sqrt( sum_k (n_{k,c} - n_{k,t})^2 )
+
+    Parameters
+    ----------
+    vec_cand, vec_targ : list[int]
+        Group-count vectors of equal length.
+
+    Returns
+    -------
+    float  —  Euclidean distance in group-count space.
+    """
+    return math.sqrt(sum((c - t) ** 2 for c, t in zip(vec_cand, vec_targ)))
+
+
+def cosine_distance_vector(vec_cand, vec_targ) -> float:
+    """
+    Cosine distance between two group-count vectors.
+
+    Measures the angular difference between compositions, ignoring
+    magnitude (molecule size).  Two molecules with the same group
+    *ratios* but different sizes have cosine distance = 0.
+
+        D_cos = 1 − (a · b) / (|a| |b|)
+
+    Returns 0 when vectors are parallel, 1 when orthogonal.
+
+    Parameters
+    ----------
+    vec_cand, vec_targ : list[int]
+        Group-count vectors of equal length.
+
+    Returns
+    -------
+    float  —  Cosine distance in [0, 1].
+    """
+    dot = sum(c * t for c, t in zip(vec_cand, vec_targ))
+    norm_c = math.sqrt(sum(c * c for c in vec_cand))
+    norm_t = math.sqrt(sum(t * t for t in vec_targ))
+    if norm_c < 1e-300 or norm_t < 1e-300:
+        return 1.0
+    cos_sim = dot / (norm_c * norm_t)
+    # Clamp for numerical safety
+    cos_sim = max(-1.0, min(1.0, cos_sim))
+    return 1.0 - cos_sim
+
+
 def _inverse_variance_weights(signatures: list[dict]) -> dict:
     """
     Compute inverse-variance weights for thermodynamic components.
@@ -1507,12 +1588,16 @@ def rank_candidates(target_vector, candidate_vectors,
     for idx, sig_c in enumerate(cand_sigs):
         d_th = euclidean_distance_thermo(sig_c, sig_targ, weights_th)
         d_st = distance_structure(sig_c, sig_targ, weights_st)
+        d_vec = euclidean_distance_vector(candidate_vectors[idx], target_vector)
+        d_cos = cosine_distance_vector(candidate_vectors[idx], target_vector)
         results.append({
             "candidate_index":  idx,
             "candidate_vector": list(candidate_vectors[idx]),
             "signature":        sig_c,
             "distance":         d_th,
             "distance_struct":  d_st,
+            "distance_vector":  d_vec,
+            "distance_cosine":  d_cos,
         })
 
     results.sort(key=lambda r: r["distance"])
@@ -1520,36 +1605,26 @@ def rank_candidates(target_vector, candidate_vectors,
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# MODULE 7 — Utility: load compounds from <compounds> section
+# MODULE 7 — Utility: load compounds from CSV
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def load_compounds(xml_path: str, group_names: list[str]) -> dict[str, list[int]]:
+def load_compounds(csv_path: str, group_names: list[str]) -> dict[str, list[int]]:
     """
-    Read ``<compounds>`` and return {name: group-count vector} aligned
+    Read solvent_space.csv and return {smiles: group-count vector} aligned
     with *group_names*.
     """
-    tree = ET.parse(xml_path)
-    root = tree.getroot()
-    group_idx = {g: i for i, g in enumerate(group_names)}
-    G = len(group_names)
+    import csv
+    import ast
 
     compounds: dict[str, list[int]] = {}
-    comp_el = root.find("compounds")
-    if comp_el is None:
-        return compounds
-
-    for c in comp_el.findall("compound"):
-        name = c.attrib["name"]
-        vec = [0] * G
-        gm_el = c.find("groupMultiplicities")
-        if gm_el is None:
-            continue
-        for gm in gm_el.findall("groupMultiplicity"):
-            ref = gm.attrib.get("ref", "")
-            count = int(float(gm.text.strip()))
-            if ref in group_idx:
-                vec[group_idx[ref]] += count
-        compounds[name] = vec
+    with open(csv_path, 'r') as f:
+        reader = csv.reader(f)
+        next(reader)  # Skip header
+        for row in reader:
+            smiles = row[0]
+            vector_str = row[1]
+            vec = [int(float(x)) for x in ast.literal_eval(vector_str)]
+            compounds[smiles] = vec
 
     return compounds
 
@@ -1563,10 +1638,7 @@ GROUPS_OF_INTEREST = [
     "CH3", "CH2", "CH", "C",
     "CH2OH", "CH2OH_Short",
     "NH2", "NH", "N",
-    "OH","OH_Short",
-    "cCH2", "cCH",
-    "cNH", "cN",
-    "cCHNH", "cCHN"
+    "CHOH","OH_Short",
 ]
 
 
@@ -1587,7 +1659,7 @@ def _print_matrix(table: dict, group_names: list[str], title: str):
 def main():
     import os
 
-    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "database.xml")
+    xml_path = os.path.join(os.path.dirname(__file__), "..", "database", "CCS_Mie_Databank_221020.xml")
     xml_path = os.path.normpath(xml_path)
 
     print(f"Loading database from: {xml_path}")
@@ -1622,14 +1694,15 @@ def main():
     _print_matrix(delta_table, group_names, "Δ_{kl}  (association strength, m³)")
 
     # ── Load compounds ──
-    compounds = load_compounds(xml_path, group_names)
-    print(f"\nLoaded {len(compounds)} compounds from database.")
+    csv_path = os.path.join(os.path.dirname(__file__), "..", "database/solvent_space.csv")
+    compounds = load_compounds(csv_path, group_names)
+    print(f"\nLoaded {len(compounds)} compounds from CSV.")
     if not compounds:
         print("No compounds found – exiting.")
         return
 
     # ── Target and ranking ──
-    target_name = "MEA"
+    target_name = "NCCO"
     if target_name not in compounds:
         target_name = next(iter(compounds))
     target_vec = compounds[target_name]
@@ -1662,16 +1735,17 @@ def main():
         print(f"  {wk:>8s} = {wv:.6f}")
 
     print(f"\n{'Rank':>4s}  {'Compound':<35s}  {'F_mono':>10s}  {'F_chain':>10s}  {'F_assoc':>10s}  "
-          f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'D_thermo':>10s}  {'D_struct':>10s}")
-    print("\u2500" * 145)
+          f"{'m':>7s}  {'sig3_avg':>13s}  {'shape':>7s}  {'D_thermo':>10s}  {'D_struct':>10s}  {'D_vector':>10s}")
+    print("\u2500" * 160)
     for rank, entry in enumerate(ranking, 1):
         cname = cand_names[entry["candidate_index"]]
         sig   = entry["signature"]
         d_th  = entry["distance"]
         d_st  = entry["distance_struct"]
+        d_vec = entry["distance_vector"]
         print(f"{rank:4d}  {cname:<35s}  {sig['F_mono']:10.4f}  {sig['F_chain']:10.4f}  "
               f"{sig['F_assoc']:10.4f}  {sig['m_total']:7.4f}  "
-              f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {d_th:10.6f}  {d_st:10.6f}")
+              f"{sig['sigma3_avg']:13.6e}  {sig['shape_avg']:7.4f}  {d_th:10.6f}  {d_st:10.6f}  {d_vec:10.6f}")
 
     # ── Export pair tables ──
     a1_json = {f"{k[0]}|{k[1]}": v for k, v in a1_table.items()}
@@ -1692,7 +1766,7 @@ def main():
             "sigma":       gd["sigma"],
         }
 
-    out_path = os.path.join(os.path.dirname(__file__), "..", "saft_pair_tables.json")
+    out_path = os.path.join(os.path.dirname(__file__), "..", "saft_pair_tables_florian.json")
     out_path = os.path.normpath(out_path)
     with open(out_path, "w") as f:
         json.dump({
@@ -1715,6 +1789,7 @@ def main():
         "signature": e["signature"],
         "distance_thermo": e["distance"],
         "distance_struct": e["distance_struct"],
+        "distance_vector": e["distance_vector"],
     } for e in ranking]
 
     rank_path = os.path.join(os.path.dirname(__file__), "..",
@@ -1781,7 +1856,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 1: Self-interaction parameters
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_self_parameters.csv")
+    path = os.path.join(out_dir, "table_self_parameters_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group", "nu_k", "S_k",
@@ -1812,7 +1887,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 2: Cross-interaction dispersion parameters
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_cross_dispersion.csv")
+    path = os.path.join(out_dir, "table_cross_dispersion_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Group_l",
@@ -1855,7 +1930,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 3: Association parameters (site-site interactions)
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_association.csv")
+    path = os.path.join(out_dir, "table_association_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Site_a", "Group_l", "Site_b",
@@ -1907,7 +1982,7 @@ def export_csv_tables(group_names: list[str], groups: dict, cross: dict,
     # ──────────────────────────────────────────────────────────────────────
     # Table 4: Computed pair quantities (a1_kl, Delta_kl)
     # ──────────────────────────────────────────────────────────────────────
-    path = os.path.join(out_dir, "table_computed_a1_delta.csv")
+    path = os.path.join(out_dir, "table_computed_a1_delta_florian.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Group_k", "Group_l",
@@ -1956,7 +2031,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     out_dir = os.path.normpath(os.path.join(base_dir, ".."))
 
     # ── CSV 1 — Group self-interaction parameters ──
-    self_path = os.path.join(out_dir, "group_self_parameters.csv")
+    self_path = os.path.join(out_dir, "group_self_parameters_florian.csv")
     with open(self_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
@@ -1994,7 +2069,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     print(f"Self-interaction parameters  -> {self_path}")
 
     # ── CSV 2 — Unlike-group dispersion parameters ──
-    disp_path = os.path.join(out_dir, "dispersion_parameters.csv")
+    disp_path = os.path.join(out_dir, "dispersion_parameters_florian.csv")
     with open(disp_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
@@ -2038,7 +2113,7 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
     print(f"Dispersion parameters       -> {disp_path}")
 
     # ── CSV 3 — Association parameters (site-site) ──
-    assoc_path = os.path.join(out_dir, "association_parameters.csv")
+    assoc_path = os.path.join(out_dir, "association_parameters_florian.csv")
     with open(assoc_path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow([
@@ -2084,6 +2159,10 @@ def _export_parameter_csvs(group_names: list[str], groups: dict,
                 bv = inter["bondingVolume"]
 
                 if ea == 0.0 or bv == 0.0:
+                    continue
+
+                # Cross interactions require different canonical site types
+                if k != l and not _is_valid_cross_site_pair(s1, s2):
                     continue
 
                 F = mayer_f(ea, T)

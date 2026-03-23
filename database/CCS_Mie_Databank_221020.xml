@@ -1,196 +1,6 @@
 <?xml version="1.0" ?>
 <gsaft theory="gc_mie">
  <compounds>
-    <compound name="MEA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH2OH_Short">1</groupMultiplicity>
-          <groupMultiplicity ref = "NH2_2nd">1</groupMultiplicity>
-	       <groupMultiplicity ref = "CH2">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="DEA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH2">2</groupMultiplicity>
-          <groupMultiplicity ref = "NH_2nd">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2OH_Short">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="MDEA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH3">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2">2</groupMultiplicity>
-          <groupMultiplicity ref = "N_2nd">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2OH_Short">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="DMMEA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH3">2</groupMultiplicity>
-          <groupMultiplicity ref = "CH2">1</groupMultiplicity>
-          <groupMultiplicity ref = "N_2nd">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2OH_Short">1</groupMultiplicity>
-        </groupMultiplicities>
-    </compound>
-    <compound name="DEEA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH3">2</groupMultiplicity>
-          <groupMultiplicity ref = "CH2">3</groupMultiplicity>
-          <groupMultiplicity ref = "N_2nd">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2OH_Short">1</groupMultiplicity>
-        </groupMultiplicities>
-    </compound>
-    <compound name="MAPA">
-       <groupMultiplicities>
-          <groupMultiplicity ref = "CH3">1</groupMultiplicity>
-          <groupMultiplicity ref = "CH2">3</groupMultiplicity>
-          <groupMultiplicity ref = "NH">1</groupMultiplicity>
-          <groupMultiplicity ref = "NH2">1</groupMultiplicity>
-      </groupMultiplicities>
-    </compound>
-    <compound name="hexylamine">
-       <groupMultiplicities>
-           <groupMultiplicity ref="NH2">1</groupMultiplicity>
-           <groupMultiplicity ref="CH3">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH2">5</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="cyclopentane">
-       <groupMultiplicities>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="cyclohexane">
-       <groupMultiplicities>
-          <groupMultiplicity ref="cCH2">6</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="methyl_cyclohexane">
-       <groupMultiplicities>
-           <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	   <groupMultiplicity ref="cCH">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="ethyl_cyclohexane">
-       <groupMultiplicities>
-           <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-   	   <groupMultiplicity ref="cCH">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH2">1</groupMultiplicity>
-			<groupMultiplicity ref="CH3">1</groupMultiplicity>
-        </groupMultiplicities>
-    </compound>
-    <compound name="ethyl_cyclopentane">
-       <groupMultiplicities>
-           <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-	   <groupMultiplicity ref="cCH">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH2">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="methyl_cyclopentane">
-       <groupMultiplicities>
-          <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-	  <groupMultiplicity ref="cCH">1</groupMultiplicity>
-          <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="propyl_cyclohexane">
-	<groupMultiplicities>
-           <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	   <groupMultiplicity ref="cCH">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH2">2</groupMultiplicity>
-	   <groupMultiplicity ref="CH3">1</groupMultiplicity>
-        </groupMultiplicities>
-    </compound>
-    <compound name="piperazine">
-         <groupMultiplicities>
-            <groupMultiplicity ref="cNH">2</groupMultiplicity>
-            <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-         </groupMultiplicities>
-    </compound>
-    <compound name="piperidine">
-       <groupMultiplicities>
-          <groupMultiplicity ref="cNH">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="pyrrolidine">
-        <groupMultiplicities>
-           <groupMultiplicity ref="cNH">1</groupMultiplicity>
-           <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-        </groupMultiplicities>
-   </compound>
-   <compound name="1_ethyl_piperidine_EPD">
-      <groupMultiplicities>
-         <groupMultiplicity ref="cN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	  <groupMultiplicity ref="CH2">1</groupMultiplicity>
-	   <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="1_methyl_piperidine_MPD">
-       <groupMultiplicities>
-          <groupMultiplicity ref="cN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-          <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="1_ethyl_piperazine_EPZ">
-	<groupMultiplicities>
-          <groupMultiplicity ref="cNH">1</groupMultiplicity>
-          <groupMultiplicity ref="cN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-  	  <groupMultiplicity ref="CH3">1</groupMultiplicity>
-	  <groupMultiplicity ref="CH2">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="1_methyl_piperazine_MPZ">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cNH">1</groupMultiplicity>
-          <groupMultiplicity ref="cN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">4</groupMultiplicity>
-	  <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="methyl_cyclohexyl_amine_MCA">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cCHNH">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	  <groupMultiplicity ref="CH3">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="ethyl_cyclohexyl_amine_ECA">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cCHNH_np">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	  <groupMultiplicity ref="CH3">1</groupMultiplicity>
-	  <groupMultiplicity ref="CH2">1</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="diethyl_cyclohexyl_amine_DECA">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cCHN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-	  <groupMultiplicity ref="CH3">2</groupMultiplicity>
-          <groupMultiplicity ref="CH2">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    
-    <compound name="dimethyl_cyclohexyl_amine_DMCA">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cCHN">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-          <groupMultiplicity ref="CH3">2</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
-    <compound name="3_Aminopropyl_cyclohexyl_amine_S1N">
-       <groupMultiplicities>
-	  <groupMultiplicity ref="cCHNH">1</groupMultiplicity>
-	  <groupMultiplicity ref="NH2">1</groupMultiplicity>
-          <groupMultiplicity ref="cCH2">5</groupMultiplicity>
-          <groupMultiplicity ref="CH2">3</groupMultiplicity>
-       </groupMultiplicities>
-    </compound>
     <compound name="water">
        <groupMultiplicities>
           <groupMultiplicity ref = "H2O">1</groupMultiplicity>
@@ -410,8 +220,40 @@
          </selfInteraction>
       </group>
 
+           <group name="CHOH">
+         <mw>30.0260</mw>
+         <heatCapacity>
+            <a>24.7910</a>
+            <b>2.5900e-2</b>
+            <c>1.2260e-4</c>
+            <d>-8.6900e-8</d>
+         </heatCapacity>
+         <enthalpyOfFormation>-228.68e3</enthalpyOfFormation>
+         <entropyOfFormation>-160.7383</entropyOfFormation>
+         <numberOfSegments>2</numberOfSegments>
+         <shapeFactor>0.18963</shapeFactor>
+         <associationSites>
+            <siteMultiplicity name="H">1</siteMultiplicity>
+            <siteMultiplicity name="e">2</siteMultiplicity>
+         </associationSites>
+         <selfInteraction>
+            <dispersion>
+               <lambdaRepulsive>18.185</lambdaRepulsive>
+               <lambdaAttractive>6.0000</lambdaAttractive>
+               <sigma>4.5381E-10</sigma>
+               <epsilon>599.66</epsilon>
+            </dispersion>
+            <association>
+               <interaction site1="H" site2="e">
+                  <epsilonAssoc>2480.6</epsilonAssoc>
+                  <bondingVolume>8.4740e-30</bondingVolume>
+               </interaction>
+            </association>
+         </selfInteraction>
+      </group>
+
       <group name = "CH2OH_Short">
-	      <mw>31.0337</mw>
+	 <mw>31.0337</mw>
          <heatCapacity>
             <a>24.791</a>
             <b>2.59e-2</b>
@@ -847,7 +689,7 @@
                <epsilon>691.5576</epsilon>
                <lambdaRepulsive>9.2374</lambdaRepulsive>
                <lambdaAttractive>6.0</lambdaAttractive>
-               <sigma>5.5000E-10</sigma>
+                <sigma>5.5000E-10</sigma>
              </dispersion>
              <association>
                 <interaction site1 = "e" site2 = "H">
@@ -935,6 +777,11 @@
      <crossInteraction group1="CH3" group2="CH2OH">
         <dispersion>
            <epsilon>333.202</epsilon>
+        </dispersion>
+     </crossInteraction>
+          <crossInteraction group1="CH3" group2="CHOH">
+        <dispersion>
+           <epsilon>479.38</epsilon>
         </dispersion>
      </crossInteraction>
      <crossInteraction group1="CH3" group2="CH2OH_Short">
@@ -1032,6 +879,11 @@
         <dispersion>
            <epsilon>396.27</epsilon>
          </dispersion>
+     </crossInteraction>
+               <crossInteraction group1="CH2" group2="CHOH">
+        <dispersion>
+           <epsilon>512.67</epsilon>
+        </dispersion>
      </crossInteraction>
      <crossInteraction group1="CH2" group2="CH2OH">
         <dispersion>
@@ -1138,6 +990,11 @@
            <epsilon>329.22</epsilon>
         </dispersion>
      </crossInteraction>
+          <crossInteraction group1="CH" group2="CHOH">
+        <dispersion>
+           <epsilon>0.0</epsilon>
+        </dispersion>
+     </crossInteraction>
      <crossInteraction group1="CH" group2="CH2OH_Short">
         <dispersion>
            <epsilon>329.22</epsilon>
@@ -1175,7 +1032,11 @@
            <epsilon>0.0000</epsilon>
         </dispersion>
      </crossInteraction>
-
+          <crossInteraction group1="C" group2="CHOH">
+        <dispersion>
+           <epsilon>0.0</epsilon>
+        </dispersion>
+     </crossInteraction>
      <!-- xxxxxxxxxxxx unlike interaction with cCH2 xxxxxxxxxxxx -->
      <crossInteraction group1="cCH2" group2="H2O">
         <dispersion>
@@ -1279,6 +1140,21 @@
             <interaction site1="H" site2="e1">
                <epsilonAssoc>2153.2</epsilonAssoc>
                <bondingVolume>147.40e-30</bondingVolume>
+            </interaction>
+         </association>
+     </crossInteraction>
+           <crossInteraction group1="H2O" group2="CHOH">
+         <dispersion>
+            <epsilon>479.16</epsilon>
+         </dispersion>
+         <association>
+            <interaction site1="e" site2="H">
+               <epsilonAssoc>2289.1</epsilonAssoc>
+               <bondingVolume>6.3813e-29</bondingVolume>
+            </interaction>
+            <interaction site1="H" site2="e">
+               <epsilonAssoc>2140.9</epsilonAssoc>
+               <bondingVolume>1.9478e-29</bondingVolume>
             </interaction>
          </association>
      </crossInteraction>
@@ -1412,21 +1288,39 @@
 
      <!--Interactions CH2OH_short Hajar['s thesis, and Table 6 Andrew's paper
      Be aware: only works for short chains of alcohols -->
+                    <crossInteraction group1="CH2OH_Short" group2="CHOH">
+        <dispersion>
+           <epsilon>389.23</epsilon>
+        </dispersion>
+        <association>
+           <interaction site1="H" site2="e">
+              <epsilonAssoc>2500.0</epsilonAssoc>
+              <bondingVolume>10.444e-30</bondingVolume>
+           </interaction>
+           <interaction site1="e" site2="H">
+              <epsilonAssoc>1464.1</epsilonAssoc>
+              <bondingVolume>561.55e-30</bondingVolume>
+           </interaction>
+        </association>
+     </crossInteraction>
+
      <crossInteraction group1="CH2OH_Short" group2="H2O">
         <dispersion>
-           <epsilon>358.02289788397809</epsilon>
+           <epsilon>345.0</epsilon>
         </dispersion>
            <association>
               <interaction site1="H" site2="e">									  
-                 <epsilonAssoc>600.00417989089362</epsilonAssoc>							
-                 <bondingVolume>490.19037407611905e-30</bondingVolume>
+                 <epsilonAssoc>2611.6</epsilonAssoc>
+                 <bondingVolume>1.5185e-29</bondingVolume>
               </interaction>    																											
               <interaction site1="e" site2="H">									
-                 <epsilonAssoc>2000.6102593510361</epsilonAssoc>									
-                 <bondingVolume>130.02180958311252e-30</bondingVolume>
+                 <epsilonAssoc>1586.2</epsilonAssoc>
+                 <bondingVolume>2.2854e-28</bondingVolume>
               </interaction>
            </association>																										
      </crossInteraction>
+
+
      <crossInteraction group1="OH_Short" group2="H2O">
         <dispersion>
            <epsilon>365.329</epsilon>
@@ -1784,6 +1678,22 @@
 
 
      <!--xxxxxxxxxxxx unlike interaction with CH2OH xxxxxxxxxxxx-->
+          <crossInteraction group1="CH2OH" group2="CHOH">
+        <dispersion>
+           <epsilon>389.23</epsilon>
+        </dispersion>
+        <association>
+           <interaction site1="H" site2="e">
+              <epsilonAssoc>2500.0</epsilonAssoc>
+              <bondingVolume>10.444e-30</bondingVolume>
+           </interaction>
+           <interaction site1="e1" site2="H">
+              <epsilonAssoc>1464.1</epsilonAssoc>
+              <bondingVolume>561.55e-30</bondingVolume>
+           </interaction>
+        </association>
+     </crossInteraction>
+
      <crossInteraction group1="CH2OH" group2="NH2">
         <dispersion>
            <epsilon>528.21</epsilon>
@@ -1800,6 +1710,40 @@
            </interaction>
         </association>
      </crossInteraction>
+
+          <crossInteraction group1="CHOH" group2="NH2">
+        <dispersion>
+           <epsilon>415.54</epsilon>
+           <lambdaRepulsive>10.643</lambdaRepulsive>
+        </dispersion>
+        <association>
+           <interaction site1="H" site2="e">
+              <epsilonAssoc>1470.3</epsilonAssoc>
+              <bondingVolume>3.0347e-28</bondingVolume>
+           </interaction>
+           <interaction site1="e" site2="H">
+              <epsilonAssoc>1524.9</epsilonAssoc>
+              <bondingVolume>1.0322e-28</bondingVolume>
+           </interaction>
+        </association>
+     </crossInteraction>
+          <crossInteraction group1="CHOH" group2="NH2_2nd">
+        <dispersion>
+           <epsilon>415.54</epsilon>
+           <lambdaRepulsive>10.643</lambdaRepulsive>
+        </dispersion>
+        <association>
+           <interaction site1="H" site2="e">
+              <epsilonAssoc>1470.3</epsilonAssoc>
+              <bondingVolume>3.0347e-28</bondingVolume>
+           </interaction>
+           <interaction site1="e" site2="H">
+              <epsilonAssoc>1524.9</epsilonAssoc>
+              <bondingVolume>1.0322e-28</bondingVolume>
+           </interaction>
+        </association>
+     </crossInteraction>
+
      <crossInteraction group1="CH2OH" group2="NH">
         <dispersion>
            <epsilon>313.25</epsilon>
@@ -1826,7 +1770,16 @@
              </interaction>
            </association>
      </crossInteraction>
-
+     <crossInteraction group1="CH2OH" group2="CO2">
+        <dispersion>
+           <epsilon>312.30</epsilon>
+        </dispersion>
+     </crossInteraction>
+     <crossInteraction group1="CH2OH_Short" group2="CO2">
+        <dispersion>
+           <epsilon>312.30</epsilon>
+        </dispersion>
+     </crossInteraction>
       <!-- New fitting made by FP to predict MEA VLE {NH2[ch2][CH2OH] environment} -->
      <crossInteraction group1="CH2OH_Short" group2="NH2_2nd">
         <dispersion>
@@ -1925,4 +1878,6 @@
 	
  </crossInteractions>
 </gsaft>
+
+
 
